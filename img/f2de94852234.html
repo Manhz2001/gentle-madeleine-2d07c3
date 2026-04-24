@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tra cứu tương hợp - tương kỵ theo Y-site</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --c-brand-50: #eaf1fb;
+      --c-brand-100: #d5e3f8;
+      --c-brand-200: #a7c4ea;
+      --c-brand-300: #6ea0d6;
+      --c-brand-500: #0b5394;
+      --c-brand-700: #083d6f;
+      --c-brand-800: #073a6a;
+      --c-accent: #cc0000;
+      --c-warning: #f6a623;
+      --c-success: #b7efb7;
+      --c-bg: #f4f9fd;
+      --c-surface: #ffffff;
+      --c-border: #dfe7f0;
+      --c-text: #1a2536;
+      --c-text-soft: #4b5766;
+      --rad-md: 16px;
+      --rad-lg: 22px;
+      --rad-pill: 999px;
+      --sh-sm: 0 3px 10px rgba(11, 83, 148, .08);
+      --sh-md: 0 12px 28px rgba(11, 83, 148, .1);
+      --sh-lg: 0 18px 38px rgba(11, 83, 148, .12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; overflow-x: hidden; }
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(11, 83, 148, .08), transparent 30%),
+        linear-gradient(180deg, #fbfdff 0%, #f2f7fd 100%);
+      color: var(--c-text);
+      padding: 16px;
+    }
+
+    .compat-app {
+      width: 100%;
+      max-width: 1380px;
+      margin: 0 auto;
+      background: rgba(255,255,255,.96);
+      border: 1px solid rgba(11, 83, 148, .08);
+      border-radius: 28px;
+      box-shadow: var(--sh-lg);
+      overflow: hidden;
+    }
+
+    .compat-header {
+      padding: 26px 28px 22px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.98) 0%, rgba(234,241,251,.98) 60%, rgba(213,227,248,.98) 100%);
+      border-bottom: 1px solid rgba(11, 83, 148, .08);
+    }
+
+    .compat-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--c-brand-500);
+    }
+
+    .compat-title {
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: clamp(30px, 2.7vw, 40px);
+      line-height: 1.08;
+      letter-spacing: -.02em;
+      color: var(--c-brand-800);
+      margin-bottom: 10px;
+    }
+
+    .compat-desc {
+      max-width: 72ch;
+      color: var(--c-text-soft);
+      font-size: 16px;
+    }
+
+    .warning-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 18px;
+      background: linear-gradient(90deg, #f7a61b 0%, #ffb320 100%);
+      color: #1f2937;
+      font-weight: 800;
+      text-align: center;
+      border-bottom: 1px solid rgba(0,0,0,.04);
+    }
+
+    .search-shell {
+      position: relative;
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--c-border);
+      background: linear-gradient(180deg, rgba(247,249,252,.82) 0%, rgba(255,255,255,.96) 100%);
+    }
+
+    .search-box {
+      position: relative;
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    #searchInput {
+      width: 100%;
+      padding: 18px 22px;
+      border-radius: var(--rad-pill);
+      border: 2px solid var(--c-brand-200);
+      outline: none;
+      font-size: 16px;
+      font-family: inherit;
+      color: var(--c-text);
+      box-shadow: var(--sh-sm);
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    #searchInput:focus {
+      border-color: var(--c-brand-500);
+      box-shadow: 0 0 0 4px rgba(11,83,148,.12), var(--sh-sm);
+    }
+
+    #searchInput::placeholder { color: #8ba0bd; }
+
+    .suggestions {
+      position: absolute;
+      inset: calc(100% + 10px) 0 auto 0;
+      background: #fff;
+      border: 1px solid rgba(11,83,148,.14);
+      border-radius: 16px;
+      box-shadow: var(--sh-md);
+      max-height: 280px;
+      overflow-y: auto;
+      display: none;
+      z-index: 20;
+      text-align: left;
+    }
+
+    .suggestions div {
+      padding: 13px 16px;
+      border-bottom: 1px solid #eef4fb;
+      cursor: pointer;
+      transition: background .18s ease, padding-left .18s ease;
+    }
+
+    .suggestions div:last-child { border-bottom: 0; }
+    .suggestions div:hover {
+      background: var(--c-brand-50);
+      padding-left: 20px;
+    }
+
+    .action-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    button {
+      border: 0;
+      border-radius: var(--rad-pill);
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: transform .12s ease, box-shadow .2s ease, filter .2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, var(--c-brand-500), var(--c-brand-700));
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(11, 83, 148, .22);
+    }
+
+    .btn-danger {
+      background: linear-gradient(180deg, #d94343 0%, #b71c1c 100%);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(183, 28, 28, .22);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: saturate(1.03);
+    }
+
+    .selected-panel,
+    .table-panel {
+      margin: 20px 28px;
+      background: #fff;
+      border: 1px solid rgba(11,83,148,.1);
+      border-radius: 22px;
+      box-shadow: var(--sh-sm);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      background: linear-gradient(90deg, #123d7a 0%, #0b5394 68%, #0a5dbb 100%);
+      color: #fff;
+    }
+
+    .panel-head h3 {
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .selected-list {
+      display: grid;
+      gap: 10px;
+      padding: 18px;
+    }
+
+    .selected-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #fbfdff 0%, #f5f9ff 100%);
+      border: 1px solid #e4edf8;
+    }
+
+    .selected-item__name {
+      font-weight: 700;
+      color: var(--c-brand-800);
+      text-align: left;
+    }
+
+    .delete-btn {
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ff6767 0%, #e53935 100%);
+      color: #fff;
+      font-size: 22px;
+      box-shadow: 0 8px 18px rgba(211,47,47,.24);
+      padding: 0;
+    }
+
+    .result-wrap {
+      padding: 18px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid var(--c-border);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: var(--sh-sm);
+    }
+
+    th, td {
+      padding: 12px 10px;
+      border-right: 1px solid #d6e7f4;
+      border-bottom: 1px solid #d6e7f4;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    th:last-child,
+    td:last-child { border-right: 0; }
+
+    thead th {
+      background: linear-gradient(180deg, var(--c-brand-500) 0%, var(--c-brand-700) 100%);
+      color: #fff;
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    tbody td:first-child {
+      text-align: left;
+      font-weight: 700;
+      color: var(--c-brand-800);
+      background: #f9fbfe;
+      min-width: 180px;
+    }
+
+    .self-intersection { background: var(--c-brand-500); color: #fff; }
+    .compatible { background: var(--c-success); color: #0b3d0d; font-weight: 700; }
+    .incompatible { background: #ff0000; color: #fff; font-weight: 700; }
+    .na { background: #ffeb99; color: #000; font-weight: 700; }
+    .controversial { background: #ffa500; color: #000; font-weight: 700; }
+
+    .placeholder,
+    .error-message {
+      padding: 28px 18px;
+      text-align: center;
+      color: var(--c-text-soft);
+      font-weight: 600;
+    }
+
+    .error-message {
+      color: var(--c-accent);
+    }
+
+    .legend {
+      display: none;
+      padding: 0 28px 26px;
+      text-align: center;
+    }
+
+    .legend span {
+      display: inline-block;
+      margin: 5px 10px;
+      padding: 8px 12px;
+      border-radius: var(--rad-pill);
+      background: #fff;
+      border: 1px solid #e3ebf3;
+      box-shadow: var(--sh-sm);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .legend .compatible {
+      background: #e8f8e8;
+      border-color: #b7efb7;
+      color: #0b3d0d;
+    }
+    .legend .na {
+      background: #ffeb99;
+      border-color: #f2d96b;
+      color: #000;
+    }
+    .legend .incompatible {
+      background: #ff0000;
+      border-color: #d40000;
+      color: #fff;
+    }
+    .legend .controversial {
+      background: #ffa500;
+      border-color: #e09100;
+      color: #000;
+    }
+
+    @media (max-width: 767px) {
+      body { padding: 6px; }
+      .compat-app { border-radius: 20px; }
+      .compat-header,
+      .search-shell,
+      .selected-panel,
+      .table-panel { margin-left: 14px; margin-right: 14px; }
+      .compat-header { padding: 20px 18px; }
+      .search-shell { padding: 16px 14px; }
+      .selected-panel, .table-panel { margin-top: 16px; margin-bottom: 16px; }
+      .action-row { grid-template-columns: 1fr; }
+      .btn-primary, .btn-danger { width: 100%; }
+      .panel-head h3 { font-size: 18px; }
+      table { min-width: 560px; }
+      th, td { font-size: 13px; padding: 10px 8px; }
+      tbody td:first-child { min-width: 126px; }
+      .legend { padding: 0 14px 20px; }
+      table.matrix-compact {
+        min-width: 0;
+        width: 100%;
+        table-layout: fixed;
+      }
+      table.matrix-compact th,
+      table.matrix-compact td {
+        font-size: 12px;
+        padding: 8px 4px;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+      table.matrix-compact tbody td:first-child,
+      table.matrix-compact tr:first-child td:first-child {
+        min-width: 88px;
+        width: 40%;
+      }
+    }
+
+    @media (max-width: 374px) {
+      body { padding: 4px; }
+      .compat-app { border-radius: 16px; }
+      .compat-header,
+      .search-shell,
+      .selected-panel,
+      .table-panel { margin-left: 8px; margin-right: 8px; }
+      .compat-header { padding: 16px 14px; }
+      .search-shell { padding: 12px 10px; }
+      #searchInput { padding: 14px 16px; font-size: 14px; }
+      table { min-width: 500px; }
+      th, td { font-size: 12px; padding: 9px 7px; }
+      tbody td:first-child { min-width: 112px; }
+      table.matrix-compact th,
+      table.matrix-compact td {
+        font-size: 11px;
+        padding: 7px 3px;
+      }
+      table.matrix-compact tbody td:first-child,
+      table.matrix-compact tr:first-child td:first-child {
+        min-width: 76px;
+        width: 42%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="compat-app">
+    <header class="compat-header">
+      <div class="compat-kicker">Công cụ tra cứu Y-site</div>
+      <h1 class="compat-title">Tra cứu tương hợp - tương kỵ thuốc</h1>
+      <p class="compat-desc">Kiểm tra nhanh khả năng tương hợp của nhiều hoạt chất khi phối hợp cùng một đường truyền. Dữ liệu giữ nguyên từ nguồn tra cứu hiện có.</p>
+    </header>
+
+    <div class="warning-bar">
+      <span>THẬN TRỌNG: Luôn kiểm tra kỹ thông tin trước khi phối hợp thuốc</span>
+    </div>
+
+    <section class="search-shell">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Nhập hoạt chất để thêm vào danh sách" autocomplete="off">
+        <div class="suggestions" id="suggestions"></div>
+      </div>
+
+      <div class="action-row">
+        <button type="button" class="btn-primary" onclick="searchCompatibility()">Tìm kiếm thông tin</button>
+        <button type="button" class="btn-danger" onclick="clearAllSelected()">Xóa tất cả</button>
+      </div>
+    </section>
+
+    <section class="selected-panel">
+      <div class="panel-head">
+        <h3>Danh sách hoạt chất đã chọn</h3>
+      </div>
+      <div class="selected-list" id="selectedList">
+        <div class="placeholder">Vui lòng nhập hoạt chất để thêm vào danh sách</div>
+      </div>
+    </section>
+
+    <section class="table-panel">
+      <div class="panel-head">
+        <h3>Thông tin kết quả</h3>
+      </div>
+      <div class="result-wrap">
+        <table id="matrixTable">
+          <tbody id="tableBody">
+            <tr><td colspan="2" class="placeholder">Vui lòng nhập hoạt chất để tra cứu</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div id="legend" class="legend">
+      <span class="compatible">C: Tương hợp</span>
+      <span class="incompatible">I: Tương kỵ</span>
+      <span class="na">N: Không có thông tin</span>
+      <span class="controversial">V: Mâu thuẫn tài liệu</span>
+    </div>
+
+    <div class="error-message" id="errorMessage"></div>
+  </div>
+
+  <script>
+    let jsonData = null;
+    let selectedDrugs = [];
+    let suggestionsList = [];
+
+    function normalizeString(str) {
+      return String(str || "").trim().toLowerCase().replace(/\s+/g, " ");
+    }
+
+    function syncParentFrameHeight() {
+      const bodyHeight = document.body ? document.body.scrollHeight : 0;
+      const htmlHeight = document.documentElement ? document.documentElement.scrollHeight : 0;
+      const nextHeight = Math.max(bodyHeight, htmlHeight) + 16;
+
+      try {
+        if (window.frameElement) {
+          window.frameElement.style.height = nextHeight + "px";
+        }
+      } catch (error) {}
+
+      try {
+        window.parent.postMessage({ type: "compat-frame-height", height: nextHeight }, "*");
+      } catch (error) {}
+    }
+
+    async function fetchData() {
+      const tableBody = document.getElementById("tableBody");
+      const selectedList = document.getElementById("selectedList");
+
+      tableBody.innerHTML = `<tr><td colspan="2" class="placeholder">Vui lòng nhập hoạt chất để tra cứu</td></tr>`;
+      selectedList.innerHTML = `<div class="placeholder">Đang tải dữ liệu...</div>`;
+
+      try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbyvH1DMRvHlsvXmK2t_7T7_9MZ2gJwatF1oEeV5izosArhTgNAMO2dQ1mSS-K8kmQ_lJg/exec");
+        jsonData = await response.json();
+        suggestionsList = [...new Set(jsonData.incompatibilities.flatMap((item) => [item.drug1, item.drug2]))].sort();
+        updateSelectedDrugsTable();
+      } catch (error) {
+        tableBody.innerHTML = `<tr><td colspan="2" class="placeholder">Lỗi khi tải dữ liệu</td></tr>`;
+        const errorMessageEl = document.getElementById("errorMessage");
+        errorMessageEl.textContent = `LỖI: ${error.message}`;
+        errorMessageEl.style.display = "block";
+      }
+    }
+
+    function addDrugToTable(drug) {
+      if (!selectedDrugs.includes(drug)) {
+        selectedDrugs.push(drug);
+        updateSelectedDrugsTable();
+      }
+    }
+
+    function removeDrug(drug) {
+      selectedDrugs = selectedDrugs.filter((d) => d !== drug);
+      updateSelectedDrugsTable();
+    }
+
+    function clearAllSelected() {
+      selectedDrugs = [];
+      document.getElementById("legend").style.display = "none";
+      updateSelectedDrugsTable();
+    }
+
+    function updateSelectedDrugsTable() {
+      const selectedList = document.getElementById("selectedList");
+      const tableBody = document.getElementById("tableBody");
+      const legend = document.getElementById("legend");
+      legend.style.display = "none";
+
+      if (!selectedDrugs.length) {
+        selectedList.innerHTML = `<div class="placeholder">Vui lòng nhập hoạt chất để thêm vào danh sách</div>`;
+        tableBody.innerHTML = `<tr><td colspan="2" class="placeholder">Vui lòng nhập hoạt chất để tra cứu</td></tr>`;
+        requestAnimationFrame(syncParentFrameHeight);
+        return;
+      }
+
+      selectedList.innerHTML = selectedDrugs.map((drug) => `
+        <div class="selected-item">
+          <div class="selected-item__name">${drug}</div>
+          <button type="button" class="delete-btn" onclick="removeDrug(${JSON.stringify(drug)})">×</button>
+        </div>
+      `).join("");
+      requestAnimationFrame(syncParentFrameHeight);
+    }
+
+    function showSuggestions() {
+      const input = normalizeString(document.getElementById("searchInput").value);
+      const suggestionsBox = document.getElementById("suggestions");
+
+      if (!input) {
+        suggestionsBox.style.display = "none";
+        return;
+      }
+
+      const filtered = suggestionsList.filter((item) => normalizeString(item).includes(input)).slice(0, 12);
+      if (!filtered.length) {
+        suggestionsBox.style.display = "none";
+        return;
+      }
+
+      suggestionsBox.innerHTML = filtered.map((item) => `
+        <div data-value="${encodeURIComponent(item)}">${item}</div>
+      `).join("");
+      suggestionsBox.style.display = "block";
+
+      suggestionsBox.querySelectorAll("div").forEach((node) => {
+        node.addEventListener("click", () => {
+          const value = decodeURIComponent(node.dataset.value || "");
+          selectSuggestion(value);
+        });
+      });
+    }
+
+    function selectSuggestion(value) {
+      document.getElementById("searchInput").value = "";
+      document.getElementById("suggestions").style.display = "none";
+      addDrugToTable(value);
+      document.getElementById("searchInput").focus();
+    }
+
+    function renderCompatibilityTable(drugs) {
+      const tableBody = document.getElementById("tableBody");
+      const errorMessage = document.getElementById("errorMessage");
+      const legend = document.getElementById("legend");
+      const matrixTable = document.getElementById("matrixTable");
+
+      tableBody.innerHTML = "";
+      errorMessage.style.display = "none";
+
+      if (drugs.length < 2) {
+        errorMessage.textContent = "VUI LÒNG CHỌN ÍT NHẤT HAI HOẠT CHẤT";
+        errorMessage.style.display = "block";
+        tableBody.innerHTML = `<tr><td colspan="2" class="placeholder">Cần ít nhất hai hoạt chất để tra cứu</td></tr>`;
+        legend.style.display = "none";
+        requestAnimationFrame(syncParentFrameHeight);
+        return;
+      }
+
+      let tableHtml = "<tr><td style='font-weight:700;'>Thuốc</td>";
+      drugs.forEach((drug) => {
+        tableHtml += `<td style='font-weight:700;'>${drug}</td>`;
+      });
+      tableHtml += "</tr>";
+
+      drugs.forEach((drug1, index1) => {
+        tableHtml += `<tr><td>${drug1}</td>`;
+        drugs.forEach((drug2, index2) => {
+          if (index1 === index2) {
+            tableHtml += '<td class="self-intersection">-</td>';
+          } else {
+            const pair = jsonData.incompatibilities.find((item) =>
+              (normalizeString(item.drug1) === normalizeString(drug1) && normalizeString(item.drug2) === normalizeString(drug2)) ||
+              (normalizeString(item.drug1) === normalizeString(drug2) && normalizeString(item.drug2) === normalizeString(drug1))
+            );
+
+            if (pair) {
+              if (pair.status === "incompatible") tableHtml += '<td class="incompatible">I</td>';
+              else if (pair.status === "unknown") tableHtml += '<td class="na">N</td>';
+              else if (pair.status === "compatible") tableHtml += '<td class="compatible">C</td>';
+              else if (pair.status === "controversial") tableHtml += '<td class="controversial">V</td>';
+              else tableHtml += "<td></td>";
+            } else {
+              tableHtml += "<td></td>";
+            }
+          }
+        });
+        tableHtml += "</tr>";
+      });
+
+      tableBody.innerHTML = tableHtml;
+      if (matrixTable) {
+        matrixTable.classList.toggle("matrix-compact", window.innerWidth <= 767 && drugs.length <= 3);
+      }
+      legend.style.display = "block";
+      requestAnimationFrame(syncParentFrameHeight);
+    }
+
+    function searchCompatibility() {
+      renderCompatibilityTable(selectedDrugs);
+    }
+
+    document.getElementById("searchInput").addEventListener("input", showSuggestions);
+    document.getElementById("searchInput").addEventListener("keypress", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        const suggestions = document.getElementById("suggestions");
+        if (suggestions.style.display === "block" && suggestions.children.length > 0) {
+          selectSuggestion(suggestions.children[0].textContent);
+        }
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      const suggestions = document.getElementById("suggestions");
+      const input = document.getElementById("searchInput");
+      if (!suggestions.contains(event.target) && event.target !== input) {
+        suggestions.style.display = "none";
+      }
+    });
+
+    window.addEventListener("load", () => {
+      fetchData();
+      syncParentFrameHeight();
+
+      if ("ResizeObserver" in window) {
+        const observer = new ResizeObserver(() => requestAnimationFrame(syncParentFrameHeight));
+        observer.observe(document.body);
+        observer.observe(document.documentElement);
+      }
+    });
+  </script>
+</body>
+</html>

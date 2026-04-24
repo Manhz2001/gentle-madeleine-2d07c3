@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hệ thống tra cứu thuốc tiêm truyền</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --c-brand-50: #eaf1fb;
+      --c-brand-100: #d5e3f8;
+      --c-brand-200: #a7c4ea;
+      --c-brand-300: #6ea0d6;
+      --c-brand-500: #0b5394;
+      --c-brand-700: #083d6f;
+      --c-brand-800: #073a6a;
+      --c-accent: #cc0000;
+      --c-warning: #f6a623;
+      --c-bg: #f7fafd;
+      --c-surface: #ffffff;
+      --c-surface-soft: #f7f9fc;
+      --c-border: #dfe7f0;
+      --c-text: #1a2536;
+      --c-text-soft: #4b5766;
+      --c-text-muted: #6b7684;
+      --rad-sm: 10px;
+      --rad-md: 16px;
+      --rad-lg: 22px;
+      --rad-pill: 999px;
+      --sh-sm: 0 3px 10px rgba(11, 83, 148, .08);
+      --sh-md: 0 12px 28px rgba(11, 83, 148, .1);
+      --sh-lg: 0 18px 38px rgba(11, 83, 148, .12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; overflow-x: hidden; }
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(11, 83, 148, .08), transparent 30%),
+        linear-gradient(180deg, #fbfdff 0%, #f2f7fd 100%);
+      color: var(--c-text);
+      line-height: 1.6;
+      padding: 18px;
+      overflow-x: hidden;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, .94);
+      border: 1px solid rgba(11, 83, 148, .08);
+      border-radius: 28px;
+      box-shadow: var(--sh-lg);
+      overflow: hidden;
+    }
+
+    .app-header {
+      position: relative;
+      padding: 28px 28px 24px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, .98) 0%, rgba(234, 241, 251, .98) 60%, rgba(213, 227, 248, .98) 100%);
+      border-bottom: 1px solid rgba(11, 83, 148, .08);
+    }
+
+    .app-header::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(11, 83, 148, .04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(11, 83, 148, .04) 1px, transparent 1px);
+      background-size: 36px 36px;
+      mask-image: radial-gradient(circle at center, black 35%, transparent 88%);
+      pointer-events: none;
+    }
+
+    .app-header__inner {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, .7fr);
+      gap: 24px;
+      align-items: center;
+    }
+
+    .app-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--c-brand-500);
+    }
+
+    .app-title {
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: clamp(30px, 2.8vw, 42px);
+      line-height: 1.08;
+      letter-spacing: -.02em;
+      color: var(--c-brand-800);
+      margin-bottom: 12px;
+    }
+
+    .app-desc {
+      max-width: 64ch;
+      font-size: 17px;
+      color: var(--c-text-soft);
+    }
+
+    .hero-alert {
+      display: grid;
+      gap: 12px;
+    }
+
+    .alert-card,
+    .hero-mini {
+      background: rgba(255, 255, 255, .92);
+      border: 1px solid rgba(11, 83, 148, .1);
+      border-radius: 18px;
+      box-shadow: var(--sh-sm);
+      padding: 16px 18px;
+    }
+
+    .alert-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      color: var(--c-brand-800);
+    }
+
+    .alert-card i {
+      margin-top: 2px;
+      color: var(--c-warning);
+      font-size: 18px;
+    }
+
+    .alert-card strong,
+    .hero-mini strong {
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 15px;
+      color: var(--c-brand-800);
+    }
+
+    .hero-mini p,
+    .alert-card p {
+      margin-top: 4px;
+      font-size: 14px;
+      color: var(--c-text-soft);
+    }
+
+    .search-area {
+      padding: 24px 28px 16px;
+      border-bottom: 1px solid var(--c-border);
+      background: linear-gradient(180deg, rgba(247,249,252,.8) 0%, rgba(255,255,255,.96) 100%);
+    }
+
+    .search-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .search-panel,
+    .side-panel {
+      background: var(--c-surface);
+      border: 1px solid rgba(11, 83, 148, .1);
+      border-radius: var(--rad-lg);
+      box-shadow: var(--sh-sm);
+    }
+
+    .search-panel {
+      padding: 22px;
+      position: relative;
+    }
+
+    .search-panel__title,
+    .side-panel__title {
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 21px;
+      color: var(--c-brand-800);
+      margin-bottom: 8px;
+    }
+
+    .search-panel__desc,
+    .side-panel__desc {
+      color: var(--c-text-soft);
+      font-size: 15px;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 18px;
+      padding: 10px;
+      border-radius: var(--rad-pill);
+      background: var(--c-surface);
+      border: 2px solid var(--c-brand-200);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.75), var(--sh-sm);
+    }
+
+    .search-box:focus-within {
+      border-color: var(--c-brand-500);
+      box-shadow: 0 0 0 4px rgba(11,83,148,.12), var(--sh-sm);
+    }
+
+    #searchInput {
+      flex: 1;
+      border: 0;
+      outline: none;
+      background: transparent;
+      font-size: 16px;
+      color: var(--c-text);
+      padding: 10px 12px;
+      font-family: inherit;
+    }
+
+    #searchInput::placeholder { color: #8ba0bd; }
+
+    #searchButton {
+      width: 52px;
+      height: 52px;
+      border: 0;
+      border-radius: 50%;
+      background: linear-gradient(180deg, var(--c-brand-500), var(--c-brand-700));
+      color: #fff;
+      cursor: pointer;
+      font-size: 18px;
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+      box-shadow: 0 10px 20px rgba(11, 83, 148, .22);
+    }
+
+    #searchButton:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(180deg, #0a4b87, #073a6a);
+    }
+
+    .search-hints {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .hint-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: var(--rad-pill);
+      background: var(--c-brand-50);
+      color: var(--c-brand-700);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .suggestions {
+      position: absolute;
+      left: 22px;
+      right: 22px;
+      top: 154px;
+      background: #fff;
+      border: 1px solid rgba(11, 83, 148, .14);
+      border-radius: 16px;
+      box-shadow: var(--sh-md);
+      max-height: 280px;
+      overflow-y: auto;
+      display: none;
+      z-index: 20;
+    }
+
+    .suggestions div {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 14px;
+      border-bottom: 1px solid #eef4fb;
+      cursor: pointer;
+      color: var(--c-text);
+      transition: background .2s ease;
+    }
+
+    .suggestions div:last-child { border-bottom: 0; }
+    .suggestions div:hover { background: var(--c-brand-50); }
+    .suggestions div i { color: var(--c-brand-500); }
+
+    .side-panel {
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+      align-self: stretch;
+    }
+
+    .quick-guide {
+      display: grid;
+      gap: 10px;
+    }
+
+    .guide-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #fbfdff 0%, #f5f9ff 100%);
+      border: 1px solid #e5eef9;
+    }
+
+    .guide-item i {
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: var(--c-brand-50);
+      color: var(--c-brand-500);
+      flex: 0 0 34px;
+    }
+
+    .guide-item strong {
+      display: block;
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 14px;
+      color: var(--c-brand-800);
+    }
+
+    .guide-item span {
+      display: block;
+      margin-top: 2px;
+      font-size: 13px;
+      color: var(--c-text-soft);
+    }
+
+    .stats-grid {
+      padding: 0 28px 8px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .stats-card {
+      background: var(--c-surface);
+      border: 1px solid rgba(11, 83, 148, .1);
+      border-radius: var(--rad-lg);
+      box-shadow: var(--sh-sm);
+      padding: 18px 20px;
+      display: none;
+    }
+
+    .stats-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      color: var(--c-brand-800);
+    }
+
+    .stats-header h4 {
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 18px;
+    }
+
+    .top-searches-list,
+    .monthly-top-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .top-search-item,
+    .monthly-top-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #fbfdff 0%, #f4f8fd 100%);
+      border: 1px solid #e5eef9;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .top-search-item:hover,
+    .monthly-top-item:hover {
+      transform: translateY(-1px);
+      border-color: var(--c-brand-300);
+      box-shadow: var(--sh-sm);
+    }
+
+    .search-term,
+    .monthly-term {
+      font-weight: 700;
+      color: var(--c-brand-800);
+    }
+
+    .search-count,
+    .monthly-count {
+      padding: 4px 10px;
+      border-radius: var(--rad-pill);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .search-count { background: var(--c-brand-500); }
+    .monthly-count { background: var(--c-accent); }
+
+    .results-section {
+      padding: 20px 28px 28px;
+      background: var(--c-surface);
+    }
+
+    .state-card {
+      text-align: center;
+      padding: 54px 28px;
+      border: 1px dashed #d8e6f4;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #fbfdff 0%, #f7fbff 100%);
+      color: var(--c-text-soft);
+    }
+
+    .state-card i {
+      font-size: 54px;
+      color: var(--c-brand-500);
+      margin-bottom: 16px;
+    }
+
+    .state-card h3 {
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 28px;
+      color: var(--c-brand-800);
+      margin-bottom: 8px;
+    }
+
+    .loader,
+    .error-message,
+    .no-results,
+    .initial-prompt {
+      display: none;
+    }
+
+    .loader.is-visible,
+    .error-message.is-visible,
+    .no-results.is-visible,
+    .initial-prompt.is-visible {
+      display: block;
+    }
+
+    .loader i { animation: spin 1s linear infinite; }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .error-message .state-card {
+      background: linear-gradient(180deg, #fff8f8 0%, #fff3f3 100%);
+      border-color: #ffd9d9;
+    }
+
+    .error-message .state-card i,
+    .error-message .state-card h3 { color: var(--c-accent); }
+
+    .drug-info { display: none; }
+    .drug-info.is-visible { display: block; }
+
+    .drug-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 22px 24px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, #f5f9ff 0%, #edf5ff 100%);
+      border: 1px solid rgba(11, 83, 148, .12);
+      box-shadow: var(--sh-sm);
+      margin-bottom: 22px;
+    }
+
+    .drug-title {
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: clamp(26px, 2.1vw, 34px);
+      color: var(--c-brand-800);
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+
+    .drug-subtitle {
+      color: var(--c-brand-500);
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .risk-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: var(--rad-pill);
+      background: rgba(204, 0, 0, .08);
+      color: var(--c-accent);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .info-group {
+      margin-bottom: 18px;
+      border: 1px solid #e7eef8;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, .04);
+    }
+
+    .group-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      background: linear-gradient(90deg, #123d7a 0%, #0b5394 68%, #0a5dbb 100%);
+      color: #fff;
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .info-item {
+      display: grid;
+      grid-template-columns: minmax(180px, .85fr) minmax(0, 2fr);
+      gap: 18px;
+      padding: 15px 18px;
+      border-bottom: 1px solid #eef4fb;
+    }
+
+    .info-item:last-child { border-bottom: 0; }
+
+    .info-label {
+      font-weight: 700;
+      color: var(--c-brand-800);
+    }
+
+    .info-value {
+      min-width: 0;
+      color: var(--c-text);
+    }
+
+    .info-value a {
+      color: var(--c-brand-500);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .info-value a:hover { text-decoration: underline; }
+
+    .warning {
+      color: var(--c-accent);
+      font-weight: 700;
+    }
+
+    .info-value img {
+      max-width: 100%;
+      border-radius: 14px;
+      border: 1px solid #e6edf7;
+      box-shadow: var(--sh-sm);
+    }
+
+    .drug-result-item {
+      padding: 16px 18px;
+      border-radius: 16px;
+      border: 1px solid #e4edf8;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      box-shadow: var(--sh-sm);
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .drug-result-item:hover {
+      transform: translateY(-2px);
+      border-color: var(--c-brand-300);
+      box-shadow: var(--sh-md);
+    }
+
+    .drug-result-name {
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--c-brand-800);
+      margin-bottom: 4px;
+    }
+
+    .drug-result-ingredient {
+      color: var(--c-brand-500);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .micro-note {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--c-text-muted);
+    }
+
+    @media (max-width: 1023px) {
+      body { padding: 12px; }
+      .app-header__inner,
+      .search-grid,
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      .suggestions {
+        left: 18px;
+        right: 18px;
+        top: 168px;
+      }
+    }
+
+    @media (max-width: 767px) {
+      body { padding: 6px; }
+      .app-shell { border-radius: 20px; }
+      .app-title { font-size: clamp(24px, 8vw, 32px); }
+      .app-desc,
+      .search-panel__desc,
+      .hero-mini p,
+      .alert-card p { font-size: 14px; }
+      .app-header,
+      .search-area,
+      .results-section { padding-left: 16px; padding-right: 16px; }
+      .stats-grid { padding-left: 16px; padding-right: 16px; }
+      .search-panel,
+      .side-panel { padding: 16px; }
+      .search-box {
+        padding: 8px;
+        gap: 8px;
+      }
+      #searchInput {
+        font-size: 15px;
+        padding: 10px;
+      }
+      #searchButton {
+        width: 46px;
+        height: 46px;
+      }
+      .suggestions {
+        left: 16px;
+        right: 16px;
+        top: 158px;
+      }
+      .info-item {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+      .group-title {
+        font-size: 16px;
+      }
+      .state-card {
+        padding: 28px 14px;
+      }
+      .state-card h3 {
+        font-size: 22px;
+      }
+      .state-card,
+      .state-card * {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+    }
+
+    @media (max-width: 374px) {
+      body { padding: 4px; }
+      .app-shell { border-radius: 16px; }
+      .app-header,
+      .search-area,
+      .results-section,
+      .stats-grid { padding-left: 12px; padding-right: 12px; }
+      .app-header { padding-top: 18px; padding-bottom: 16px; }
+      .search-panel,
+      .side-panel { padding: 14px; }
+      .search-box { padding: 6px; }
+      #searchInput { padding: 9px 8px; font-size: 14px; }
+      #searchButton { width: 42px; height: 42px; }
+      .suggestions { left: 12px; right: 12px; }
+      .group-title { font-size: 15px; padding: 12px 14px; }
+      .info-item { padding: 12px 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-header__inner">
+        <div>
+          <div class="app-kicker">
+            <i class="fas fa-syringe"></i>
+            <span>Công cụ tra cứu tiêm truyền</span>
+          </div>
+          <h1 class="app-title">Hệ thống tra cứu thuốc tiêm truyền</h1>
+          <p class="app-desc">Tra cứu nhanh hoạt chất, biệt dược, cách hoàn nguyên, dung môi pha loãng, nồng độ khuyến nghị và các lưu ý khi tiêm truyền.</p>
+        </div>
+        <div class="hero-alert">
+          <div class="alert-card">
+            <i class="fas fa-triangle-exclamation"></i>
+            <div>
+              <strong>Thận trọng khi sử dụng</strong>
+              <p>Luôn đối chiếu với y lệnh, hướng dẫn nhà sản xuất và tình trạng người bệnh trước khi thực hiện.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="search-area">
+      <div class="search-grid">
+        <div class="search-panel">
+          <h2 class="search-panel__title">Tra cứu trực tiếp</h2>
+          <p class="search-panel__desc">Nhập tên hoạt chất, biệt dược hoặc mã thuốc để tìm nhanh thông tin sử dụng thực tế.</p>
+
+          <form class="search-box" id="searchForm">
+            <input type="text" id="searchInput" placeholder="Nhập tên hoạt chất, biệt dược hoặc mã thuốc...">
+            <button id="searchButton" type="submit" aria-label="Tra cứu"><i class="fas fa-search"></i></button>
+          </form>
+
+          <div class="suggestions" id="suggestions"></div>
+
+          <div class="search-hints">
+            <span class="hint-chip"><i class="fas fa-vial"></i> Hoạt chất</span>
+            <span class="hint-chip"><i class="fas fa-capsules"></i> Biệt dược</span>
+            <span class="hint-chip"><i class="fas fa-barcode"></i> Mã thuốc</span>
+          </div>
+        </div>
+
+        <aside class="side-panel">
+          <div>
+            <h3 class="side-panel__title">Cách sử dụng</h3>
+            <p class="side-panel__desc">Tra cứu thật ngay trong trang, không cần mở Google Sheet riêng.</p>
+          </div>
+          <div class="quick-guide">
+            <div class="guide-item">
+              <i class="fas fa-1"></i>
+              <div>
+                <strong>Nhập từ khóa</strong>
+                <span>Tên thuốc, hoạt chất hoặc mã thuốc đều có thể tìm được.</span>
+              </div>
+            </div>
+            <div class="guide-item">
+              <i class="fas fa-2"></i>
+              <div>
+                <strong>Chọn đúng kết quả</strong>
+                <span>Nếu có nhiều thuốc trùng tên, chọn đúng biệt dược cần dùng.</span>
+              </div>
+            </div>
+            <div class="guide-item">
+              <i class="fas fa-3"></i>
+              <div>
+                <strong>Đọc theo nhóm</strong>
+                <span>Thông tin được tách theo đặc điểm chung, pha chế, sử dụng và tương tác.</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <div class="stats-card" id="realTimeStats">
+        <div class="stats-header">
+          <i class="fas fa-chart-line"></i>
+          <h4>Top tìm kiếm hiện tại</h4>
+        </div>
+        <div class="top-searches-list" id="topSearchesList"></div>
+      </div>
+
+    </section>
+
+    <section class="results-section">
+      <div class="initial-prompt is-visible" id="initialPrompt">
+        <div class="state-card">
+          <i class="fas fa-magnifying-glass"></i>
+          <h3>Bắt đầu tra cứu thông tin thuốc</h3>
+          <p>Nhập tên hoạt chất, biệt dược hoặc mã thuốc ở ô tìm kiếm phía trên để xem dữ liệu sử dụng thực tế.</p>
+        </div>
+      </div>
+
+      <div class="loader" id="loader">
+        <div class="state-card">
+          <i class="fas fa-spinner"></i>
+          <h3>Đang tải dữ liệu</h3>
+          <p>Hệ thống đang kết nối đến nguồn dữ liệu chuyên môn. Vui lòng chờ trong giây lát.</p>
+        </div>
+      </div>
+
+      <div class="error-message" id="errorMessage">
+        <div class="state-card">
+          <i class="fas fa-circle-exclamation"></i>
+          <h3>Không thể tải dữ liệu</h3>
+          <p>Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.</p>
+        </div>
+      </div>
+
+      <div class="drug-info" id="drugInfo"></div>
+
+      <div class="no-results" id="noResults">
+        <div class="state-card">
+          <i class="fas fa-folder-open"></i>
+          <h3>Không tìm thấy kết quả phù hợp</h3>
+          <p>Hãy thử lại với tên hoạt chất, biệt dược hoặc mã thuốc khác.</p>
+        </div>
+      </div>
+
+      <p class="micro-note">Dữ liệu chỉ phục vụ tra cứu chuyên môn. Quyết định cuối cùng thuộc về bác sĩ và điều dưỡng thực hiện.</p>
+    </section>
+  </div>
+
+  <script>
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbwPjxaE67xfN1pV4A6nO2ND-tjOc_65jvpBR1xfeBwBSkVFMHf5IbLQ5rKWGu_xsRQ23Q/exec";
+
+    let allData = [];
+    let suggestionsList = [];
+    let monthlyTopSearches = [];
+    let realTimeStats = { today: 0, month: 0, topSearches: [] };
+    let searchKeys = [];
+
+    const searchInput = document.getElementById("searchInput");
+    const searchForm = document.getElementById("searchForm");
+    const searchButton = document.getElementById("searchButton");
+    const suggestionsBox = document.getElementById("suggestions");
+    const initialPrompt = document.getElementById("initialPrompt");
+    const loader = document.getElementById("loader");
+    const errorMessage = document.getElementById("errorMessage");
+    const drugInfo = document.getElementById("drugInfo");
+    const noResults = document.getElementById("noResults");
+
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchData();
+      setupEventListeners();
+      loadRealTimeStats();
+      loadMonthlyTopSearches();
+      setInterval(loadRealTimeStats, 30000);
+      setInterval(loadMonthlyTopSearches, 30000);
+      applyQueryParamSearch();
+      setupAutoResize();
+    });
+
+    function setupEventListeners() {
+      searchInput.addEventListener("input", showSuggestions);
+      searchForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        suggestionsBox.style.display = "none";
+        searchData();
+      });
+      searchButton.addEventListener("click", () => {
+        suggestionsBox.style.display = "none";
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!suggestionsBox.contains(e.target) && e.target !== searchInput) {
+          suggestionsBox.style.display = "none";
+        }
+      });
+    }
+
+    async function fetchData() {
+      try {
+        showLoader();
+        const response = await fetch(`${webAppUrl}?t=${Date.now()}`);
+        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+        const text = await response.text();
+        const data = JSON.parse(text);
+        if (!Array.isArray(data)) throw new Error("Invalid data format");
+
+        allData = data;
+        suggestionsList = [];
+
+        if (data.length > 0) {
+          searchKeys = getSearchKeys(data[0]);
+
+          searchKeys.forEach((col) => {
+            const values = data
+              .map((row) => getCellValue(row[col]))
+              .filter((value) => value && value.toString().trim() !== "");
+
+            suggestionsList = suggestionsList.concat(values);
+          });
+
+          suggestionsList = [...new Set(suggestionsList)].filter(Boolean);
+        }
+
+        hideLoader();
+        showInitialPrompt();
+      } catch (error) {
+        showError();
+      }
+    }
+
+    async function loadRealTimeStats() {
+      try {
+        const response = await fetch(`${webAppUrl}?action=getRealTimeStats&t=${Date.now()}`);
+        if (!response.ok) return hideStats("realTimeStats");
+
+        const data = await response.json();
+        if (!data || !Array.isArray(data.topSearches) || data.topSearches.length === 0) {
+          return hideStats("realTimeStats");
+        }
+
+        realTimeStats = data;
+        updateRealTimeStatsDisplay();
+      } catch (error) {
+        hideStats("realTimeStats");
+      }
+    }
+
+    async function loadMonthlyTopSearches() {
+      try {
+        const now = new Date();
+        const currentMonthYear = `${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+        const response = await fetch(`${webAppUrl}?action=getMonthlyStats&month=${currentMonthYear}&t=${Date.now()}`);
+        if (!response.ok) return hideStats("monthlyTopSearches");
+
+        const data = await response.json();
+        let topSearches = [];
+
+        if (data && Array.isArray(data.popular) && data.popular.length) topSearches = data.popular;
+        else if (data && Array.isArray(data.topSearches) && data.topSearches.length) topSearches = data.topSearches;
+        else if (Array.isArray(data) && data.length) topSearches = data;
+
+        if (!topSearches.length) return hideStats("monthlyTopSearches");
+
+        monthlyTopSearches = topSearches;
+        updateMonthlyTopSearchesDisplay();
+      } catch (error) {
+        hideStats("monthlyTopSearches");
+      }
+    }
+
+    function updateRealTimeStatsDisplay() {
+      const wrapper = document.getElementById("realTimeStats");
+      const list = document.getElementById("topSearchesList");
+      wrapper.style.display = "block";
+
+      list.innerHTML = realTimeStats.topSearches.map((item, index) => {
+        const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`;
+        return `
+          <div class="top-search-item" onclick="searchFromTop(${JSON.stringify(item.term)})">
+            <span class="search-term">${medal} ${escapeHtml(item.term)}</span>
+            <span class="search-count">${item.count}</span>
+          </div>
+          `;
+        }).join("");
+        syncIframeHeight();
+      }
+
+    function updateMonthlyTopSearchesDisplay() {
+      const wrapper = document.getElementById("monthlyTopSearches");
+      const list = document.getElementById("monthlyTopList");
+      wrapper.style.display = "block";
+
+      list.innerHTML = monthlyTopSearches.slice(0, 3).map((item, index) => {
+        const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`;
+        return `
+          <div class="monthly-top-item" onclick="searchFromTop(${JSON.stringify(item.term)})">
+            <span class="monthly-term">${medal} ${escapeHtml(item.term)}</span>
+            <span class="monthly-count">${item.count}</span>
+          </div>
+          `;
+        }).join("");
+        syncIframeHeight();
+      }
+
+      function hideStats(id) {
+        const element = document.getElementById(id);
+        if (element) {
+          element.style.display = "none";
+          syncIframeHeight();
+        }
+      }
+
+    function searchFromTop(term) {
+      searchInput.value = term;
+      searchData();
+    }
+
+    async function recordSearch(term) {
+      if (!term) return;
+      try {
+        const response = await fetch(`${webAppUrl}?action=recordSearch&term=${encodeURIComponent(term)}`);
+        if (response.ok) {
+          setTimeout(() => {
+            loadRealTimeStats();
+            loadMonthlyTopSearches();
+          }, 500);
+        }
+      } catch (error) {}
+    }
+
+    function searchData(explicitValue) {
+      const input = String(explicitValue ?? searchInput.value).trim().toLowerCase();
+      if (!input) {
+        showInitialPrompt();
+        return;
+      }
+
+      recordSearch(input);
+      const normalizedInput = normalizeText(input);
+
+      let results = allData.filter((row) =>
+        searchKeys.some((key) => normalizeText(getCellValue(row[key])).trim() === normalizedInput)
+      );
+
+      if (!results.length) {
+        results = allData.filter((row) =>
+          searchKeys.some((key) => normalizeText(getCellValue(row[key])).includes(normalizedInput))
+        );
+      }
+
+      if (!results.length) showNoResults();
+      else if (results.length === 1) displayDrugInfo(results[0]);
+      else displayMultipleDrugs(results);
+    }
+
+    function displayMultipleDrugs(drugs) {
+      hideStates();
+
+      let html = `
+        <div class="drug-header">
+          <div>
+            <h2 class="drug-title">Tìm thấy ${drugs.length} kết quả</h2>
+            <p class="drug-subtitle">Chọn đúng biệt dược hoặc hoạt chất cần tra cứu để xem chi tiết.</p>
+          </div>
+        </div>
+      `;
+
+      html += drugs.map((drug, index) => {
+        const bietDuoc = escapeHtml(getCellValue(drug["Biệt dược"]) || "Không rõ");
+        const hoatChat = escapeHtml(getCellValue(drug["Hoạt chất"]) || "Không rõ");
+        return `
+          <div class="drug-result-item" data-index="${index}">
+            <div class="drug-result-name">${bietDuoc}</div>
+            <div class="drug-result-ingredient">${hoatChat}</div>
+          </div>
+        `;
+      }).join("");
+
+      drugInfo.innerHTML = html;
+      drugInfo.classList.add("is-visible");
+      syncIframeHeight();
+
+      drugInfo.querySelectorAll(".drug-result-item").forEach((item) => {
+        item.addEventListener("click", () => {
+          const index = Number(item.dataset.index);
+          displayDrugInfo(drugs[index]);
+        });
+      });
+    }
+
+    function displayDrugInfo(data) {
+      if (!data) return showNoResults();
+      hideStates();
+
+      const getValue = (key) => getCellValue(data[key]);
+      const bietDuocValue = getValue("Biệt dược") || "Không rõ";
+      const hoatChatValue = getValue("Hoạt chất") || "Không rõ";
+      const canhBaoValue = getValue("Cảnh báo thuốc");
+
+      const groups = {
+        "Đặc điểm chung": ["Hoạt chất", "Biệt dược", "Dạng bào chế", "Đường tiêm", "Cảnh báo thuốc"],
+        "Chỉ định và liều dùng": ["Nhóm tác dụng dược lý", "Chống chỉ định", "Liều tối đa", "CÁCH DÙNG"],
+        "Pha chế và bảo quản": ["Dung môi hoàn nguyên", "Cách hoàn nguyên", "Dung môi pha loãng", "Nồng độ khuyến nghị", "Bảo quản sau hoàn nguyên", "Bảo quản sau pha loãng"],
+        "Sử dụng và theo dõi": ["Thời gian/tốc độ khuyến cáo tiêm, truyền tĩnh mạch", "Lưu ý khi tiêm, truyền tĩnh mạch"],
+        "Tương tác": ["Tương hợp", "Tương kỵ"],
+        "Tài liệu tham khảo": ["Biệt dược tham khảo", "Tài liệu tham khảo", "Hình ảnh biệt dược tại bệnh viện"]
+      };
+
+      let html = `
+        <div class="drug-header">
+          <div>
+            <h2 class="drug-title">${escapeHtml(bietDuocValue)}</h2>
+            <p class="drug-subtitle">${escapeHtml(hoatChatValue)}</p>
+          </div>
+          ${canhBaoValue && canhBaoValue.toString().toLowerCase().includes("nguy cơ cao")
+            ? `<div class="risk-chip"><i class="fas fa-triangle-exclamation"></i> Thuốc nguy cơ cao</div>`
+            : ""}
+        </div>
+      `;
+
+      Object.entries(groups).forEach(([groupName, fields]) => {
+        let validRows = "";
+
+        fields.forEach((key) => {
+          const value = getValue(key);
+          if (!value || !value.toString().trim()) return;
+
+          let displayValue = escapeHtml(value.toString()).replace(/\n/g, "<br>");
+
+          if (key.includes("Cảnh báo") || key.includes("Chống chỉ định")) {
+            displayValue = `<span class="warning">${displayValue}</span>`;
+          }
+
+          if (key === "Tài liệu tham khảo") {
+            let url = "";
+            let text = "Xem chi tiết";
+            if (typeof data[key] === "string") url = data[key];
+            else if (typeof data[key] === "object") {
+              url = data[key].url || data[key].value || "";
+              text = data[key].text || "Xem chi tiết";
+            }
+
+            if (url) {
+              validRows += `
+                <div class="info-item">
+                  <div class="info-label">${escapeHtml(key)}</div>
+                  <div class="info-value"><a href="${url}" target="_blank" rel="noopener">${escapeHtml(text)}</a></div>
+                </div>
+              `;
+            }
+          } else if (key === "Hình ảnh biệt dược tại bệnh viện") {
+            let imageUrl = value.toString();
+            if (imageUrl.includes("drive.google.com")) {
+              const fileIdMatch = imageUrl.match(/\/file\/d\/([^\/]+)/) || imageUrl.match(/\/d\/([^\/]+)/) || imageUrl.match(/id=([^&]+)/);
+              if (fileIdMatch && fileIdMatch[1]) {
+                imageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1200`;
+              }
+            }
+            validRows += `
+              <div class="info-item">
+                <div class="info-label">${escapeHtml(key)}</div>
+                <div class="info-value">
+                  <img src="${imageUrl}" alt="Hình ảnh ${escapeHtml(bietDuocValue)}" onerror="this.src='https://via.placeholder.com/700x360?text=Khong+co+hinh+anh';this.onerror=null;">
+                </div>
+              </div>
+            `;
+          } else {
+            validRows += `
+              <div class="info-item">
+                <div class="info-label">${escapeHtml(key)}</div>
+                <div class="info-value">${displayValue}</div>
+              </div>
+            `;
+          }
+        });
+
+        if (validRows) {
+          html += `
+            <div class="info-group">
+              <div class="group-title">${escapeHtml(groupName)}</div>
+              ${validRows}
+            </div>
+          `;
+        }
+      });
+
+      drugInfo.innerHTML = html;
+      drugInfo.classList.add("is-visible");
+      syncIframeHeight();
+    }
+
+    function showSuggestions() {
+      const input = searchInput.value.toLowerCase().trim();
+      if (!input) {
+        suggestionsBox.style.display = "none";
+        return;
+      }
+
+      let filteredSuggestions = suggestionsList.filter((item) =>
+        item.toString().toLowerCase().includes(input)
+      );
+
+      if (!filteredSuggestions.length) {
+        suggestionsBox.style.display = "none";
+        return;
+      }
+
+      filteredSuggestions = filteredSuggestions.slice(0, 10);
+      suggestionsBox.innerHTML = filteredSuggestions.map((item) => `
+        <div data-value="${encodeURIComponent(item.toString())}">
+          <i class="fas fa-search"></i>
+          <span>${escapeHtml(item.toString())}</span>
+        </div>
+      `).join("");
+
+      suggestionsBox.style.display = "block";
+      syncIframeHeight();
+
+      suggestionsBox.querySelectorAll("div").forEach((item) => {
+        item.addEventListener("click", () => {
+          const selectedValue = decodeURIComponent(item.dataset.value || "");
+          searchInput.value = selectedValue;
+          suggestionsBox.style.display = "none";
+          searchInput.focus();
+          searchInput.setSelectionRange(selectedValue.length, selectedValue.length);
+          syncIframeHeight();
+        });
+      });
+    }
+
+    function getCellValue(cell) {
+      if (!cell) return "";
+      return typeof cell === "object" && cell.value !== undefined ? cell.value : cell;
+    }
+
+    function getSearchKeys(sampleRow) {
+      const preferredKeys = ["Hoạt chất", "Biệt dược", "Tên thuốc"];
+      return preferredKeys.filter((key) => Object.prototype.hasOwnProperty.call(sampleRow, key));
+    }
+
+    function normalizeText(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D")
+        .toLowerCase()
+        .trim();
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function hideStates() {
+      initialPrompt.classList.remove("is-visible");
+      loader.classList.remove("is-visible");
+      errorMessage.classList.remove("is-visible");
+      noResults.classList.remove("is-visible");
+      drugInfo.classList.remove("is-visible");
+      syncIframeHeight();
+    }
+
+    function showLoader() {
+      hideStates();
+      loader.classList.add("is-visible");
+      syncIframeHeight();
+    }
+
+    function hideLoader() {
+      loader.classList.remove("is-visible");
+      syncIframeHeight();
+    }
+
+    function showInitialPrompt() {
+      hideStates();
+      initialPrompt.classList.add("is-visible");
+      syncIframeHeight();
+    }
+
+    function showError() {
+      hideStates();
+      errorMessage.classList.add("is-visible");
+      syncIframeHeight();
+    }
+
+    function showNoResults() {
+      hideStates();
+      noResults.classList.add("is-visible");
+      syncIframeHeight();
+    }
+
+    function applyQueryParamSearch() {
+      const url = new URL(window.location.href);
+      const keyword = url.searchParams.get("q") || "";
+      if (!keyword) return;
+      searchInput.value = keyword;
+      setTimeout(() => searchData(), 500);
+    }
+
+    function syncIframeHeight() {
+      window.requestAnimationFrame(() => {
+        const doc = document.documentElement;
+        const body = document.body;
+        const height = Math.max(
+          body.scrollHeight,
+          body.offsetHeight,
+          doc.scrollHeight,
+          doc.offsetHeight,
+          doc.clientHeight
+        );
+
+        if (window.frameElement) {
+          window.frameElement.style.height = `${height + 8}px`;
+        }
+      });
+    }
+
+    function setupAutoResize() {
+      syncIframeHeight();
+      window.addEventListener("load", syncIframeHeight);
+      window.addEventListener("resize", syncIframeHeight);
+
+      if ("ResizeObserver" in window) {
+        const observer = new ResizeObserver(() => syncIframeHeight());
+        observer.observe(document.body);
+      }
+    }
+  </script>
+</body>
+</html>
