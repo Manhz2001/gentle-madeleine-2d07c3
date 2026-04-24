@@ -176,3 +176,113 @@
     startAutoplay();
   });
 })();
+
+(function () {
+  'use strict';
+
+  if (document.getElementById('drugview-mobile-safe-area-fix')) return;
+
+  const style = document.createElement('style');
+  style.id = 'drugview-mobile-safe-area-fix';
+  style.textContent = `
+    :root {
+      --mobile-browser-chrome: 96px;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+
+    .to-top {
+      bottom: max(var(--sp-6, 1.5rem), calc(env(safe-area-inset-bottom) + var(--sp-4, 1rem)));
+    }
+
+    @media (max-width: 767px) {
+      .site-footer {
+        padding-bottom: calc(var(--sp-6, 1.5rem) + var(--mobile-browser-chrome) + env(safe-area-inset-bottom));
+      }
+
+      .to-top {
+        right: var(--sp-4, 1rem);
+        bottom: calc(var(--mobile-browser-chrome) + env(safe-area-inset-bottom));
+      }
+    }
+  `;
+  document.head.appendChild(style);
+})();
+
+(function () {
+  'use strict';
+
+  const MEASUREMENT_ID = 'G-NC0D1PTZ3L';
+  const CLICK_EVENT_NAME = 'site_click';
+
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function () {
+    window.dataLayer.push(arguments);
+  };
+
+  if (!document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}"]`)) {
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`;
+    document.head.appendChild(script);
+  }
+
+  window.gtag('js', new Date());
+  window.gtag('config', MEASUREMENT_ID, {
+    send_page_view: true
+  });
+
+  const cleanText = (value, maxLength = 120) =>
+    (value || '').replace(/\s+/g, ' ').trim().slice(0, maxLength);
+
+  const getClickArea = (element) => {
+    if (element.closest('header, nav, .site-header, .site-nav')) return 'navigation';
+    if (element.closest('footer, .site-footer')) return 'footer';
+    if (element.closest('.hero')) return 'hero';
+    if (element.closest('.feature-card, .tool-card, .card')) return 'card';
+    if (element.closest('.media-slider')) return 'media_slider';
+    return 'content';
+  };
+
+  const getTrackedElement = (target) => {
+    if (!(target instanceof Element)) return null;
+    return target.closest('a, button, [role="button"], [data-analytics-click]');
+  };
+
+  document.addEventListener('click', (event) => {
+    const element = getTrackedElement(event.target);
+    if (!element || element.closest('[data-analytics-ignore]')) return;
+
+    const href = element.getAttribute('href');
+    const absoluteUrl = href ? new URL(href, window.location.href) : null;
+    const linkText = cleanText(
+      element.dataset.analyticsLabel ||
+      element.getAttribute('aria-label') ||
+      element.textContent ||
+      href ||
+      element.id ||
+      element.className
+    );
+
+    if (!linkText && !absoluteUrl) return;
+
+    const outbound = absoluteUrl ? absoluteUrl.hostname !== window.location.hostname : false;
+
+    window.gtag('event', CLICK_EVENT_NAME, {
+      click_text: linkText,
+      click_area: getClickArea(element),
+      click_type: absoluteUrl ? (outbound ? 'external_link' : 'internal_link') : 'button',
+      link_url: absoluteUrl ? absoluteUrl.href : '',
+      link_domain: absoluteUrl ? absoluteUrl.hostname : '',
+      link_id: element.id || '',
+      link_classes: typeof element.className === 'string' ? cleanText(element.className, 100) : '',
+      outbound,
+      page_location: window.location.href,
+      page_title: document.title,
+      transport_type: 'beacon'
+    });
+  }, { capture: true });
+})();
