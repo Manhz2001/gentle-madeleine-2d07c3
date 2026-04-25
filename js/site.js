@@ -187,6 +187,7 @@
   style.textContent = `
     :root {
       --mobile-browser-chrome: 96px;
+      --embedded-mobile-scale: 1.08;
     }
 
     body {
@@ -196,6 +197,19 @@
 
     .to-top {
       bottom: max(var(--sp-6, 1.5rem), calc(env(safe-area-inset-bottom) + var(--sp-4, 1rem)));
+    }
+
+    html.drugview-embedded-mobile-zoom body {
+      width: calc(100% / var(--embedded-mobile-scale));
+      zoom: var(--embedded-mobile-scale);
+      overflow-x: hidden;
+    }
+
+    @supports not (zoom: 1) {
+      html.drugview-embedded-mobile-zoom body {
+        transform: scale(var(--embedded-mobile-scale));
+        transform-origin: top center;
+      }
     }
 
     @media (max-width: 767px) {
@@ -208,8 +222,33 @@
         bottom: calc(var(--mobile-browser-chrome) + env(safe-area-inset-bottom));
       }
     }
+
+    @media (max-width: 390px) {
+      :root {
+        --embedded-mobile-scale: 1.06;
+      }
+    }
   `;
   document.head.appendChild(style);
+
+  const isEmbedded = (() => {
+    try {
+      return window.self !== window.top;
+    } catch (_error) {
+      return true;
+    }
+  })();
+
+  const updateEmbeddedZoom = () => {
+    document.documentElement.classList.toggle(
+      'drugview-embedded-mobile-zoom',
+      isEmbedded && window.matchMedia('(max-width: 767px)').matches
+    );
+  };
+
+  updateEmbeddedZoom();
+  window.addEventListener('resize', updateEmbeddedZoom, { passive: true });
+  window.addEventListener('orientationchange', updateEmbeddedZoom);
 })();
 
 (function () {
