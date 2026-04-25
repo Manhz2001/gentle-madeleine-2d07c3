@@ -194,6 +194,13 @@
       min-height: 100dvh;
     }
 
+    .site-main,
+    .section,
+    .section--soft,
+    .section--subtle {
+      background: #fff;
+    }
+
     .to-top {
       bottom: max(var(--sp-6, 1.5rem), calc(env(safe-area-inset-bottom) + var(--sp-4, 1rem)));
     }
