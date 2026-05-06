@@ -189,6 +189,12 @@
       --mobile-browser-chrome: 96px;
     }
 
+    html,
+    body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
     body {
       min-height: 100vh;
       min-height: 100dvh;
@@ -203,6 +209,12 @@
 
     .to-top {
       bottom: max(var(--sp-6, 1.5rem), calc(env(safe-area-inset-bottom) + var(--sp-4, 1rem)));
+    }
+
+    @media (max-width: 900px) {
+      .site-nav:not([data-open="true"]) .site-nav__list {
+        transform: translateY(-8px) scale(.98);
+      }
     }
 
     @media (max-width: 767px) {
