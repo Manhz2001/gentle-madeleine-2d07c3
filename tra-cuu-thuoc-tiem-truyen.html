@@ -142,18 +142,39 @@
       try {
         const doc = iframe.contentDocument || iframe.contentWindow?.document;
         if (!doc) return;
+        if (iframe.contentWindow) iframe.contentWindow.syncIframeHeight = () => {};
         const body = doc.body;
         const html = doc.documentElement;
-        if (html) html.style.overflow = "hidden";
-        if (body) body.style.overflow = "hidden";
+        if (html) {
+          html.style.overflow = "hidden";
+          html.style.minHeight = "0";
+        }
+        if (body) {
+          body.style.overflow = "hidden";
+          body.style.minHeight = "0";
+          if (html) {
+            try {
+              ["scrollHeight", "offsetHeight", "clientHeight"].forEach((key) => {
+                Object.defineProperty(html, key, {
+                  configurable: true,
+                  get: () => Math.max(body.scrollHeight, body.offsetHeight)
+                });
+              });
+            } catch (error) {}
+          }
+        }
         iframe.setAttribute("scrolling", "no");
         iframe.style.overflow = "hidden";
         iframe.style.height = `${getFrameHeight(doc)}px`;
       } catch (error) {}
     };
 
-    iframe.addEventListener("load", () => {
+    let frameEventsBound = false;
+
+    const bindFrameEvents = () => {
       resizeIframe();
+      if (frameEventsBound) return;
+      frameEventsBound = true;
       try {
         const doc = iframe.contentDocument || iframe.contentWindow?.document;
         if (!doc) return;
@@ -166,9 +187,12 @@
         doc.addEventListener("keyup", () => setTimeout(resizeIframe, 30), true);
         setInterval(resizeIframe, 500);
       } catch (error) {}
-    });
+    };
 
+    iframe.addEventListener("load", bindFrameEvents);
     window.addEventListener("resize", resizeIframe);
+    setTimeout(bindFrameEvents, 0);
+    setTimeout(bindFrameEvents, 800);
   })();
 </script>
 </body>
