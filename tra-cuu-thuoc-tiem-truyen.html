@@ -63,7 +63,7 @@
     <section class="section">
       <div class="container container--wide">
         <div class="tool-embed">
-          <iframe id="tiem-truyen-frame" src="img/64d25eb2bcf2.html" title="Tra cứu thuốc tiêm truyền" loading="lazy" allow="fullscreen" scrolling="no"></iframe>
+          <iframe id="tiem-truyen-frame" src="img/64d25eb2bcf2.html" title="Tra cứu thuốc tiêm truyền" loading="lazy" allow="fullscreen" scrolling="auto"></iframe>
           <p class="tool-embed__caption">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px;flex:0 0 auto;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
             <span>Dữ liệu cập nhật dựa trên Dược thư Quốc gia và tờ thông tin nhà sản xuất. Luôn kiểm tra kỹ thông tin khi sử dụng thuốc.</span>
@@ -125,20 +125,25 @@
     const iframe = document.getElementById("tiem-truyen-frame");
     if (!iframe) return;
 
+    const getFrameHeight = (doc) => {
+      const body = doc.body;
+      if (!body) return 0;
+
+      const fallbackHeight = window.matchMedia("(max-width: 767px)").matches ? 980 : 1300;
+      const measuredHeight = Math.max(
+        body.scrollHeight,
+        body.offsetHeight,
+        body.clientHeight
+      );
+
+      return Math.max(measuredHeight + 8, fallbackHeight);
+    };
+
     const resizeIframe = () => {
       try {
         const doc = iframe.contentDocument || iframe.contentWindow?.document;
         if (!doc) return;
-        const body = doc.body;
-        const html = doc.documentElement;
-        const height = Math.max(
-          body.scrollHeight,
-          body.offsetHeight,
-          html.scrollHeight,
-          html.offsetHeight,
-          html.clientHeight
-        );
-        iframe.style.height = `${height + 8}px`;
+        iframe.style.height = `${getFrameHeight(doc)}px`;
       } catch (error) {}
     };
 
@@ -150,7 +155,6 @@
         if ("ResizeObserver" in window) {
           const observer = new ResizeObserver(() => resizeIframe());
           observer.observe(doc.body);
-          observer.observe(doc.documentElement);
         }
         doc.addEventListener("click", () => setTimeout(resizeIframe, 30), true);
         doc.addEventListener("input", () => setTimeout(resizeIframe, 30), true);
