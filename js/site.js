@@ -202,7 +202,6 @@
     '/lien-he': '/liên-hệ'
   };
   const CONTENT_NAV_SELECTOR = '.site-main a[href]';
-  const DIRECT_GOOGLE_SITE_LINK_SELECTOR = '.site-main a[href^="https://www.drugviewninhbinh.com/"][target="_blank"]';
 
   const params = new URLSearchParams(window.location.search);
   let isEmbedded = params.get('embed') === '1' || params.get('shell') === 'google-sites';
@@ -250,27 +249,12 @@
 
     link.dataset.netlifyHref = link.getAttribute('href') || link.href;
     link.href = googleSiteHref;
-    link.target = '_blank';
-    link.rel = 'noopener';
+    link.target = '_top';
+    link.removeAttribute('rel');
     link.dataset.googleSitesNav = 'true';
   };
 
   document.querySelectorAll(CONTENT_NAV_SELECTOR).forEach(markGoogleSitesLink);
-
-  document.addEventListener('click', (event) => {
-    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    const target = event.target?.nodeType === 1 ? event.target : null;
-    const link = target?.closest?.(DIRECT_GOOGLE_SITE_LINK_SELECTOR);
-    if (!link) return;
-
-    const opened = window.open(link.href, '_blank');
-    if (!opened) return;
-
-    try {
-      opened.opener = null;
-    } catch (error) {}
-    event.preventDefault();
-  });
 })();
 
 (function () {
