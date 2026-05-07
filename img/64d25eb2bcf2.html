@@ -165,9 +165,11 @@
 
     .search-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+      grid-template-columns: minmax(0, 1fr);
       gap: 20px;
       align-items: start;
+      max-width: 760px;
+      margin: 0 auto;
     }
 
     .search-panel,
@@ -216,6 +218,8 @@
 
     #searchInput {
       flex: 1;
+      min-width: 0;
+      width: 100%;
       border: 0;
       outline: none;
       background: transparent;
@@ -632,8 +636,8 @@
     }
 
     @media (max-width: 767px) {
-      body { padding: 6px; }
-      .app-shell { border-radius: 20px; }
+      body { padding: 0; }
+      .app-shell { border-radius: 0; }
       .app-title { font-size: clamp(24px, 8vw, 32px); }
       .app-desc,
       .search-panel__desc,
@@ -641,21 +645,22 @@
       .alert-card p { font-size: 14px; }
       .app-header,
       .search-area,
-      .results-section { padding-left: 16px; padding-right: 16px; }
-      .stats-grid { padding-left: 16px; padding-right: 16px; }
+      .results-section { padding-left: 10px; padding-right: 10px; }
+      .stats-grid { padding-left: 10px; padding-right: 10px; }
       .search-panel,
-      .side-panel { padding: 16px; }
+      .side-panel { padding: 12px; }
       .search-box {
-        padding: 8px;
-        gap: 8px;
+        padding: 6px;
+        gap: 6px;
       }
       #searchInput {
-        font-size: 15px;
-        padding: 10px;
+        font-size: 14px;
+        padding: 9px 8px;
       }
       #searchButton {
-        width: 46px;
-        height: 46px;
+        flex: 0 0 42px;
+        width: 42px;
+        height: 42px;
       }
       .suggestions {
         left: 16px;
@@ -683,18 +688,18 @@
     }
 
     @media (max-width: 374px) {
-      body { padding: 4px; }
-      .app-shell { border-radius: 16px; }
+      body { padding: 0; }
+      .app-shell { border-radius: 0; }
       .app-header,
       .search-area,
       .results-section,
-      .stats-grid { padding-left: 12px; padding-right: 12px; }
+      .stats-grid { padding-left: 8px; padding-right: 8px; }
       .app-header { padding-top: 18px; padding-bottom: 16px; }
       .search-panel,
-      .side-panel { padding: 14px; }
-      .search-box { padding: 6px; }
-      #searchInput { padding: 9px 8px; font-size: 14px; }
-      #searchButton { width: 42px; height: 42px; }
+      .side-panel { padding: 10px; }
+      .search-box { padding: 5px; }
+      #searchInput { padding: 8px 6px; font-size: 13.5px; }
+      #searchButton { flex-basis: 40px; width: 40px; height: 40px; }
       .suggestions { left: 12px; right: 12px; }
       .group-title { font-size: 15px; padding: 12px 14px; }
       .info-item { padding: 12px 14px; }
@@ -729,10 +734,10 @@
       <div class="search-grid">
         <div class="search-panel">
           <h2 class="search-panel__title">Tra cứu trực tiếp</h2>
-          <p class="search-panel__desc">Nhập tên hoạt chất, biệt dược hoặc mã thuốc để tìm nhanh thông tin sử dụng thực tế.</p>
+          <p class="search-panel__desc">Nhập tên hoạt chất hoặc biệt dược để tìm nhanh thông tin sử dụng thực tế.</p>
 
           <form class="search-box" id="searchForm">
-            <input type="text" id="searchInput" placeholder="Nhập tên hoạt chất, biệt dược hoặc mã thuốc...">
+            <input type="text" id="searchInput" placeholder="Tên hoạt chất hoặc biệt dược...">
             <button id="searchButton" type="submit" aria-label="Tra cứu"><i class="fas fa-search"></i></button>
           </form>
 
@@ -741,39 +746,8 @@
           <div class="search-hints">
             <span class="hint-chip"><i class="fas fa-vial"></i> Hoạt chất</span>
             <span class="hint-chip"><i class="fas fa-capsules"></i> Biệt dược</span>
-            <span class="hint-chip"><i class="fas fa-barcode"></i> Mã thuốc</span>
           </div>
         </div>
-
-        <aside class="side-panel">
-          <div>
-            <h3 class="side-panel__title">Cách sử dụng</h3>
-            <p class="side-panel__desc">Tra cứu thật ngay trong trang, không cần mở Google Sheet riêng.</p>
-          </div>
-          <div class="quick-guide">
-            <div class="guide-item">
-              <i class="fas fa-1"></i>
-              <div>
-                <strong>Nhập từ khóa</strong>
-                <span>Tên thuốc, hoạt chất hoặc mã thuốc đều có thể tìm được.</span>
-              </div>
-            </div>
-            <div class="guide-item">
-              <i class="fas fa-2"></i>
-              <div>
-                <strong>Chọn đúng kết quả</strong>
-                <span>Nếu có nhiều thuốc trùng tên, chọn đúng biệt dược cần dùng.</span>
-              </div>
-            </div>
-            <div class="guide-item">
-              <i class="fas fa-3"></i>
-              <div>
-                <strong>Đọc theo nhóm</strong>
-                <span>Thông tin được tách theo đặc điểm chung, pha chế, sử dụng và tương tác.</span>
-              </div>
-            </div>
-          </div>
-        </aside>
       </div>
     </section>
 
@@ -793,7 +767,7 @@
         <div class="state-card">
           <i class="fas fa-magnifying-glass"></i>
           <h3>Bắt đầu tra cứu thông tin thuốc</h3>
-          <p>Nhập tên hoạt chất, biệt dược hoặc mã thuốc ở ô tìm kiếm phía trên để xem dữ liệu sử dụng thực tế.</p>
+          <p>Nhập tên hoạt chất hoặc biệt dược ở ô tìm kiếm phía trên để xem dữ liệu sử dụng thực tế.</p>
         </div>
       </div>
 
@@ -819,7 +793,7 @@
         <div class="state-card">
           <i class="fas fa-folder-open"></i>
           <h3>Không tìm thấy kết quả phù hợp</h3>
-          <p>Hãy thử lại với tên hoạt chất, biệt dược hoặc mã thuốc khác.</p>
+          <p>Hãy thử lại với tên hoạt chất hoặc biệt dược khác.</p>
         </div>
       </div>
 
@@ -1214,7 +1188,7 @@
     }
 
     function getSearchKeys(sampleRow) {
-      const preferredKeys = ["Hoạt chất", "Biệt dược", "Tên thuốc"];
+      const preferredKeys = ["Hoạt chất", "Biệt dược"];
       return preferredKeys.filter((key) => Object.prototype.hasOwnProperty.call(sampleRow, key));
     }
 
