@@ -63,7 +63,7 @@
     <section class="section">
       <div class="container container--wide">
         <div class="tool-embed">
-          <iframe id="tiem-truyen-frame" src="img/64d25eb2bcf2.html" title="Tra cứu thuốc tiêm truyền" loading="lazy" allow="fullscreen" scrolling="no"></iframe>
+          <iframe id="tiem-truyen-frame" src="img/64d25eb2bcf2.html" title="Tra cứu thuốc tiêm truyền" loading="eager" allow="fullscreen" scrolling="no"></iframe>
           <p class="tool-embed__caption">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px;flex:0 0 auto;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
             <span>Dữ liệu cập nhật dựa trên Dược thư Quốc gia và tờ thông tin nhà sản xuất. Luôn kiểm tra kỹ thông tin khi sử dụng thuốc.</span>
@@ -124,86 +124,126 @@
   (() => {
     const iframe = document.getElementById("tiem-truyen-frame");
     if (!iframe) return;
-    let lastHeight = 0;
-    let resizeRaf = 0;
+    const state = { bound: false, lastHeight: 0, raf: 0, viewportWidth: window.innerWidth };
+    const scheduleDelays = [0, 240, 700, 1400];
+
+    iframe.loading = "eager";
+
+    const getMinHeight = () => window.matchMedia("(max-width: 767px)").matches ? 980 : 1300;
+
+    const getFrameDocument = () => {
+      try {
+        return iframe.contentDocument || iframe.contentWindow?.document || null;
+      } catch (error) {
+        return null;
+      }
+    };
+
+    const stabilizeFrameDocument = (doc) => {
+      if (!doc) return;
+      try {
+        iframe.contentWindow.syncIframeHeight = () => {};
+        iframe.contentWindow.syncParentFrameHeight = () => {};
+      } catch (error) {}
+
+      const style = doc.getElementById("frame-scroll-stabilizer") || doc.createElement("style");
+      style.id = "frame-scroll-stabilizer";
+      style.textContent = `
+        html,
+        body {
+          overflow: hidden !important;
+          min-height: 0 !important;
+          scroll-behavior: auto !important;
+        }
+        @media (max-width: 767px) {
+          *,
+          *::before,
+          *::after {
+            animation-duration: .01ms !important;
+            transition-duration: .01ms !important;
+          }
+        }
+      `;
+      if (!style.parentNode) doc.head.appendChild(style);
+
+      if (doc.documentElement) {
+        doc.documentElement.style.overflow = "hidden";
+        doc.documentElement.style.minHeight = "0";
+      }
+      if (doc.body) {
+        doc.body.style.overflow = "hidden";
+        doc.body.style.minHeight = "0";
+      }
+    };
 
     const getFrameHeight = (doc) => {
       const body = doc.body;
-      if (!body) return 0;
-
-      const fallbackHeight = window.matchMedia("(max-width: 767px)").matches ? 980 : 1300;
+      const html = doc.documentElement;
+      if (!body || !html) return getMinHeight();
       const measuredHeight = Math.max(
         body.scrollHeight,
-        body.offsetHeight
+        body.offsetHeight,
+        html.scrollHeight,
+        html.offsetHeight
       );
+      return Math.max(measuredHeight + 24, getMinHeight());
+    };
 
-      return Math.max(measuredHeight + 24, fallbackHeight);
+    const setFrameHeight = (height) => {
+      const nextHeight = Math.ceil(Number(height) || getMinHeight());
+      if (Math.abs(nextHeight - state.lastHeight) <= 10) return;
+      iframe.setAttribute("scrolling", "no");
+      iframe.style.overflow = "hidden";
+      iframe.style.height = `${nextHeight}px`;
+      state.lastHeight = nextHeight;
     };
 
     const resizeIframe = () => {
       try {
-        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        const doc = getFrameDocument();
         if (!doc) return;
-        if (iframe.contentWindow) iframe.contentWindow.syncIframeHeight = () => {};
-        const body = doc.body;
-        const html = doc.documentElement;
-        if (html) {
-          html.style.overflow = "hidden";
-          html.style.minHeight = "0";
-        }
-        if (body) {
-          body.style.overflow = "hidden";
-          body.style.minHeight = "0";
-          if (html) {
-            try {
-              ["scrollHeight", "offsetHeight", "clientHeight"].forEach((key) => {
-                Object.defineProperty(html, key, {
-                  configurable: true,
-                  get: () => Math.max(body.scrollHeight, body.offsetHeight)
-                });
-              });
-            } catch (error) {}
-          }
-        }
+        stabilizeFrameDocument(doc);
         iframe.setAttribute("scrolling", "no");
         iframe.style.overflow = "hidden";
-        const nextHeight = getFrameHeight(doc);
-        if (Math.abs(nextHeight - lastHeight) > 4) {
-          iframe.style.height = `${nextHeight}px`;
-          lastHeight = nextHeight;
-        }
+        setFrameHeight(getFrameHeight(doc));
       } catch (error) {}
     };
 
-    const scheduleResize = () => {
-      cancelAnimationFrame(resizeRaf);
-      resizeRaf = requestAnimationFrame(resizeIframe);
+    const scheduleResize = (delays = scheduleDelays) => {
+      delays.forEach((delay) => {
+        window.setTimeout(() => {
+          cancelAnimationFrame(state.raf);
+          state.raf = requestAnimationFrame(resizeIframe);
+        }, delay);
+      });
     };
-
-    let frameEventsBound = false;
 
     const bindFrameEvents = () => {
       resizeIframe();
-      if (frameEventsBound) return;
-      frameEventsBound = true;
-      try {
-        const doc = iframe.contentDocument || iframe.contentWindow?.document;
-        if (!doc) return;
-        if ("ResizeObserver" in window) {
-          const observer = new ResizeObserver(scheduleResize);
-          observer.observe(doc.body);
-        }
-        doc.addEventListener("click", () => setTimeout(scheduleResize, 60), true);
-        doc.addEventListener("input", () => setTimeout(scheduleResize, 60), true);
-        doc.addEventListener("keyup", () => setTimeout(scheduleResize, 60), true);
-        setInterval(scheduleResize, 1500);
-      } catch (error) {}
+      if (state.bound) return;
+      const doc = getFrameDocument();
+      if (!doc) return;
+      state.bound = true;
+      ["click", "input", "keyup", "change", "submit"].forEach((eventName) => {
+        doc.addEventListener(eventName, () => scheduleResize([80, 360, 900, 1600]), true);
+      });
     };
 
-    iframe.addEventListener("load", bindFrameEvents);
-    window.addEventListener("resize", scheduleResize);
+    iframe.addEventListener("load", () => {
+      bindFrameEvents();
+      scheduleResize([0, 300, 900, 2000, 3500]);
+    });
+    const handleViewportChange = () => {
+      const nextWidth = window.innerWidth;
+      if (Math.abs(nextWidth - state.viewportWidth) < 16) return;
+      state.viewportWidth = nextWidth;
+      scheduleResize([0, 300, 900]);
+    };
+
+    window.addEventListener("resize", handleViewportChange, { passive: true });
+    window.addEventListener("orientationchange", () => scheduleResize([250, 900, 1800]), { passive: true });
     setTimeout(bindFrameEvents, 0);
-    setTimeout(bindFrameEvents, 800);
+    setTimeout(bindFrameEvents, 900);
   })();
 </script>
 </body>

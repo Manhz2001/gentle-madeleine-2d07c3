@@ -483,25 +483,32 @@
     let jsonData = null;
     let selectedDrugs = [];
     let suggestionsList = [];
+    let lastSyncedFrameHeight = 0;
+    let syncFrameRaf = 0;
 
     function normalizeString(str) {
       return String(str || "").trim().toLowerCase().replace(/\s+/g, " ");
     }
 
     function syncParentFrameHeight() {
-      const bodyHeight = document.body ? document.body.scrollHeight : 0;
-      const htmlHeight = document.documentElement ? document.documentElement.scrollHeight : 0;
-      const nextHeight = Math.max(bodyHeight, htmlHeight) + 16;
+      cancelAnimationFrame(syncFrameRaf);
+      syncFrameRaf = requestAnimationFrame(() => {
+        const bodyHeight = document.body ? document.body.scrollHeight : 0;
+        const htmlHeight = document.documentElement ? document.documentElement.scrollHeight : 0;
+        const nextHeight = Math.max(bodyHeight, htmlHeight) + 16;
+        if (Math.abs(nextHeight - lastSyncedFrameHeight) <= 10) return;
+        lastSyncedFrameHeight = nextHeight;
 
-      try {
-        if (window.frameElement) {
-          window.frameElement.style.height = nextHeight + "px";
-        }
-      } catch (error) {}
+        try {
+          if (window.frameElement) {
+            window.frameElement.style.height = nextHeight + "px";
+          }
+        } catch (error) {}
 
-      try {
-        window.parent.postMessage({ type: "compat-frame-height", height: nextHeight }, "*");
-      } catch (error) {}
+        try {
+          window.parent.postMessage({ type: "compat-frame-height", height: nextHeight }, "*");
+        } catch (error) {}
+      });
     }
 
     async function fetchData() {
@@ -682,12 +689,6 @@
     window.addEventListener("load", () => {
       fetchData();
       syncParentFrameHeight();
-
-      if ("ResizeObserver" in window) {
-        const observer = new ResizeObserver(() => requestAnimationFrame(syncParentFrameHeight));
-        observer.observe(document.body);
-        observer.observe(document.documentElement);
-      }
     });
   </script>
 </body>

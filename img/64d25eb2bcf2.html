@@ -1283,8 +1283,12 @@
       setTimeout(() => searchData(), 500);
     }
 
+    let lastSyncedFrameHeight = 0;
+    let syncFrameRaf = 0;
+
     function syncIframeHeight() {
-      window.requestAnimationFrame(() => {
+      cancelAnimationFrame(syncFrameRaf);
+      syncFrameRaf = window.requestAnimationFrame(() => {
         const doc = document.documentElement;
         const body = document.body;
         const height = Math.max(
@@ -1296,7 +1300,11 @@
         );
 
         if (window.frameElement) {
-          window.frameElement.style.height = `${height + 8}px`;
+          const nextHeight = height + 8;
+          if (Math.abs(nextHeight - lastSyncedFrameHeight) > 10) {
+            window.frameElement.style.height = `${nextHeight}px`;
+            lastSyncedFrameHeight = nextHeight;
+          }
         }
       });
     }
@@ -1304,12 +1312,6 @@
     function setupAutoResize() {
       syncIframeHeight();
       window.addEventListener("load", syncIframeHeight);
-      window.addEventListener("resize", syncIframeHeight);
-
-      if ("ResizeObserver" in window) {
-        const observer = new ResizeObserver(() => syncIframeHeight());
-        observer.observe(document.body);
-      }
     }
   </script>
 </body>

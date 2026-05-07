@@ -1093,6 +1093,7 @@ body[data-page="phacdo"] .hero .section__eyebrow {
   background: var(--c-surface-soft);
   border-radius: var(--rad-md);
   overflow: hidden;
+  contain: layout paint;
 }
 .tool-embed--compat {
   padding: var(--sp-5);
