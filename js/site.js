@@ -242,13 +242,42 @@
     return googleSiteUrl.href;
   };
 
-  document.querySelectorAll('a[href]').forEach((link) => {
-    const googleSiteHref = getGoogleSiteHref(link.getAttribute('href'));
+  const markGoogleSitesLink = (link) => {
+    const googleSiteHref = getGoogleSiteHref(link.getAttribute('href') || link.href);
     if (!googleSiteHref) return;
 
     link.href = googleSiteHref;
     link.target = '_top';
     link.dataset.googleSitesNav = 'true';
+    link.rel = 'noopener';
+  };
+
+  const navigateTop = (href) => {
+    try {
+      window.top.location.assign(href);
+      return;
+    } catch (error) {}
+
+    try {
+      window.open(href, '_top');
+      return;
+    } catch (error) {}
+
+    window.location.href = href;
+  };
+
+  document.querySelectorAll('a[href]').forEach(markGoogleSitesLink);
+
+  document.addEventListener('click', (event) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+    const link = event.target?.closest?.('a[href]');
+    if (!link) return;
+    if (!link.dataset.googleSitesNav) markGoogleSitesLink(link);
+    if (link.dataset.googleSitesNav !== 'true') return;
+
+    event.preventDefault();
+    navigateTop(link.href);
   });
 })();
 
