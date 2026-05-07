@@ -251,36 +251,9 @@
     link.href = googleSiteHref;
     link.target = '_top';
     link.dataset.googleSitesNav = 'true';
-    link.rel = 'noopener';
-  };
-
-  const navigateTop = (href) => {
-    try {
-      window.top.location.assign(href);
-      return;
-    } catch (error) {}
-
-    try {
-      window.open(href, '_top');
-      return;
-    } catch (error) {}
-
-    window.location.href = href;
   };
 
   document.querySelectorAll(CONTENT_NAV_SELECTOR).forEach(markGoogleSitesLink);
-
-  document.addEventListener('click', (event) => {
-    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-
-    const link = event.target?.closest?.(CONTENT_NAV_SELECTOR);
-    if (!link) return;
-    if (!link.dataset.googleSitesNav) markGoogleSitesLink(link);
-    if (link.dataset.googleSitesNav !== 'true') return;
-
-    event.preventDefault();
-    navigateTop(link.href);
-  });
 })();
 
 (function () {
