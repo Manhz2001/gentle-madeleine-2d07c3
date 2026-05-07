@@ -181,6 +181,80 @@
 (function () {
   'use strict';
 
+  const GOOGLE_SITE_ORIGIN = 'https://www.drugviewninhbinh.com';
+  const GOOGLE_SITE_PAGE_MAP = {
+    '/': '/trang-chủ',
+    '/index.html': '/trang-chủ',
+    '/trang-chu': '/trang-chủ',
+    '/tra-cuu-thuoc.html': '/tra-cứu-thuốc',
+    '/tra-cuu-thuoc': '/tra-cứu-thuốc',
+    '/tra-cuu-thuoc-tiem-truyen.html': '/tra-cứu-thuốc/tiêm-truyền',
+    '/tra-cuu-thuoc-tiem-truyen': '/tra-cứu-thuốc/tiêm-truyền',
+    '/tra-cuu-thuoc-tuong-ky-tuong-hop.html': '/tra-cứu-thuốc/tương-kỵ-tương-hợp',
+    '/tra-cuu-thuoc-tuong-ky-tuong-hop': '/tra-cứu-thuốc/tương-kỵ-tương-hợp',
+    '/tra-cuu-thuoc-tuong-tac-thuoc.html': '/tra-cứu-thuốc/tương-tác-thuốc',
+    '/tra-cuu-thuoc-tuong-tac-thuoc': '/tra-cứu-thuốc/tương-tác-thuốc',
+    '/cap-nhat-chuyen-mon-duoc.html': '/cập-nhật-chuyên-môn-dược',
+    '/cap-nhat-chuyen-mon-duoc': '/cập-nhật-chuyên-môn-dược',
+    '/phac-do-dieu-tri.html': '/phác-đồ-điều-trị',
+    '/phac-do-dieu-tri': '/phác-đồ-điều-trị',
+    '/lien-he.html': '/liên-hệ',
+    '/lien-he': '/liên-hệ'
+  };
+
+  const params = new URLSearchParams(window.location.search);
+  let isEmbedded = params.get('embed') === '1' || params.get('shell') === 'google-sites';
+
+  try {
+    isEmbedded = isEmbedded || window.self !== window.top;
+  } catch (error) {
+    isEmbedded = true;
+  }
+
+  if (!isEmbedded) return;
+
+  document.documentElement.dataset.embedded = 'google-sites';
+  document.body.dataset.embedded = 'google-sites';
+
+  const normalizePath = (pathname) => {
+    const path = pathname.replace(/\/+$/, '');
+    return path || '/';
+  };
+
+  const getGoogleSiteHref = (href) => {
+    if (!href || href.startsWith('#') || /^(mailto|tel|javascript):/i.test(href)) return null;
+
+    let url;
+    try {
+      url = new URL(href, window.location.href);
+    } catch (error) {
+      return null;
+    }
+
+    if (url.origin !== window.location.origin) return null;
+    if (/^\/(docs|img|css|js)\//.test(url.pathname)) return null;
+
+    const mappedPath = GOOGLE_SITE_PAGE_MAP[normalizePath(url.pathname)];
+    if (!mappedPath) return null;
+
+    const googleSiteUrl = new URL(mappedPath, GOOGLE_SITE_ORIGIN);
+    if (url.hash) googleSiteUrl.hash = url.hash;
+    return googleSiteUrl.href;
+  };
+
+  document.querySelectorAll('a[href]').forEach((link) => {
+    const googleSiteHref = getGoogleSiteHref(link.getAttribute('href'));
+    if (!googleSiteHref) return;
+
+    link.href = googleSiteHref;
+    link.target = '_top';
+    link.dataset.googleSitesNav = 'true';
+  });
+})();
+
+(function () {
+  'use strict';
+
   if (document.getElementById('drugview-mobile-safe-area-fix')) return;
 
   const style = document.createElement('style');

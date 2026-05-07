@@ -801,6 +801,16 @@ body[data-page="phacdo"] .hero .section__eyebrow {
 @media (min-width: 768px)  { .feature-grid { grid-template-columns: repeat(2, 1fr); gap: var(--sp-8); } }
 @media (min-width: 1024px) { .feature-grid { grid-template-columns: repeat(3, 1fr); } }
 
+.feature-grid--launcher .feature-card__media {
+  aspect-ratio: 16 / 9;
+}
+
+.feature-grid--launcher .feature-card__media img[src*="27ed86eb0b3d"] {
+  object-fit: contain;
+  padding: var(--sp-8);
+  background: linear-gradient(180deg, #f7f9fc, #eaf1fb);
+}
+
 .feature-card {
   display: flex;
   flex-direction: column;
@@ -1696,6 +1706,54 @@ body[data-page="tracuu-tk"] .tool-embed iframe {
 }
 .text-center { text-align: center; }
 .mx-auto { margin-left: auto; margin-right: auto; }
+
+/* ---------- 14A. GOOGLE SITES EMBED SHELL ------------------------------ */
+html[data-embedded="google-sites"],
+body[data-embedded="google-sites"] {
+  background: #fff;
+  min-height: 0;
+}
+
+body[data-embedded="google-sites"] {
+  display: block;
+}
+
+body[data-embedded="google-sites"] .skip-link,
+body[data-embedded="google-sites"] .site-header,
+body[data-embedded="google-sites"] .site-footer,
+body[data-embedded="google-sites"] .to-top {
+  display: none !important;
+}
+
+body[data-embedded="google-sites"] .site-main {
+  flex: none;
+}
+
+body[data-embedded="google-sites"] .hero {
+  padding-top: clamp(2rem, 5vw, 4rem);
+  padding-bottom: clamp(2rem, 5vw, 4rem);
+}
+
+body[data-embedded="google-sites"] .section {
+  background: #fff;
+}
+
+body[data-embedded="google-sites"] .section--soft,
+body[data-embedded="google-sites"] .section--subtle {
+  background: #fff;
+}
+
+@media (max-width: 767px) {
+  body[data-embedded="google-sites"] .container {
+    padding-left: var(--sp-4);
+    padding-right: var(--sp-4);
+  }
+
+  body[data-embedded="google-sites"] .hero {
+    padding-top: var(--sp-8);
+    padding-bottom: var(--sp-8);
+  }
+}
 
 /* ---------- 15. PRINT -------------------------------------------------- */
 @media print {
