@@ -201,6 +201,7 @@
     '/lien-he.html': '/liên-hệ',
     '/lien-he': '/liên-hệ'
   };
+  const CONTENT_NAV_SELECTOR = '.site-main a[href]';
 
   const params = new URLSearchParams(window.location.search);
   let isEmbedded = params.get('embed') === '1' || params.get('shell') === 'google-sites';
@@ -246,6 +247,7 @@
     const googleSiteHref = getGoogleSiteHref(link.getAttribute('href') || link.href);
     if (!googleSiteHref) return;
 
+    link.dataset.netlifyHref = link.getAttribute('href') || link.href;
     link.href = googleSiteHref;
     link.target = '_top';
     link.dataset.googleSitesNav = 'true';
@@ -266,12 +268,12 @@
     window.location.href = href;
   };
 
-  document.querySelectorAll('a[href]').forEach(markGoogleSitesLink);
+  document.querySelectorAll(CONTENT_NAV_SELECTOR).forEach(markGoogleSitesLink);
 
   document.addEventListener('click', (event) => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
 
-    const link = event.target?.closest?.('a[href]');
+    const link = event.target?.closest?.(CONTENT_NAV_SELECTOR);
     if (!link) return;
     if (!link.dataset.googleSitesNav) markGoogleSitesLink(link);
     if (link.dataset.googleSitesNav !== 'true') return;
