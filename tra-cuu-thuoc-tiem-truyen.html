@@ -124,6 +124,8 @@
   (() => {
     const iframe = document.getElementById("tiem-truyen-frame");
     if (!iframe) return;
+    let lastHeight = 0;
+    let resizeRaf = 0;
 
     const getFrameHeight = (doc) => {
       const body = doc.body;
@@ -165,8 +167,17 @@
         }
         iframe.setAttribute("scrolling", "no");
         iframe.style.overflow = "hidden";
-        iframe.style.height = `${getFrameHeight(doc)}px`;
+        const nextHeight = getFrameHeight(doc);
+        if (Math.abs(nextHeight - lastHeight) > 4) {
+          iframe.style.height = `${nextHeight}px`;
+          lastHeight = nextHeight;
+        }
       } catch (error) {}
+    };
+
+    const scheduleResize = () => {
+      cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(resizeIframe);
     };
 
     let frameEventsBound = false;
@@ -179,18 +190,18 @@
         const doc = iframe.contentDocument || iframe.contentWindow?.document;
         if (!doc) return;
         if ("ResizeObserver" in window) {
-          const observer = new ResizeObserver(() => resizeIframe());
+          const observer = new ResizeObserver(scheduleResize);
           observer.observe(doc.body);
         }
-        doc.addEventListener("click", () => setTimeout(resizeIframe, 30), true);
-        doc.addEventListener("input", () => setTimeout(resizeIframe, 30), true);
-        doc.addEventListener("keyup", () => setTimeout(resizeIframe, 30), true);
-        setInterval(resizeIframe, 500);
+        doc.addEventListener("click", () => setTimeout(scheduleResize, 60), true);
+        doc.addEventListener("input", () => setTimeout(scheduleResize, 60), true);
+        doc.addEventListener("keyup", () => setTimeout(scheduleResize, 60), true);
+        setInterval(scheduleResize, 1500);
       } catch (error) {}
     };
 
     iframe.addEventListener("load", bindFrameEvents);
-    window.addEventListener("resize", resizeIframe);
+    window.addEventListener("resize", scheduleResize);
     setTimeout(bindFrameEvents, 0);
     setTimeout(bindFrameEvents, 800);
   })();

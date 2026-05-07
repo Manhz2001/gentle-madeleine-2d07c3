@@ -126,12 +126,16 @@
     if (!frame) return;
 
     const getMinHeight = () => window.matchMedia("(max-width: 767px)").matches ? 980 : 1300;
+    let lastHeight = 0;
+    let resizeRaf = 0;
 
     const setFrameHeight = (height) => {
       const nextHeight = Math.max(getMinHeight(), Math.ceil(Number(height) || 0));
+      if (Math.abs(nextHeight - lastHeight) <= 4) return;
       frame.setAttribute("scrolling", "no");
       frame.style.overflow = "hidden";
       frame.style.height = nextHeight + "px";
+      lastHeight = nextHeight;
     };
 
     frame.addEventListener("load", () => {
@@ -143,16 +147,20 @@
           const bodyHeight = doc.body ? Math.max(doc.body.scrollHeight, doc.body.offsetHeight) : 0;
           setFrameHeight(bodyHeight + 24);
         };
+        const scheduleResize = () => {
+          cancelAnimationFrame(resizeRaf);
+          resizeRaf = requestAnimationFrame(resize);
+        };
 
         resize();
 
         if ("ResizeObserver" in window && doc.body) {
-          const observer = new ResizeObserver(resize);
+          const observer = new ResizeObserver(scheduleResize);
           observer.observe(doc.body);
         }
 
         ["click", "input", "keyup", "change"].forEach((eventName) => {
-          doc.addEventListener(eventName, () => requestAnimationFrame(resize), true);
+          doc.addEventListener(eventName, scheduleResize, true);
         });
       } catch (error) {
         setFrameHeight(1300);
