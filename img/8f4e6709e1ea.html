@@ -605,7 +605,7 @@
         const bodyHeight = document.body ? document.body.scrollHeight : 0;
         const htmlHeight = document.documentElement ? document.documentElement.scrollHeight : 0;
         const nextHeight = Math.max(bodyHeight, htmlHeight) + 16;
-        if (Math.abs(nextHeight - lastSyncedFrameHeight) <= 10) return;
+      if (Math.abs(nextHeight - lastSyncedFrameHeight) <= 32) return;
         lastSyncedFrameHeight = nextHeight;
 
         try {

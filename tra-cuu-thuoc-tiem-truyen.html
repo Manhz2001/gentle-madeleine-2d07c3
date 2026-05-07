@@ -178,20 +178,16 @@
 
     const getFrameHeight = (doc) => {
       const body = doc.body;
-      const html = doc.documentElement;
-      if (!body || !html) return getMinHeight();
-      const measuredHeight = Math.max(
-        body.scrollHeight,
-        body.offsetHeight,
-        html.scrollHeight,
-        html.offsetHeight
-      );
-      return Math.max(measuredHeight + 24, getMinHeight());
+      if (!body) return getMinHeight();
+      const measuredHeight = Array.from(body.children).reduce((height, child) => {
+        return Math.max(height, child.offsetTop + child.offsetHeight);
+      }, 0);
+      return Math.max(measuredHeight + 56, getMinHeight());
     };
 
     const setFrameHeight = (height) => {
       const nextHeight = Math.ceil(Number(height) || getMinHeight());
-      if (Math.abs(nextHeight - state.lastHeight) <= 10) return;
+      if (Math.abs(nextHeight - state.lastHeight) <= 32) return;
       iframe.setAttribute("scrolling", "no");
       iframe.style.overflow = "hidden";
       iframe.style.height = `${nextHeight}px`;
@@ -231,7 +227,7 @@
 
     iframe.addEventListener("load", () => {
       bindFrameEvents();
-      scheduleResize([0, 300, 900, 2000, 3500]);
+      scheduleResize([0, 300, 900, 1800]);
     });
     const handleViewportChange = () => {
       const nextWidth = window.innerWidth;

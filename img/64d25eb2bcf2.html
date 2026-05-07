@@ -1301,7 +1301,7 @@
 
         if (window.frameElement) {
           const nextHeight = height + 8;
-          if (Math.abs(nextHeight - lastSyncedFrameHeight) > 10) {
+            if (Math.abs(nextHeight - lastSyncedFrameHeight) > 32) {
             window.frameElement.style.height = `${nextHeight}px`;
             lastSyncedFrameHeight = nextHeight;
           }
