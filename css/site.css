@@ -1092,7 +1092,7 @@ body:not([data-page="home"]) .hero__lede {
 .accordion__item[data-open="true"] .accordion__panel-inner { padding: 0 var(--sp-5) var(--sp-5); }
 
 body[data-page="phacdo"] .accordion {
-  max-height: min(72vh, 760px);
+  max-height: min(84vh, 940px);
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior-y: auto;
@@ -1613,7 +1613,7 @@ body[data-page="tracuu-tk"] .tool-embed iframe {
   }
 
   body[data-page="phacdo"] .accordion {
-    max-height: min(62vh, 520px);
+    max-height: min(76vh, 720px);
     padding-right: var(--sp-1);
   }
 
@@ -2022,7 +2022,7 @@ body[data-embedded="google-sites"] .section--subtle {
   }
 
   body[data-embedded="google-sites"][data-page="phacdo"] .accordion {
-    max-height: min(58vh, 470px);
+    max-height: min(76vh, 680px);
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior-y: auto;

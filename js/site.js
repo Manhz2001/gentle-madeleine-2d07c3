@@ -384,7 +384,7 @@
   'use strict';
 
   const SEARCH_INPUT_SELECTOR = '#searchInput';
-  const SEARCH_ANCHOR_SELECTOR = '.search-panel, .search-area, .search-shell';
+  const SEARCH_ANCHOR_SELECTOR = '.search-box, .search-row, .search-panel, .search-area, .search-shell';
   const supportsTouch = window.matchMedia?.('(hover: none) and (pointer: coarse)').matches;
   if (!supportsTouch) return;
 
@@ -399,7 +399,11 @@
     const anchor = getAnchor(activeInput);
     if (!anchor) return;
 
-    const top = Math.max(0, window.scrollY + anchor.getBoundingClientRect().top - 8);
+    const viewport = window.visualViewport;
+    const viewportTop = viewport?.offsetTop || 0;
+    const viewportHeight = viewport?.height || window.innerHeight;
+    const desiredOffset = Math.min(150, Math.max(72, viewportHeight * 0.18));
+    const top = Math.max(0, window.scrollY + anchor.getBoundingClientRect().top - viewportTop - desiredOffset);
     if (Math.abs(window.scrollY - top) > 2) {
       window.scrollTo({ top, left: 0, behavior: 'auto' });
     }
