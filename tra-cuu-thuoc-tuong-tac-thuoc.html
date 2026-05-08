@@ -2,259 +2,1001 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Hệ thống tra cứu tương tác thuốc — Khoa Dược, BVĐK Tỉnh Ninh Bình.">
-  <meta name="theme-color" content="#0b5394">
-  <title>Tương tác thuốc — BVĐK TỈNH NINH BÌNH</title>
+    <base href="img/">
+    <meta name="x-drugview-module-mode" content="direct-no-inner-iframe">
+<script src="/js/site.js" defer></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tra cứu tương tác thuốc</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/site.css">
-  <script src="js/site.js" defer></script>
-</head>
-<body data-page="tracuu-tt">
-  <a class="skip-link" href="#main">Chuyển đến nội dung chính</a>
-  <header class="site-header">
-  <div class="container site-header__inner">
-    <a class="brand" href="index.html" aria-label="DrugView Ninh Bình — Trang chủ">
-      <img class="brand__mark" src="img/27ed86eb0b3d.png" alt="" width="42" height="42" decoding="async">
-      <span class="brand__text">
-        <span class="brand__line1">BVĐK Tỉnh</span>
-        <span class="brand__line2">Ninh Bình</span>
-      </span>
-    </a>
-    <nav class="site-nav" aria-label="Điều hướng chính">
-      <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="site-nav-menu" aria-label="Mở menu">
-        <svg class="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-      <ul class="site-nav__list" id="site-nav-menu">
-        <li class="site-nav__item"><a class="site-nav__link" href="index.html">Trang chủ</a></li>
-        <li class="site-nav__item site-nav__item--has-sub">
-          <a class="site-nav__link" href="tra-cuu-thuoc.html" aria-haspopup="true" aria-expanded="false" aria-current="page">
-            Tra cứu thuốc
-            <svg class="site-nav__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-          </a>
-          <ul class="site-nav__submenu">
-            <li><a href="tra-cuu-thuoc-tiem-truyen.html">Tiêm truyền</a></li>
-            <li><a href="tra-cuu-thuoc-tuong-ky-tuong-hop.html">Tương kỵ - tương hợp</a></li>
-            <li><a href="tra-cuu-thuoc-tuong-tac-thuoc.html" aria-current="page">Tương tác thuốc</a></li>
-          </ul>
-        </li>
-        <li class="site-nav__item"><a class="site-nav__link" href="cap-nhat-chuyen-mon-duoc.html">Cập nhật chuyên môn dược</a></li>
-        <li class="site-nav__item"><a class="site-nav__link" href="phac-do-dieu-tri.html">Phác đồ điều trị</a></li>
-        <li class="site-nav__item"><a class="site-nav__link" href="lien-he.html">Liên hệ</a></li>
-      </ul>
-    </nav>
-  </div>
-</header>
-  <main id="main" class="site-main">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --c-brand-50: #eaf1fb;
+      --c-brand-100: #d5e3f8;
+      --c-brand-200: #a7c4ea;
+      --c-brand-500: #0b5394;
+      --c-brand-700: #083d6f;
+      --c-brand-800: #073a6a;
+      --c-accent: #cc0000;
+      --c-danger-soft: #fff1f1;
+      --c-surface: #ffffff;
+      --c-surface-soft: #f7f9fc;
+      --c-border: #dfe7f0;
+      --c-text: #1a2536;
+      --c-text-soft: #4b5766;
+      --rad-md: 16px;
+      --rad-lg: 22px;
+      --rad-pill: 999px;
+      --sh-sm: 0 4px 12px rgba(11, 83, 148, .07);
+      --sh-md: 0 12px 28px rgba(11, 83, 148, .10);
+      --sh-lg: 0 18px 38px rgba(11, 83, 148, .12);
+    }
 
-    <section class="hero">
-      <div class="container">
-        <div class="hero__content module-hero__content">
-          <img class="module-hero__logo" src="img/27ed86eb0b3d.png" alt="Logo Bệnh viện Đa khoa Tỉnh Ninh Bình" width="72" height="72" decoding="async">
-          <h1 class="hero__title">Tương tác thuốc</h1>
-          <p class="hero__lede" style="margin-left:auto;margin-right:auto;">Tra cứu tương tác giữa các thuốc: mức độ, cơ chế và khuyến cáo xử trí lâm sàng.</p>
-        </div>
-      </div>
-    </section>
+    * { box-sizing: border-box; margin: 0; padding: 0; min-width: 0; }
+    html, body { min-height: 100%; overflow-x: hidden; }
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      color: var(--c-text);
+      background:
+        radial-gradient(circle at top right, rgba(11, 83, 148, .08), transparent 30%),
+        linear-gradient(180deg, #fbfdff 0%, #f2f7fd 100%);
+      padding: 16px;
+    }
 
-    <section class="section">
-      <div class="container container--wide">
-        <div class="tool-embed tool-embed--interaction">
-          <iframe id="tuong-tac-frame" src="img/8f4e6709e1ea.html" title="Tra cứu tương tác thuốc" loading="eager" allow="fullscreen" scrolling="no"></iframe>
-          <p class="tool-embed__caption">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px;flex:0 0 auto;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            <span>Dữ liệu chỉ có giá trị tham khảo. Quyết định điều trị cuối cùng do bác sĩ lâm sàng thực hiện dựa trên từng bệnh nhân cụ thể.</span>
-          </p>
-        </div>
-      </div>
-    </section>
-  </main>
-  <footer class="site-footer">
-  <div class="container site-footer__grid">
-    <div>
-      <div class="site-footer__brand">
-        <img src="img/27ed86eb0b3d.png" alt="" width="44" height="44">
-        <strong>BVĐK Tỉnh Ninh Bình<br>Khoa Dược</strong>
-      </div>
-      <p>Công cụ tra cứu thuốc và phác đồ điều trị dành cho cán bộ y tế. Dữ liệu cập nhật theo hướng dẫn của Bộ Y tế và các hiệp hội chuyên môn.</p>
-      <div class="site-footer__social">
-        <a href="http://www.benhvienninhbinh.vn" target="_blank" rel="noopener" aria-label="Website bệnh viện">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-        </a>
-        <a href="https://www.facebook.com/bvdakhoatinhninhbinh" target="_blank" rel="noopener" aria-label="Fanpage Khoa Dược">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-        </a>
-        <a href="mailto:duocbvdknb@gmail.com" aria-label="Email Khoa Dược">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        </a>
-      </div>
-    </div>
-    <div>
-      <h5>Điều hướng</h5>
-      <ul>
-        <li><a href="index.html">Trang chủ</a></li>
-        <li><a href="tra-cuu-thuoc.html">Tra cứu thuốc</a></li>
-        <li><a href="cap-nhat-chuyen-mon-duoc.html">Cập nhật chuyên môn dược</a></li>
-        <li><a href="phac-do-dieu-tri.html">Phác đồ điều trị</a></li>
-        <li><a href="lien-he.html">Liên hệ</a></li>
-      </ul>
-    </div>
-    <div>
-      <h5>Công cụ tra cứu</h5>
-      <ul>
-        <li><a href="tra-cuu-thuoc-tiem-truyen.html">Hệ thống tiêm truyền</a></li>
-        <li><a href="tra-cuu-thuoc-tuong-ky-tuong-hop.html">Tương kỵ - tương hợp</a></li>
-        <li><a href="tra-cuu-thuoc-tuong-tac-thuoc.html">Tương tác thuốc</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="container site-footer__bottom">
-    <p>&copy; Khoa Dược — Bệnh viện Đa khoa Tỉnh Ninh Bình. Mọi quyền được bảo lưu.</p>
-    <p>Dành cho cán bộ y tế chuyên môn</p>
-  </div>
-</footer>
+    .interaction-app {
+      width: 100%;
+      max-width: 1320px;
+      margin: 0 auto;
+      background: rgba(255,255,255,.96);
+      border: 1px solid rgba(11, 83, 148, .08);
+      border-radius: 28px;
+      box-shadow: var(--sh-lg);
+      overflow: hidden;
+    }
 
-<button class="to-top" type="button" aria-label="Lên đầu trang">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-</button>
-<script>
-  (function () {
-    const frame = document.getElementById("tuong-tac-frame");
-    if (!frame) return;
-    const state = { bound: false, lastHeight: 0, raf: 0, viewportWidth: window.innerWidth };
-    const scheduleDelays = [0, 240, 700, 1400];
+    .interaction-header {
+      padding: 26px 28px 22px;
+      background: linear-gradient(135deg, rgba(255,255,255,.98) 0%, rgba(234,241,251,.98) 58%, rgba(213,227,248,.98) 100%);
+      border-bottom: 1px solid rgba(11, 83, 148, .08);
+    }
 
-    frame.loading = "eager";
+    .interaction-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--c-brand-500);
+    }
 
-    const getMinHeight = () => window.matchMedia("(max-width: 767px)").matches ? 980 : 1300;
+    .interaction-brand-lockup {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
 
-    const getFrameDocument = () => {
-      try {
-        return frame.contentDocument || frame.contentWindow?.document || null;
-      } catch (error) {
-        return null;
+    .interaction-logo {
+      flex: 0 0 auto;
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: var(--sh-sm);
+    }
+
+    .interaction-title {
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: clamp(30px, 2.6vw, 40px);
+      line-height: 1.08;
+      letter-spacing: -.02em;
+      color: var(--c-brand-800);
+      margin-bottom: 0;
+    }
+
+    .interaction-desc {
+      max-width: 72ch;
+      color: var(--c-text-soft);
+      font-size: 16px;
+      white-space: nowrap;
+    }
+
+    .warning-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 18px;
+      background: linear-gradient(90deg, #f7a61b 0%, #ffb320 100%);
+      color: #1f2937;
+      font-weight: 800;
+      text-align: center;
+      border-bottom: 1px solid rgba(0, 0, 0, .04);
+    }
+
+    .search-shell {
+      position: relative;
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--c-border);
+      background: linear-gradient(180deg, rgba(247,249,252,.82) 0%, rgba(255,255,255,.96) 100%);
+    }
+
+    .search-box {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #searchInput {
+      flex: 1;
+      width: 100%;
+      padding: 18px 22px;
+      border-radius: var(--rad-pill);
+      border: 2px solid var(--c-brand-200);
+      outline: none;
+      font-size: 16px;
+      font-family: inherit;
+      color: var(--c-text);
+      box-shadow: var(--sh-sm);
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    #searchInput:focus {
+      border-color: var(--c-brand-500);
+      box-shadow: 0 0 0 4px rgba(11, 83, 148, .12), var(--sh-sm);
+    }
+
+    #searchInput::placeholder { color: #8ba0bd; }
+
+    #btnSearch {
+      border: 0;
+      border-radius: var(--rad-pill);
+      padding: 16px 22px;
+      background: linear-gradient(180deg, var(--c-brand-500), var(--c-brand-700));
+      color: #fff;
+      font-weight: 700;
+      font-family: inherit;
+      font-size: 15px;
+      white-space: nowrap;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(11, 83, 148, .22);
+      transition: transform .12s ease, box-shadow .2s ease, filter .2s ease;
+    }
+
+    #btnSearch:hover {
+      transform: translateY(-1px);
+      filter: saturate(1.03);
+    }
+
+    .suggestions {
+      position: relative;
+      max-width: 980px;
+      margin: 10px auto 0;
+    }
+
+    .suggestions__box {
+      position: absolute;
+      inset: 0 0 auto 0;
+      background: #fff;
+      border: 1px solid rgba(11, 83, 148, .14);
+      border-radius: 16px;
+      box-shadow: var(--sh-md);
+      max-height: 280px;
+      overflow-y: auto;
+      display: none;
+      z-index: 20;
+    }
+
+    .suggestions__item {
+      padding: 13px 16px;
+      border-bottom: 1px solid #eef4fb;
+      cursor: pointer;
+      transition: background .18s ease, padding-left .18s ease;
+    }
+
+    .suggestions__item:last-child { border-bottom: 0; }
+    .suggestions__item:hover {
+      background: var(--c-brand-50);
+      padding-left: 20px;
+    }
+
+    .chips-panel,
+    .results-panel {
+      margin: 20px 28px;
+      background: #fff;
+      border: 1px solid rgba(11, 83, 148, .10);
+      border-radius: 22px;
+      box-shadow: var(--sh-sm);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      background: linear-gradient(90deg, #123d7a 0%, #0b5394 68%, #0a5dbb 100%);
+      color: #fff;
+    }
+
+    .panel-head h3 {
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 18px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #fbfdff 0%, #f5f9ff 100%);
+      border: 1px solid #e4edf8;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, .04);
+    }
+
+    .chip__label {
+      font-weight: 700;
+      color: var(--c-brand-800);
+      overflow-wrap: anywhere;
+    }
+
+    .chip__remove {
+      width: 24px;
+      height: 24px;
+      border: 0;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #ff6767 0%, #e53935 100%);
+      color: #fff;
+      font-size: 16px;
+      line-height: 24px;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .panel-body {
+      padding: 18px;
+    }
+
+    .msg {
+      padding: 24px 18px;
+      text-align: center;
+      color: var(--c-text-soft);
+      font-weight: 600;
+    }
+
+    .msg strong {
+      color: var(--c-accent);
+      font-family: "Be Vietnam Pro", sans-serif;
+    }
+
+    .mobile-results {
+      display: none;
+    }
+
+    .mobile-interaction {
+      border: 1px solid var(--c-border);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: var(--sh-sm);
+    }
+
+    .mobile-interaction + .mobile-interaction {
+      margin-top: 14px;
+    }
+
+    .mobile-group-title {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, #d6eaff 0%, #c5ddfb 100%);
+      color: var(--c-brand-800);
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .mobile-interaction--alert .mobile-group-title {
+      background: linear-gradient(180deg, #ffe1e1 0%, #ffd2d2 100%);
+      color: #9e0000;
+    }
+
+    .mobile-field + .mobile-field {
+      border-top: 1px solid #d6e7f4;
+    }
+
+    .mobile-field__label {
+      padding: 10px 14px;
+      background: #fbfdff;
+      color: var(--c-brand-800);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .mobile-field__value {
+      padding: 12px 14px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid var(--c-border);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: var(--sh-sm);
+    }
+
+    thead th {
+      padding: 14px 12px;
+      background: linear-gradient(180deg, var(--c-brand-500) 0%, var(--c-brand-700) 100%);
+      color: #fff;
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-right: 1px solid #d6e7f4;
+      border-bottom: 1px solid #d6e7f4;
+      vertical-align: top;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    td:last-child { border-right: 0; }
+
+    tbody tr:last-child td { border-bottom: 0; }
+
+    tbody tr:nth-child(even):not(.group-row) {
+      background: #f9fbfe;
+    }
+
+    tbody td:first-child {
+      width: 28%;
+      font-weight: 800;
+      color: var(--c-brand-800);
+      background: #fbfdff;
+    }
+
+    .group-row td {
+      padding: 0;
+      border-right: 0;
+    }
+
+    .group-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      background: linear-gradient(180deg, #d6eaff 0%, #c5ddfb 100%);
+      color: var(--c-brand-800);
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .group-row--alert .group-title {
+      background: linear-gradient(180deg, #ffe1e1 0%, #ffd2d2 100%);
+      color: #9e0000;
+    }
+
+    .alert-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(204, 0, 0, .12);
+      color: var(--c-accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .value-alert {
+      background: var(--c-danger-soft);
+      color: var(--c-accent) !important;
+      font-weight: 800;
+    }
+
+    @media (max-width: 900px) {
+      .table-wrap {
+        display: none;
       }
+
+      .mobile-results {
+        display: block;
+      }
+
+      .group-title {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 767px) {
+      body { padding: 0; }
+
+      .interaction-app {
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+      }
+
+      .interaction-header,
+      .search-shell {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .interaction-brand-lockup {
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .interaction-logo {
+        width: 44px;
+        height: 44px;
+      }
+
+      .search-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      #btnSearch {
+        width: 100%;
+      }
+
+      .chips-panel,
+      .results-panel { margin: 12px; }
+
+      .panel-body { padding: 12px; }
+
+      .interaction-desc {
+        white-space: normal;
+        font-size: 14px;
+      }
+
+      .chips {
+        flex-direction: column;
+      }
+
+      .chip {
+        width: 100%;
+        justify-content: space-between;
+        border-radius: 14px;
+      }
+
+      .mobile-interaction {
+        border-radius: 14px;
+      }
+
+      .mobile-group-title .alert-badge {
+        width: 100%;
+        border-radius: 16px;
+        justify-content: center;
+        text-align: center;
+        line-height: 1.4;
+        letter-spacing: .04em;
+      }
+    }
+
+    @media (max-width: 374px) {
+      body { padding: 0; }
+      .interaction-app { border-radius: 0; }
+      .interaction-header,
+      .search-shell { padding-left: 12px; padding-right: 12px; }
+      .interaction-header { padding-top: 18px; padding-bottom: 16px; }
+      .search-shell { padding-top: 12px; padding-bottom: 12px; }
+      .chips-panel,
+      .results-panel { margin: 8px; }
+      .panel-head { padding: 14px 12px; }
+      .panel-body { padding: 10px; }
+      #searchInput { padding: 14px 16px; font-size: 14px; }
+      #btnSearch { padding: 14px 12px; }
+      .mobile-group-title {
+        font-size: 16px;
+        padding: 12px 14px;
+      }
+
+      .mobile-field__label {
+        font-size: 11px;
+        padding: 9px 12px;
+      }
+
+      .mobile-field__value {
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="interaction-app">
+    <header class="interaction-header">
+      <div class="interaction-brand-lockup">
+        <img class="interaction-logo" src="27ed86eb0b3d.png" alt="Logo Bệnh viện Đa khoa Tỉnh Ninh Bình" width="56" height="56" decoding="async">
+        <h1 class="interaction-title">Tra cứu tương tác thuốc</h1>
+      </div>
+      <p class="interaction-desc">Thêm tối thiểu hai hoạt chất để tra cứu theo cặp, xem mức độ tương tác, cơ chế, hậu quả và khuyến cáo xử trí lâm sàng.</p>
+    </header>
+
+    <div class="warning-bar">Thận trọng: Đặc biệt lưu ý các tương tác chống chỉ định và mức độ nặng theo khuyến cáo chuyên môn.</div>
+
+    <section class="search-shell">
+      <div class="search-box">
+        <div class="search-row">
+          <input id="searchInput" type="text" placeholder="Nhập hoạt chất để thêm vào danh sách" autocomplete="off">
+          <button id="btnSearch" type="button">Tra cứu tương tác</button>
+        </div>
+        <div class="suggestions">
+          <div id="suggestionsBox" class="suggestions__box"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chips-panel">
+      <div class="panel-head">
+        <h3>Danh sách hoạt chất đã chọn</h3>
+      </div>
+      <div id="chips" class="chips">
+        <div class="msg">Vui lòng thêm tối thiểu hai hoạt chất để bắt đầu tra cứu.</div>
+      </div>
+    </section>
+
+    <section class="results-panel">
+      <div class="panel-head">
+        <h3>Thông tin kết quả</h3>
+      </div>
+      <div class="panel-body">
+        <div id="msgInit" class="msg">Bắt đầu: thêm tối thiểu 2 hoạt chất, sau đó nhấn <strong>Tra cứu tương tác</strong>.</div>
+        <div id="msgError" class="msg" style="display:none;"></div>
+        <div id="msgEmpty" class="msg" style="display:none;">Không có thông tin phù hợp.</div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th colspan="2">Thông tin kết quả</th></tr>
+            </thead>
+            <tbody id="pcBody"></tbody>
+          </table>
+        </div>
+        <div id="mobileResults" class="mobile-results"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbxybEUZXYbZxuz2EESUzC1tgIb1nWw4I7CrLTB6yIpGFYk1pLzfNl9Z8V2Kb49HyryS/exec";
+
+    let allData = [];
+    let suggestionsList = [];
+    let selectedDrugs = [];
+    let lastSyncedFrameHeight = 0;
+    let syncFrameRaf = 0;
+
+    const $ = (selector) => document.querySelector(selector);
+    const el = {
+      input: $("#searchInput"),
+      btnSearch: $("#btnSearch"),
+      box: $("#suggestionsBox"),
+      chips: $("#chips"),
+      msgInit: $("#msgInit"),
+      msgError: $("#msgError"),
+      msgEmpty: $("#msgEmpty"),
+      pcBody: $("#pcBody"),
+      mobileResults: $("#mobileResults")
     };
 
-    const stabilizeFrameDocument = (doc) => {
-      if (!doc) return;
-      try {
-        frame.contentWindow.syncIframeHeight = () => {};
-        frame.contentWindow.syncParentFrameHeight = () => {};
-      } catch (error) {}
+    function syncParentFrameHeight() {
+      cancelAnimationFrame(syncFrameRaf);
+      syncFrameRaf = requestAnimationFrame(() => {
+        const bodyHeight = document.body ? document.body.scrollHeight : 0;
+        const htmlHeight = document.documentElement ? document.documentElement.scrollHeight : 0;
+        const nextHeight = Math.max(bodyHeight, htmlHeight) + 16;
+      if (Math.abs(nextHeight - lastSyncedFrameHeight) <= 32) return;
+        lastSyncedFrameHeight = nextHeight;
 
-      const style = doc.getElementById("frame-scroll-stabilizer") || doc.createElement("style");
-      style.id = "frame-scroll-stabilizer";
-      style.textContent = `
-        html,
-        body {
-          overflow: hidden !important;
-          min-height: 0 !important;
-          scroll-behavior: auto !important;
-          touch-action: none !important;
-          overscroll-behavior: contain !important;
-        }
-        input,
-        textarea,
-        select,
-        [contenteditable='true'] {
-          touch-action: manipulation !important;
-        }
-        @media (max-width: 767px) {
-          *,
-          *::before,
-          *::after {
-            animation-duration: .01ms !important;
-            transition-duration: .01ms !important;
+        try {
+          if (window.frameElement) {
+            window.frameElement.style.height = nextHeight + "px";
+          }
+        } catch (error) {}
+
+        try {
+          window.parent.postMessage({ type: "interaction-frame-height", height: nextHeight }, "*");
+        } catch (error) {}
+      });
+    }
+
+    function normalizeString(str) {
+      return String(str || "").trim().toLowerCase().replace(/\s+/g, " ");
+    }
+
+    function foldVietnamese(str) {
+      return normalizeString(str)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D");
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = String(text || "");
+      return div.innerHTML.replace(/\n/g, "<br>");
+    }
+
+    function getVal(cell) {
+      if (!cell) return "";
+      if (typeof cell === "object" && "value" in cell) return cell.value || "";
+      return cell || "";
+    }
+
+    function buildSuggestionItem(value) {
+      const node = document.createElement("div");
+      node.className = "suggestions__item";
+      node.textContent = value;
+      node.dataset.value = value;
+      node.addEventListener("click", () => selectSuggestion(value));
+      return node;
+    }
+
+    function isContraindicatedByMOH(row) {
+      const interactionGroup = foldVietnamese(getVal(row["Nhóm tương tác"]));
+      const severity = foldVietnamese(getVal(row["Mức độ"]));
+      const consequence = foldVietnamese(getVal(row["Hậu quả"]));
+      const management = foldVietnamese(getVal(row["Xử trí"]));
+      const source = foldVietnamese(getVal(row["Nguồn"]));
+
+      const isContraindicated =
+        severity.includes("chong chi dinh") ||
+        consequence.includes("chong chi dinh") ||
+        management.includes("chong chi dinh");
+
+      const isMOHSource =
+        source.includes("5948/byt") ||
+        source.includes("quyet dinh 5948") ||
+        source.includes("bo y te");
+
+      const mentionsMOHContraindication =
+        interactionGroup.includes("chong chi dinh") ||
+        (isContraindicated && isMOHSource);
+
+      return mentionsMOHContraindication;
+    }
+
+    async function fetchData() {
+      try {
+        showInit("Đang tải dữ liệu...");
+        const response = await fetch(webAppUrl);
+        const data = await response.json();
+
+        if (data && data.error) throw new Error(data.error);
+
+        allData = Array.isArray(data) ? data : [];
+
+        const set = new Set();
+        allData.forEach((row) => {
+          set.add(getVal(row["Thuốc 1"]).trim());
+          set.add(getVal(row["Thuốc 2"]).trim());
+        });
+        suggestionsList = [...set].filter(Boolean).sort();
+
+        showInit("Bắt đầu: thêm tối thiểu 2 hoạt chất, sau đó nhấn Tra cứu tương tác.");
+      } catch (error) {
+        showError("LỖI: " + (error && error.message ? error.message : "Không thể tải dữ liệu"));
+      }
+    }
+
+    function showSuggestions() {
+      const query = normalizeString(el.input.value);
+      if (!query) {
+        hideSuggestions();
+        return;
+      }
+
+      const filtered = suggestionsList.filter((item) => normalizeString(item).includes(query)).slice(0, 15);
+      if (!filtered.length) {
+        hideSuggestions();
+        return;
+      }
+
+      el.box.innerHTML = "";
+      filtered.forEach((item) => el.box.appendChild(buildSuggestionItem(item)));
+      el.box.style.display = "block";
+      requestAnimationFrame(syncParentFrameHeight);
+    }
+
+    function hideSuggestions() {
+      el.box.style.display = "none";
+      el.box.innerHTML = "";
+      requestAnimationFrame(syncParentFrameHeight);
+    }
+
+    function selectSuggestion(value) {
+      if (!selectedDrugs.includes(value)) {
+        selectedDrugs.push(value);
+        renderChips();
+      }
+      el.input.value = "";
+      el.input.focus();
+      hideSuggestions();
+    }
+
+    function removeDrug(drug) {
+      selectedDrugs = selectedDrugs.filter((item) => item !== drug);
+      renderChips();
+    }
+
+    function renderChips() {
+      el.chips.innerHTML = "";
+
+      if (!selectedDrugs.length) {
+        el.chips.innerHTML = '<div class="msg">Vui lòng thêm tối thiểu hai hoạt chất để bắt đầu tra cứu.</div>';
+        requestAnimationFrame(syncParentFrameHeight);
+        return;
+      }
+
+      selectedDrugs.forEach((drug) => {
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        chip.innerHTML = `
+          <span class="chip__label"></span>
+          <button type="button" class="chip__remove" aria-label="Xóa hoạt chất">×</button>
+        `;
+        chip.querySelector(".chip__label").textContent = drug;
+        chip.querySelector(".chip__remove").addEventListener("click", () => removeDrug(drug));
+        el.chips.appendChild(chip);
+      });
+
+      requestAnimationFrame(syncParentFrameHeight);
+    }
+
+    function searchInteraction() {
+      hideSuggestions();
+      el.msgError.style.display = "none";
+      el.msgEmpty.style.display = "none";
+      el.msgInit.style.display = "none";
+      el.pcBody.innerHTML = "";
+      el.mobileResults.innerHTML = "";
+
+      const pendingValue = el.input.value.trim();
+      if (pendingValue && !selectedDrugs.includes(pendingValue)) {
+        selectedDrugs.push(pendingValue);
+        renderChips();
+        el.input.value = "";
+      }
+
+      if (selectedDrugs.length < 2) {
+        showError("VUI LÒNG CHỌN ÍT NHẤT HAI HOẠT CHẤT");
+        return;
+      }
+
+      const results = allData.filter((row) => {
+        const drug1 = normalizeString(getVal(row["Thuốc 1"]));
+        const drug2 = normalizeString(getVal(row["Thuốc 2"]));
+
+        for (let i = 0; i < selectedDrugs.length; i += 1) {
+          for (let j = i + 1; j < selectedDrugs.length; j += 1) {
+            const a = normalizeString(selectedDrugs[i]);
+            const b = normalizeString(selectedDrugs[j]);
+            if ((drug1 === a && drug2 === b) || (drug1 === b && drug2 === a)) return true;
           }
         }
-      `;
-      if (!style.parentNode) doc.head.appendChild(style);
-
-      if (doc.documentElement) {
-        doc.documentElement.style.overflow = "hidden";
-        doc.documentElement.style.minHeight = "0";
-      }
-      if (doc.body) {
-        doc.body.style.overflow = "hidden";
-        doc.body.style.minHeight = "0";
-      }
-    };
-
-    const installFrameTouchBridge = () => {
-      // The touch bridge lives inside the embedded module so it is ready before the first mobile drag.
-    };
-
-    const getFrameHeight = (doc) => {
-      const body = doc.body;
-      if (!body) return getMinHeight();
-      const measuredHeight = Array.from(body.children).reduce((height, child) => {
-        return Math.max(height, child.offsetTop + child.offsetHeight);
-      }, 0);
-      return Math.max(measuredHeight + 56, getMinHeight());
-    };
-
-    const setFrameHeight = (height) => {
-      const nextHeight = Math.ceil(Number(height) || getMinHeight());
-      if (Math.abs(nextHeight - state.lastHeight) <= 32) return;
-      frame.setAttribute("scrolling", "no");
-      frame.style.overflow = "hidden";
-      frame.style.height = `${nextHeight}px`;
-      state.lastHeight = nextHeight;
-    };
-
-    const resizeFrame = () => {
-      try {
-        const doc = getFrameDocument();
-        if (!doc) return;
-        stabilizeFrameDocument(doc);
-        installFrameTouchBridge(doc);
-        setFrameHeight(getFrameHeight(doc));
-      } catch (error) {
-        setFrameHeight(getMinHeight());
-      }
-    };
-
-    const scheduleResize = (delays = scheduleDelays) => {
-      delays.forEach((delay) => {
-        window.setTimeout(() => {
-          cancelAnimationFrame(state.raf);
-          state.raf = requestAnimationFrame(resizeFrame);
-        }, delay);
+        return false;
       });
-    };
 
-    const bindFrameEvents = () => {
-      resizeFrame();
-      if (state.bound) return;
-      const doc = getFrameDocument();
-      if (!doc) return;
-      state.bound = true;
-      ["click", "input", "keyup", "change", "submit"].forEach((eventName) => {
-        doc.addEventListener(eventName, () => scheduleResize([80, 360, 900, 1600]), true);
+      if (!results.length) {
+        showEmpty();
+        return;
+      }
+
+      renderResults(results);
+    }
+
+    function renderResults(results) {
+      el.pcBody.innerHTML = "";
+      el.mobileResults.innerHTML = "";
+
+      results.forEach((row, index) => {
+        const alertCase = isContraindicatedByMOH(row);
+        const groupRow = document.createElement("tr");
+        groupRow.className = alertCase ? "group-row group-row--alert" : "group-row";
+
+        const groupCell = document.createElement("td");
+        groupCell.colSpan = 2;
+        groupCell.innerHTML = `
+          <div class="group-title">
+            <span>Tương tác ${index + 1}</span>
+            ${alertCase ? '<span class="alert-badge">Cảnh báo đỏ · Chống chỉ định Bộ Y tế</span>' : ""}
+          </div>
+        `;
+        groupRow.appendChild(groupCell);
+        el.pcBody.appendChild(groupRow);
+
+        const fields = [
+          { key: "NHÓM TƯƠNG TÁC", cell: row["Nhóm tương tác"] },
+          { key: "THUỐC 1", cell: row["Thuốc 1"] },
+          { key: "THUỐC 2", cell: row["Thuốc 2"] },
+          { key: "MỨC ĐỘ", cell: row["Mức độ"] },
+          { key: "CƠ CHẾ", cell: row["Cơ chế"] },
+          { key: "HẬU QUẢ", cell: row["Hậu quả"] },
+          { key: "XỬ TRÍ", cell: row["Xử trí"] },
+          { key: "NGUỒN", cell: row["Nguồn"] }
+        ];
+
+        fields.forEach((field) => {
+          const value = getVal(field.cell);
+          if (!value) return;
+
+          const style = field.cell && field.cell.style ? field.cell.style : {};
+          const rowNode = document.createElement("tr");
+          const labelCell = document.createElement("td");
+          const valueCell = document.createElement("td");
+
+          labelCell.textContent = field.key;
+          valueCell.innerHTML = escapeHtml(value);
+
+          if (style.foreground) valueCell.style.color = style.foreground;
+          if (style.isBold) valueCell.style.fontWeight = "800";
+          if (style.isItalic) valueCell.style.fontStyle = "italic";
+          if (style.isUnderlined) valueCell.style.textDecoration = "underline";
+
+          if (alertCase && (field.key === "NHÓM TƯƠNG TÁC" || field.key === "MỨC ĐỘ" || field.key === "XỬ TRÍ")) {
+            valueCell.classList.add("value-alert");
+          }
+
+          rowNode.appendChild(labelCell);
+          rowNode.appendChild(valueCell);
+          el.pcBody.appendChild(rowNode);
+        });
+
+        const mobileCard = document.createElement("article");
+        mobileCard.className = alertCase ? "mobile-interaction mobile-interaction--alert" : "mobile-interaction";
+        mobileCard.innerHTML = `
+          <div class="mobile-group-title">
+            <span>Tương tác ${index + 1}</span>
+            ${alertCase ? '<span class="alert-badge">Cảnh báo đỏ · Chống chỉ định Bộ Y tế</span>' : ""}
+          </div>
+        `;
+
+        fields.forEach((field) => {
+          const value = getVal(field.cell);
+          if (!value) return;
+
+          const style = field.cell && field.cell.style ? field.cell.style : {};
+          const fieldNode = document.createElement("div");
+          fieldNode.className = "mobile-field";
+          fieldNode.innerHTML = `
+            <div class="mobile-field__label">${field.key}</div>
+            <div class="mobile-field__value">${escapeHtml(value)}</div>
+          `;
+
+          const mobileValue = fieldNode.querySelector(".mobile-field__value");
+          if (style.foreground) mobileValue.style.color = style.foreground;
+          if (style.isBold) mobileValue.style.fontWeight = "800";
+          if (style.isItalic) mobileValue.style.fontStyle = "italic";
+          if (style.isUnderlined) mobileValue.style.textDecoration = "underline";
+          if (alertCase && (field.key === "NHÓM TƯƠNG TÁC" || field.key === "MỨC ĐỘ" || field.key === "XỬ TRÍ")) {
+            mobileValue.classList.add("value-alert");
+          }
+
+          mobileCard.appendChild(fieldNode);
+        });
+
+        el.mobileResults.appendChild(mobileCard);
       });
-    };
 
-    frame.addEventListener("load", () => {
-      bindFrameEvents();
-      scheduleResize([0, 300, 900, 1800]);
+      requestAnimationFrame(syncParentFrameHeight);
+    }
+
+    function showInit(message) {
+      el.msgError.style.display = "none";
+      el.msgEmpty.style.display = "none";
+      el.msgInit.style.display = "block";
+      el.msgInit.textContent = message;
+      el.pcBody.innerHTML = "";
+      el.mobileResults.innerHTML = "";
+      requestAnimationFrame(syncParentFrameHeight);
+    }
+
+    function showError(message) {
+      el.msgInit.style.display = "none";
+      el.msgEmpty.style.display = "none";
+      el.msgError.style.display = "block";
+      el.msgError.innerHTML = "<strong>" + escapeHtml(message) + "</strong>";
+      el.pcBody.innerHTML = "";
+      el.mobileResults.innerHTML = "";
+      requestAnimationFrame(syncParentFrameHeight);
+    }
+
+    function showEmpty() {
+      el.msgInit.style.display = "none";
+      el.msgError.style.display = "none";
+      el.msgEmpty.style.display = "block";
+      el.pcBody.innerHTML = "";
+      el.mobileResults.innerHTML = "";
+      requestAnimationFrame(syncParentFrameHeight);
+    }
+
+    function setupEvents() {
+      let timer = null;
+
+      el.input.addEventListener("input", () => {
+        clearTimeout(timer);
+        timer = window.setTimeout(showSuggestions, 120);
+      });
+
+      el.input.addEventListener("keypress", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          if (el.box.style.display === "block" && el.box.firstElementChild) {
+            selectSuggestion(el.box.firstElementChild.dataset.value || el.box.firstElementChild.textContent);
+          } else {
+            searchInteraction();
+          }
+        }
+      });
+
+      el.btnSearch.addEventListener("click", searchInteraction);
+
+      document.addEventListener("click", (event) => {
+        if (!el.box.contains(event.target) && event.target !== el.input) {
+          hideSuggestions();
+        }
+      });
+    }
+
+    window.addEventListener("load", async () => {
+      setupEvents();
+      renderChips();
+      await fetchData();
+      syncParentFrameHeight();
     });
-
-    const handleViewportChange = () => {
-      const nextWidth = window.innerWidth;
-      if (Math.abs(nextWidth - state.viewportWidth) < 16) return;
-      state.viewportWidth = nextWidth;
-      scheduleResize([0, 300, 900]);
-    };
-
-    window.addEventListener("resize", handleViewportChange, { passive: true });
-    window.addEventListener("orientationchange", () => scheduleResize([250, 900, 1800]), { passive: true });
-    setTimeout(bindFrameEvents, 0);
-    setTimeout(bindFrameEvents, 900);
-  })();
-</script>
+  </script>
 </body>
 </html>
