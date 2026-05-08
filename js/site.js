@@ -307,6 +307,10 @@
       bottom: max(var(--sp-6, 1.5rem), calc(env(safe-area-inset-bottom) + var(--sp-4, 1rem)));
     }
 
+    body[data-search-focused="true"] {
+      padding-bottom: calc(min(42vh, 360px) + env(safe-area-inset-bottom)) !important;
+    }
+
     @media (max-width: 900px) {
       .site-nav:not([data-open="true"]) .site-nav__list {
         transform: translateY(-8px) scale(.98);
@@ -374,6 +378,64 @@
       restoreViewport();
     }, 200);
   }, true);
+})();
+
+(function () {
+  'use strict';
+
+  const SEARCH_INPUT_SELECTOR = '#searchInput';
+  const SEARCH_ANCHOR_SELECTOR = '.search-panel, .search-area, .search-shell';
+  const supportsTouch = window.matchMedia?.('(hover: none) and (pointer: coarse)').matches;
+  if (!supportsTouch) return;
+
+  let activeInput = null;
+  let pinTimer = 0;
+
+  const getAnchor = (input) => input?.closest?.(SEARCH_ANCHOR_SELECTOR) || input;
+
+  const pinSearchNearTop = () => {
+    if (!activeInput || document.activeElement !== activeInput) return;
+
+    const anchor = getAnchor(activeInput);
+    if (!anchor) return;
+
+    const top = Math.max(0, window.scrollY + anchor.getBoundingClientRect().top - 8);
+    if (Math.abs(window.scrollY - top) > 2) {
+      window.scrollTo({ top, left: 0, behavior: 'auto' });
+    }
+  };
+
+  const schedulePin = () => {
+    window.clearTimeout(pinTimer);
+    window.requestAnimationFrame(pinSearchNearTop);
+    pinTimer = window.setTimeout(pinSearchNearTop, 90);
+    window.setTimeout(pinSearchNearTop, 260);
+    window.setTimeout(pinSearchNearTop, 520);
+  };
+
+  document.addEventListener('focusin', (event) => {
+    const input = event.target?.matches?.(SEARCH_INPUT_SELECTOR) ? event.target : null;
+    if (!input) return;
+
+    activeInput = input;
+    document.body.dataset.searchFocused = 'true';
+    schedulePin();
+  }, true);
+
+  document.addEventListener('focusout', (event) => {
+    if (event.target !== activeInput) return;
+
+    activeInput = null;
+    window.clearTimeout(pinTimer);
+    window.setTimeout(() => {
+      if (!document.activeElement?.matches?.(SEARCH_INPUT_SELECTOR)) {
+        document.body.dataset.searchFocused = 'false';
+      }
+    }, 180);
+  }, true);
+
+  window.visualViewport?.addEventListener('resize', schedulePin, { passive: true });
+  window.visualViewport?.addEventListener('scroll', schedulePin, { passive: true });
 })();
 
 (function () {

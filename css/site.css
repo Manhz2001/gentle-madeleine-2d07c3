@@ -34,8 +34,8 @@
   --c-focus:          #0b5394;
 
   /* Type */
-  --ff-body:    "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --ff-heading: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  --ff-body:    "Inter", "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ff-heading: "Be Vietnam Pro", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
   --fs-xs:   clamp(0.75rem,  0.72rem + 0.15vw, 0.80rem);
   --fs-sm:   clamp(0.875rem, 0.84rem + 0.17vw, 0.9375rem);
@@ -1091,8 +1091,7 @@ body:not([data-page="home"]) .hero__lede {
 }
 .accordion__item[data-open="true"] .accordion__panel-inner { padding: 0 var(--sp-5) var(--sp-5); }
 
-body[data-page="phacdo"] .accordion,
-body[data-page="capnhat"] .accordion {
+body[data-page="phacdo"] .accordion {
   max-height: min(72vh, 760px);
   overflow-x: hidden;
   overflow-y: auto;
@@ -1613,8 +1612,7 @@ body[data-page="tracuu-tk"] .tool-embed iframe {
     padding-right: var(--sp-4);
   }
 
-  body[data-page="phacdo"] .accordion,
-  body[data-page="capnhat"] .accordion {
+  body[data-page="phacdo"] .accordion {
     max-height: min(62vh, 520px);
     padding-right: var(--sp-1);
   }
@@ -2023,8 +2021,7 @@ body[data-embedded="google-sites"] .section--subtle {
     padding: 0 .75rem .75rem;
   }
 
-  body[data-embedded="google-sites"][data-page="phacdo"] .accordion,
-  body[data-embedded="google-sites"][data-page="capnhat"] .accordion {
+  body[data-embedded="google-sites"][data-page="phacdo"] .accordion {
     max-height: min(58vh, 470px);
     overflow-x: hidden;
     overflow-y: auto;
