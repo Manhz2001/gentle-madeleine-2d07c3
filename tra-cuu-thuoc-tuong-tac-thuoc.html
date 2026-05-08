@@ -5,7 +5,7 @@
     <base href="img/">
     <meta name="x-drugview-module-mode" content="direct-no-inner-iframe">
 <script src="/js/site.js" defer></script>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Tra cứu tương tác thuốc</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -553,29 +553,38 @@
       }
     }
 
-    /* Keep vertical scrolling on the page/frame itself in Google Sites. Panels
-       remain visually card-like, but they no longer become touch-capture boxes. */
+    /* Google Sites embeds this page in its own frame. On touch devices the module
+       uses one internal scroller, so vertical gestures stay smooth and predictable. */
     html,
     body {
-      height: auto !important;
-      min-height: 100% !important;
+      width: 100%;
+      max-width: 100%;
       overflow-x: hidden !important;
-      overflow-y: visible !important;
-      -webkit-overflow-scrolling: touch;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
     }
 
     body {
-      overscroll-behavior-y: auto;
-      touch-action: pan-y;
+      overscroll-behavior-y: contain;
     }
 
-    .interaction-app,
-    .chips-panel,
-    .results-panel,
-    .panel-body,
-    .mobile-interaction,
-    .mobile-results {
-      overflow: visible !important;
+    input,
+    textarea,
+    select,
+    button {
+      font-size: 16px !important;
+    }
+
+    #searchInput {
+      font-size: 16px !important;
+      line-height: 1.45;
+      touch-action: manipulation;
+    }
+
+    button,
+    .chip,
+    .suggestions__item {
+      touch-action: manipulation;
     }
 
     .table-wrap {
@@ -592,6 +601,59 @@
       overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
+    }
+
+    @media (max-width: 767px), (hover: none) and (pointer: coarse) {
+      html,
+      body {
+        height: 100%;
+        min-height: 100%;
+        overflow: hidden !important;
+      }
+
+      body {
+        position: fixed;
+        inset: 0;
+        margin: 0;
+        padding: 0 !important;
+        overscroll-behavior: none;
+      }
+
+      .interaction-app {
+        width: 100%;
+        max-width: none;
+        height: 100vh;
+        max-height: 100vh;
+        margin: 0;
+        border-radius: 0;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+        scrollbar-gutter: stable;
+      }
+
+      @supports (height: 100dvh) {
+        .interaction-app {
+          height: 100dvh;
+          max-height: 100dvh;
+        }
+      }
+
+      #searchInput {
+        min-height: 50px;
+        padding: 14px 16px;
+      }
+
+      .suggestions__box {
+        max-height: min(300px, 42dvh);
+      }
+
+      .table-wrap {
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+      }
     }
   </style>
 </head>
@@ -672,7 +734,12 @@
       mobileResults: $("#mobileResults")
     };
 
+    function useInternalMobileScroller() {
+      return window.matchMedia && window.matchMedia("(max-width: 767px), (hover: none) and (pointer: coarse)").matches;
+    }
+
     function syncParentFrameHeight() {
+      if (useInternalMobileScroller()) return;
       cancelAnimationFrame(syncFrameRaf);
       syncFrameRaf = requestAnimationFrame(() => {
         const bodyHeight = document.body ? document.body.scrollHeight : 0;

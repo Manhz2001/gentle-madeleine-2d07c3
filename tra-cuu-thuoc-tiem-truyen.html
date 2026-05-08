@@ -5,7 +5,7 @@
     <base href="img/">
     <meta name="x-drugview-module-mode" content="direct-no-inner-iframe">
 <script src="/js/site.js" defer></script>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Hệ thống tra cứu thuốc tiêm truyền</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -727,31 +727,39 @@
       .info-item { padding: 12px 14px; }
     }
 
-    /* Google Sites embeds this page in its own frame. Keep vertical scrolling on
-       the document and avoid card-level overflow traps that can capture iOS touch. */
+    /* Google Sites embeds this page in its own frame. On touch devices the module
+       uses one internal scroller, so iOS/Google Sites do not fight over gestures. */
     html,
     body {
-      height: auto !important;
-      min-height: 100% !important;
+      width: 100%;
+      max-width: 100%;
       overflow-x: hidden !important;
-      overflow-y: visible !important;
-      -webkit-overflow-scrolling: touch;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
     }
 
     body {
-      overscroll-behavior-y: auto;
-      touch-action: pan-y;
+      overscroll-behavior-y: contain;
     }
 
-    .app-shell,
-    .search-panel,
-    .side-panel,
-    .stats-grid,
-    .result-group,
-    .state-card,
-    .drug-image,
-    .info-item {
-      overflow: visible !important;
+    input,
+    textarea,
+    select,
+    button {
+      font-size: 16px !important;
+    }
+
+    #searchInput {
+      font-size: 16px !important;
+      line-height: 1.45;
+      touch-action: manipulation;
+    }
+
+    button,
+    .drug-result-item,
+    .stat-item,
+    .suggestions div {
+      touch-action: manipulation;
     }
 
     .suggestions {
@@ -760,6 +768,58 @@
       overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
+    }
+
+    @media (max-width: 767px), (hover: none) and (pointer: coarse) {
+      html,
+      body {
+        height: 100%;
+        min-height: 100%;
+        overflow: hidden !important;
+      }
+
+      body {
+        position: fixed;
+        inset: 0;
+        margin: 0;
+        padding: 0 !important;
+        overscroll-behavior: none;
+      }
+
+      .app-shell {
+        width: 100%;
+        max-width: none;
+        height: 100vh;
+        max-height: 100vh;
+        margin: 0;
+        border-radius: 0;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+        scrollbar-gutter: stable;
+      }
+
+      @supports (height: 100dvh) {
+        .app-shell {
+          height: 100dvh;
+          max-height: 100dvh;
+        }
+      }
+
+      .search-box {
+        min-height: 54px;
+      }
+
+      #searchInput {
+        min-height: 44px;
+        padding: 10px 8px;
+      }
+
+      .suggestions {
+        max-height: min(300px, 42dvh);
+      }
     }
   </style>
 </head>
@@ -1316,7 +1376,12 @@
     let lastSyncedFrameHeight = 0;
     let syncFrameRaf = 0;
 
+    function useInternalMobileScroller() {
+      return window.matchMedia && window.matchMedia("(max-width: 767px), (hover: none) and (pointer: coarse)").matches;
+    }
+
     function syncIframeHeight() {
+      if (useInternalMobileScroller()) return;
       cancelAnimationFrame(syncFrameRaf);
       syncFrameRaf = window.requestAnimationFrame(() => {
         const doc = document.documentElement;
