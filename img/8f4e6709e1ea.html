@@ -71,13 +71,30 @@
       color: var(--c-brand-500);
     }
 
+    .interaction-brand-lockup {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .interaction-logo {
+      flex: 0 0 auto;
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: var(--sh-sm);
+    }
+
     .interaction-title {
       font-family: "Be Vietnam Pro", sans-serif;
       font-size: clamp(30px, 2.6vw, 40px);
       line-height: 1.08;
       letter-spacing: -.02em;
       color: var(--c-brand-800);
-      margin-bottom: 10px;
+      margin-bottom: 0;
     }
 
     .interaction-desc {
@@ -451,6 +468,16 @@
         padding-right: 16px;
       }
 
+      .interaction-brand-lockup {
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .interaction-logo {
+        width: 44px;
+        height: 44px;
+      }
+
       .search-row {
         flex-direction: column;
         align-items: stretch;
@@ -527,8 +554,10 @@
 <body>
   <div class="interaction-app">
     <header class="interaction-header">
-      <div class="interaction-kicker">Công cụ tra cứu</div>
-      <h1 class="interaction-title">Tra cứu tương tác thuốc</h1>
+      <div class="interaction-brand-lockup">
+        <img class="interaction-logo" src="27ed86eb0b3d.png" alt="Logo Bệnh viện Đa khoa Tỉnh Ninh Bình" width="56" height="56" decoding="async">
+        <h1 class="interaction-title">Tra cứu tương tác thuốc</h1>
+      </div>
       <p class="interaction-desc">Thêm tối thiểu hai hoạt chất để tra cứu theo cặp, xem mức độ tương tác, cơ chế, hậu quả và khuyến cáo xử trí lâm sàng.</p>
     </header>
 

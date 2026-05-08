@@ -731,6 +731,56 @@ body[data-page="phacdo"] .hero .section__eyebrow {
 }
 .hero__actions { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
 
+.module-hero__content {
+  text-align: center;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.module-hero__logo {
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  margin: 0 auto var(--sp-4);
+  border-radius: var(--rad-pill);
+  background: #fff;
+  box-shadow: var(--sh-sm);
+}
+
+body:not([data-page="home"]) .hero .hero__content {
+  max-width: 1120px !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body:not([data-page="home"]) .hero__title {
+  font-size: clamp(2.2rem, 3.2vw, 3rem);
+  line-height: 1.12;
+  letter-spacing: -.01em;
+  margin-bottom: var(--sp-4);
+}
+
+body:not([data-page="home"]) .hero__lede {
+  max-width: 78ch;
+  font-size: clamp(.96rem, .92rem + .2vw, 1.05rem);
+  line-height: 1.52;
+  margin-bottom: var(--sp-6);
+}
+
+@media (max-width: 767px) {
+  body:not([data-page="home"]) .hero__title {
+    font-size: clamp(1.8rem, 6.2vw, 2.15rem);
+    line-height: 1.14;
+  }
+
+  body:not([data-page="home"]) .hero__lede {
+    font-size: .94rem;
+    line-height: 1.45;
+    margin-bottom: var(--sp-4);
+  }
+}
+
 .hero__visual {
   position: relative;
   aspect-ratio: 1;
@@ -1104,6 +1154,7 @@ body[data-page="phacdo"] .hero .section__eyebrow {
   border-radius: var(--rad-md);
   overflow: hidden;
   contain: layout paint;
+  touch-action: pan-y;
 }
 .tool-embed--compat {
   padding: var(--sp-5);
@@ -1111,6 +1162,8 @@ body[data-page="phacdo"] .hero .section__eyebrow {
 body[data-page="tracuu-tt"] .container--wide {
   max-width: 1460px;
 }
+body[data-page="tracuu-tiem"] .hero__lede,
+body[data-page="tracuu-tk"] .hero__lede,
 body[data-page="tracuu-tt"] .hero__lede {
   max-width: none;
   white-space: nowrap;
@@ -1260,6 +1313,12 @@ body[data-page="tracuu-tk"] .tool-embed iframe {
     margin-bottom: var(--sp-3);
   }
 
+  .module-hero__logo {
+    width: 52px;
+    height: 52px;
+    margin-bottom: var(--sp-2);
+  }
+
   .hero__actions {
     gap: var(--sp-2);
   }
@@ -1291,6 +1350,8 @@ body[data-page="tracuu-tk"] .tool-embed iframe {
 
   .section__intro,
   .hero__lede,
+  body[data-page="tracuu-tiem"] .hero__lede,
+  body[data-page="tracuu-tk"] .hero__lede,
   body[data-page="tracuu-tt"] .hero__lede {
     white-space: normal;
   }
@@ -1456,6 +1517,18 @@ body[data-page="tracuu-tk"] .tool-embed iframe {
 
   .hero__lede {
     margin-bottom: var(--sp-4);
+  }
+
+  .module-hero__logo {
+    width: 52px;
+    height: 52px;
+    margin-bottom: var(--sp-2);
+  }
+
+  body[data-page="tracuu-tiem"] .hero__lede,
+  body[data-page="tracuu-tk"] .hero__lede,
+  body[data-page="tracuu-tt"] .hero__lede {
+    white-space: normal;
   }
 
   .hero__visual {

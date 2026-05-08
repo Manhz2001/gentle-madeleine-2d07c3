@@ -74,13 +74,30 @@
       color: var(--c-brand-500);
     }
 
+    .compat-brand-lockup {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .compat-logo {
+      flex: 0 0 auto;
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: var(--sh-sm);
+    }
+
     .compat-title {
       font-family: "Be Vietnam Pro", sans-serif;
       font-size: clamp(30px, 2.7vw, 40px);
       line-height: 1.08;
       letter-spacing: -.02em;
       color: var(--c-brand-800);
-      margin-bottom: 10px;
+      margin-bottom: 0;
     }
 
     .compat-desc {
@@ -369,6 +386,8 @@
       .selected-panel,
       .table-panel { margin-left: 14px; margin-right: 14px; }
       .compat-header { padding: 20px 18px; }
+      .compat-brand-lockup { align-items: flex-start; gap: 10px; }
+      .compat-logo { width: 44px; height: 44px; }
       .search-shell { padding: 16px 14px; }
       .selected-panel, .table-panel { margin-top: 16px; margin-bottom: 16px; }
       .action-row { grid-template-columns: 1fr; }
@@ -426,8 +445,10 @@
 <body>
   <div class="compat-app">
     <header class="compat-header">
-      <div class="compat-kicker">Công cụ tra cứu Y-site</div>
-      <h1 class="compat-title">Tra cứu tương hợp - tương kỵ thuốc</h1>
+      <div class="compat-brand-lockup">
+        <img class="compat-logo" src="27ed86eb0b3d.png" alt="Logo Bệnh viện Đa khoa Tỉnh Ninh Bình" width="56" height="56" decoding="async">
+        <h1 class="compat-title">Tra cứu tương hợp - tương kỵ thuốc</h1>
+      </div>
       <p class="compat-desc">Kiểm tra nhanh khả năng tương hợp của nhiều hoạt chất khi phối hợp cùng một đường truyền. Dữ liệu giữ nguyên từ nguồn tra cứu hiện có.</p>
     </header>
 

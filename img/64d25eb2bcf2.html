@@ -101,13 +101,30 @@
       color: var(--c-brand-500);
     }
 
+    .app-brand-lockup {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .app-logo {
+      flex: 0 0 auto;
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: var(--sh-sm);
+    }
+
     .app-title {
       font-family: "Be Vietnam Pro", sans-serif;
       font-size: clamp(30px, 2.8vw, 42px);
       line-height: 1.08;
       letter-spacing: -.02em;
       color: var(--c-brand-800);
-      margin-bottom: 12px;
+      margin-bottom: 0;
     }
 
     .app-desc {
@@ -639,6 +656,8 @@
       body { padding: 0; }
       .app-shell { border-radius: 0; }
       .app-title { font-size: clamp(24px, 8vw, 32px); }
+      .app-brand-lockup { align-items: flex-start; gap: 10px; }
+      .app-logo { width: 46px; height: 46px; }
       .app-desc,
       .search-panel__desc,
       .hero-mini p,
@@ -711,11 +730,10 @@
     <header class="app-header">
       <div class="app-header__inner">
         <div>
-          <div class="app-kicker">
-            <i class="fas fa-syringe"></i>
-            <span>Công cụ tra cứu tiêm truyền</span>
+          <div class="app-brand-lockup">
+            <img class="app-logo" src="27ed86eb0b3d.png" alt="Logo Bệnh viện Đa khoa Tỉnh Ninh Bình" width="58" height="58" decoding="async">
+            <h1 class="app-title">Hệ thống tra cứu thuốc tiêm truyền</h1>
           </div>
-          <h1 class="app-title">Hệ thống tra cứu thuốc tiêm truyền</h1>
           <p class="app-desc">Tra cứu nhanh hoạt chất, biệt dược, cách hoàn nguyên, dung môi pha loãng, nồng độ khuyến nghị và các lưu ý khi tiêm truyền.</p>
         </div>
         <div class="hero-alert">

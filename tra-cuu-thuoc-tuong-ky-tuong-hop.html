@@ -52,8 +52,8 @@
 
     <section class="hero">
       <div class="container">
-        <div class="hero__content" style="text-align:center; max-width:780px; margin:0 auto;">
-          <span class="section__eyebrow">Công cụ tra cứu</span>
+        <div class="hero__content module-hero__content">
+          <img class="module-hero__logo" src="img/27ed86eb0b3d.png" alt="Logo Bệnh viện Đa khoa Tỉnh Ninh Bình" width="72" height="72" decoding="async">
           <h1 class="hero__title">Tương kỵ - Tương hợp</h1>
           <p class="hero__lede" style="margin-left:auto;margin-right:auto;">Kiểm tra tính tương hợp - tương kỵ khi phối hợp thuốc tại cùng một đường truyền (Y-site compatibility).</p>
         </div>
@@ -84,7 +84,7 @@
         <a href="http://www.benhvienninhbinh.vn" target="_blank" rel="noopener" aria-label="Website bệnh viện">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
         </a>
-        <a href="https://www.facebook.com/khoaduoctb" target="_blank" rel="noopener" aria-label="Fanpage Khoa Dược">
+        <a href="https://www.facebook.com/bvdakhoatinhninhbinh" target="_blank" rel="noopener" aria-label="Fanpage Khoa Dược">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
         </a>
         <a href="mailto:duocbvdknb@gmail.com" aria-label="Email Khoa Dược">
@@ -154,6 +154,7 @@
           overflow: hidden !important;
           min-height: 0 !important;
           scroll-behavior: auto !important;
+          touch-action: pan-y !important;
         }
         @media (max-width: 767px) {
           *,
@@ -174,6 +175,74 @@
         doc.body.style.overflow = "hidden";
         doc.body.style.minHeight = "0";
       }
+    };
+
+    const installFrameTouchBridge = (doc) => {
+      if (!doc || doc.getElementById("frame-parent-scroll-bridge")) return;
+      if (!window.matchMedia("(max-width: 767px), (pointer: coarse)").matches) return;
+      const script = doc.createElement("script");
+      script.id = "frame-parent-scroll-bridge";
+      script.textContent = `
+        (() => {
+          if (window.__drugviewParentScrollBridge) return;
+          window.__drugviewParentScrollBridge = true;
+          document.__drugviewParentScrollBridge = true;
+          let active = false;
+          let lastY = 0;
+          let startX = 0;
+          let startY = 0;
+          let pendingDelta = 0;
+          let scrollQueued = false;
+          const flushParentScroll = () => {
+            const amount = pendingDelta;
+            pendingDelta = 0;
+            scrollQueued = false;
+            if (Math.abs(amount) < 1) return;
+            const parentDocument = window.parent.document;
+            const scroller = parentDocument.scrollingElement || parentDocument.documentElement || parentDocument.body;
+            if (scroller) {
+              scroller.scrollTop += amount;
+            } else {
+              window.parent.scrollBy(0, amount);
+            }
+          };
+          const isTextControl = (target) => {
+            return !!(target && target.closest && target.closest("input, textarea, select, [contenteditable='true']"));
+          };
+          document.addEventListener("touchstart", (event) => {
+            if (event.touches.length !== 1) {
+              active = false;
+              return;
+            }
+            active = !isTextControl(event.target);
+            startX = event.touches[0].clientX;
+            startY = event.touches[0].clientY;
+            lastY = startY;
+          }, { passive: true, capture: true });
+          document.addEventListener("touchmove", (event) => {
+            if (!active || event.touches.length !== 1) return;
+            const touch = event.touches[0];
+            const totalX = Math.abs(touch.clientX - startX);
+            const totalY = Math.abs(touch.clientY - startY);
+            if (totalX > totalY && totalX > 12) {
+              active = false;
+              return;
+            }
+            const deltaY = lastY - touch.clientY;
+            if (Math.abs(deltaY) < 1) return;
+            try {
+              pendingDelta += deltaY;
+              if (!scrollQueued) {
+                scrollQueued = true;
+                window.parent.setTimeout(flushParentScroll, 0);
+              }
+              lastY = touch.clientY;
+              if (event.cancelable) event.preventDefault();
+            } catch (error) {}
+          }, { passive: false, capture: true });
+        })();
+      `;
+      doc.head.appendChild(script);
     };
 
     const getFrameHeight = (doc) => {
@@ -199,6 +268,7 @@
         const doc = getFrameDocument();
         if (!doc) return;
         stabilizeFrameDocument(doc);
+        installFrameTouchBridge(doc);
         setFrameHeight(getFrameHeight(doc));
       } catch (error) {
         setFrameHeight(getMinHeight());
