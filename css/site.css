@@ -2034,6 +2034,71 @@ body[data-embedded="google-sites"] .section--subtle {
   }
 }
 
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 767px) and (hover: none) and (pointer: coarse) {
+    body[data-embedded="google-sites"] {
+      -webkit-text-size-adjust: 100%;
+      padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+    }
+
+    body[data-embedded="google-sites"][data-page="home"] .hero {
+      padding-top: var(--sp-3);
+      padding-bottom: var(--sp-4);
+    }
+
+    body[data-embedded="google-sites"][data-page="home"] .hero__inner {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-3);
+      align-items: center;
+    }
+
+    body[data-embedded="google-sites"][data-page="home"] .hero__content {
+      order: 1;
+      width: 100%;
+      text-align: center;
+    }
+
+    body[data-embedded="google-sites"][data-page="home"] .hero__visual {
+      order: 2;
+      width: clamp(104px, 34vw, 132px);
+      max-width: 132px;
+      margin: 0 auto;
+    }
+
+    body[data-embedded="google-sites"][data-page="home"] .hero__visual::before {
+      animation: none;
+      transform: scale(1.02);
+      opacity: .65;
+    }
+
+    body[data-embedded="google-sites"][data-page="home"] .hero__visual img {
+      filter: drop-shadow(0 8px 18px rgba(7, 58, 106, .14));
+    }
+
+    body[data-embedded="google-sites"][data-page="home"] .section--features {
+      padding-top: var(--sp-5);
+    }
+
+    body[data-embedded="google-sites"][data-page="home"] .section__head {
+      margin-bottom: var(--sp-4);
+    }
+
+    body[data-embedded="google-sites"][data-page="home"] .section__title {
+      font-size: clamp(1.38rem, 6.1vw, 1.82rem);
+      line-height: 1.14;
+    }
+
+    body[data-embedded="google-sites"][data-page="home"] .section__intro {
+      max-width: 34ch;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: .94rem;
+      line-height: 1.45;
+    }
+  }
+}
+
 /* ---------- 15. PRINT -------------------------------------------------- */
 @media print {
   .site-header, .site-footer, .to-top, .site-nav__toggle { display: none !important; }
