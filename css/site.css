@@ -1091,6 +1091,17 @@ body:not([data-page="home"]) .hero__lede {
 }
 .accordion__item[data-open="true"] .accordion__panel-inner { padding: 0 var(--sp-5) var(--sp-5); }
 
+body[data-page="phacdo"] .accordion__item[data-open="true"] .accordion__panel-inner,
+body[data-page="capnhat"] .accordion__item[data-open="true"] .accordion__panel-inner {
+  max-height: min(68vh, 640px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  touch-action: pan-y;
+}
+
 /* doc list */
 .doc-list {
   list-style: none;
@@ -1601,6 +1612,12 @@ body[data-page="tracuu-tk"] .tool-embed iframe {
     padding-right: var(--sp-4);
   }
 
+  body[data-page="phacdo"] .accordion__item[data-open="true"] .accordion__panel-inner,
+  body[data-page="capnhat"] .accordion__item[data-open="true"] .accordion__panel-inner {
+    max-height: min(58vh, 460px);
+    padding-right: var(--sp-3);
+  }
+
   .tool-embed__caption {
     padding: var(--sp-3);
   }
@@ -1767,6 +1784,16 @@ body[data-page="tracuu-tk"] .tool-embed iframe {
 .to-top[data-visible="true"] { opacity: 1; visibility: visible; transform: translateY(0); }
 .to-top:hover { background: var(--c-brand-700); transform: translateY(-3px); }
 .to-top svg { width: 20px; height: 20px; }
+
+html[data-keyboard="true"],
+body[data-keyboard="true"] {
+  scroll-behavior: auto;
+}
+
+body[data-keyboard="true"] .site-footer,
+body[data-keyboard="true"] .to-top {
+  display: none !important;
+}
 
 /* ---------- 14. UTILITIES ---------------------------------------------- */
 .sr-only {
@@ -1993,6 +2020,17 @@ body[data-embedded="google-sites"] .section--subtle {
   body[data-embedded="google-sites"] .accordion__item[data-open="true"] .accordion__panel-inner {
     overflow: visible;
     padding: 0 .75rem .75rem;
+  }
+
+  body[data-embedded="google-sites"][data-page="phacdo"] .accordion__item[data-open="true"] .accordion__panel-inner,
+  body[data-embedded="google-sites"][data-page="capnhat"] .accordion__item[data-open="true"] .accordion__panel-inner {
+    max-height: min(54vh, 430px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable;
+    touch-action: pan-y;
   }
 
   body[data-embedded="google-sites"] .doc-list {

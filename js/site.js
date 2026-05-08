@@ -330,6 +330,55 @@
 (function () {
   'use strict';
 
+  const FIELD_SELECTOR = 'input, textarea, select';
+  const viewport = document.querySelector('meta[name="viewport"]');
+  const originalViewport = viewport?.getAttribute('content') || '';
+  let restoreTimer = null;
+
+  const setKeyboardMode = (enabled) => {
+    document.documentElement.dataset.keyboard = enabled ? 'true' : 'false';
+    document.body.dataset.keyboard = enabled ? 'true' : 'false';
+  };
+
+  const lockViewport = () => {
+    if (!viewport) return;
+
+    const base = (originalViewport || 'width=device-width, initial-scale=1')
+      .split(',')
+      .map(part => part.trim())
+      .filter(Boolean)
+      .filter(part => !/^(maximum-scale|user-scalable)\s*=/i.test(part));
+
+    viewport.setAttribute('content', base.length ? `${base.join(', ')}, maximum-scale=1` : 'maximum-scale=1');
+  };
+
+  const restoreViewport = () => {
+    if (!viewport || !originalViewport) return;
+    viewport.setAttribute('content', originalViewport);
+  };
+
+  document.addEventListener('focusin', (event) => {
+    if (!event.target?.matches?.(FIELD_SELECTOR)) return;
+
+    window.clearTimeout(restoreTimer);
+    setKeyboardMode(true);
+    lockViewport();
+  }, true);
+
+  document.addEventListener('focusout', (event) => {
+    if (!event.target?.matches?.(FIELD_SELECTOR)) return;
+
+    restoreTimer = window.setTimeout(() => {
+      if (document.activeElement?.matches?.(FIELD_SELECTOR)) return;
+      setKeyboardMode(false);
+      restoreViewport();
+    }, 200);
+  }, true);
+})();
+
+(function () {
+  'use strict';
+
   const MESSAGE_TYPE = 'drugview-scroll-handoff';
   const MAX_DELTA = 900;
   const EDGE_TOLERANCE = 2;
