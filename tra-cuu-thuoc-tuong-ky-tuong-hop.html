@@ -614,6 +614,58 @@
         max-height: min(300px, 42vh);
       }
     }
+
+    @supports (-webkit-touch-callout: none) {
+      @media (hover: none) and (pointer: coarse) {
+        body { padding: 0; }
+        .compat-app {
+          max-width: none;
+          border-radius: 0;
+          border-left: 0;
+          border-right: 0;
+          box-shadow: none;
+        }
+        .compat-header__inner {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        .compat-header,
+        .search-shell {
+          padding-left: 12px;
+          padding-right: 12px;
+        }
+        .selected-panel,
+        .table-panel {
+          margin-left: 12px;
+          margin-right: 12px;
+        }
+        .compat-brand-lockup {
+          align-items: center;
+        }
+        .compat-logo {
+          width: 46px;
+          height: 46px;
+        }
+        .compat-title {
+          font-size: clamp(20px, 6vw, 26px);
+          line-height: 1.15;
+          white-space: normal;
+          text-wrap: balance;
+        }
+        .compat-desc,
+        .search-panel__desc,
+        .compat-alert-card p {
+          font-size: 15px;
+          line-height: 1.55;
+        }
+        .compat-alert-card,
+        .search-panel,
+        .selected-list,
+        .result-wrap {
+          padding: 14px;
+        }
+      }
+    }
   </style>
 </head>
 <body>

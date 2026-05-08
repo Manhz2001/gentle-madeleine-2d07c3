@@ -719,6 +719,58 @@
         max-height: min(300px, 42vh);
       }
     }
+
+    @supports (-webkit-touch-callout: none) {
+      @media (hover: none) and (pointer: coarse) {
+        body { padding: 0; }
+        .interaction-app {
+          max-width: none;
+          border-radius: 0;
+          border-left: 0;
+          border-right: 0;
+          box-shadow: none;
+        }
+        .interaction-header__inner {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        .interaction-header,
+        .search-shell {
+          padding-left: 12px;
+          padding-right: 12px;
+        }
+        .chips-panel,
+        .results-panel {
+          margin-left: 12px;
+          margin-right: 12px;
+        }
+        .interaction-brand-lockup {
+          align-items: center;
+        }
+        .interaction-logo {
+          width: 46px;
+          height: 46px;
+        }
+        .interaction-title {
+          font-size: clamp(20px, 6vw, 26px);
+          line-height: 1.15;
+          white-space: normal;
+          text-wrap: balance;
+        }
+        .interaction-desc,
+        .search-panel__desc,
+        .interaction-alert-card p {
+          font-size: 15px;
+          line-height: 1.55;
+        }
+        .interaction-alert-card,
+        .search-panel,
+        .panel-body,
+        .chips {
+          padding: 14px;
+        }
+      }
+    }
   </style>
 </head>
 <body>

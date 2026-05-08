@@ -512,6 +512,11 @@
       margin-bottom: 22px;
     }
 
+    .drug-header > div {
+      flex: 1 1 240px;
+      min-width: 0;
+    }
+
     .drug-title {
       font-family: "Be Vietnam Pro", sans-serif;
       font-size: clamp(26px, 2.1vw, 34px);
@@ -530,6 +535,8 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      flex: 1 1 auto;
+      max-width: 100%;
       padding: 10px 14px;
       border-radius: var(--rad-pill);
       background: rgba(204, 0, 0, .08);
@@ -563,7 +570,7 @@
 
     .info-item {
       display: grid;
-      grid-template-columns: minmax(180px, .85fr) minmax(0, 2fr);
+      grid-template-columns: minmax(150px, .85fr) minmax(0, 2fr);
       gap: 18px;
       padding: 15px 18px;
       border-bottom: 1px solid #eef4fb;
@@ -602,6 +609,9 @@
     }
 
     .drug-result-item {
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden;
       padding: 16px 18px;
       border-radius: 16px;
       border: 1px solid #e4edf8;
@@ -772,14 +782,52 @@
 
     .app-title,
     .app-desc,
+    .drug-header,
+    .drug-header > div,
     .drug-title,
+    .drug-subtitle,
+    .risk-chip,
     .group-title,
+    .info-item,
     .info-label,
     .info-value,
+    .info-value *,
+    .top-search-item,
+    .monthly-top-item,
+    .search-term,
+    .monthly-term,
+    .search-count,
+    .monthly-count,
+    .drug-result-item,
     .drug-result-name,
     .drug-result-ingredient {
+      min-width: 0;
+      max-width: 100%;
+      max-inline-size: 100%;
       overflow-wrap: anywhere;
-      word-break: normal;
+      word-break: break-word;
+      -webkit-hyphens: auto;
+      hyphens: auto;
+      white-space: normal;
+    }
+
+    .info-value a {
+      word-break: break-all;
+    }
+
+    .info-value img {
+      display: block;
+      height: auto;
+    }
+
+    .top-search-item,
+    .monthly-top-item {
+      align-items: flex-start;
+    }
+
+    .search-count,
+    .monthly-count {
+      flex: 0 0 auto;
     }
 
     @media (min-width: 768px) {
@@ -802,6 +850,70 @@
 
       #searchInput {
         padding: 10px 8px;
+      }
+    }
+
+    @supports (-webkit-touch-callout: none) {
+      @media (hover: none) and (pointer: coarse) {
+        body { padding: 0; }
+        .app-shell {
+          max-width: none;
+          border-radius: 0;
+          border-left: 0;
+          border-right: 0;
+          box-shadow: none;
+        }
+        .app-header__inner,
+        .search-grid,
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+        .app-header,
+        .search-area,
+        .results-section,
+        .stats-grid {
+          padding-left: 12px;
+          padding-right: 12px;
+        }
+        .app-brand-lockup {
+          align-items: center;
+        }
+        .app-logo {
+          width: 46px;
+          height: 46px;
+        }
+        .app-title {
+          font-size: clamp(20px, 6vw, 26px);
+          line-height: 1.15;
+          white-space: normal;
+          text-wrap: balance;
+        }
+        .app-desc,
+        .search-panel__desc,
+        .alert-card p {
+          font-size: 15px;
+          line-height: 1.55;
+        }
+        .alert-card,
+        .search-panel,
+        .side-panel {
+          padding: 14px;
+        }
+        .drug-header {
+          padding: 18px;
+          border-radius: 18px;
+        }
+        .drug-header > div,
+        .risk-chip {
+          flex-basis: 100%;
+        }
+        .drug-title {
+          font-size: clamp(22px, 6vw, 28px);
+        }
+        .info-item {
+          grid-template-columns: 1fr;
+          gap: 6px;
+        }
       }
     }
   </style>
