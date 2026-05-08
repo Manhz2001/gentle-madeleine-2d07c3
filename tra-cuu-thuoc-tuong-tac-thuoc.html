@@ -154,7 +154,14 @@
           overflow: hidden !important;
           min-height: 0 !important;
           scroll-behavior: auto !important;
-          touch-action: pan-y !important;
+          touch-action: none !important;
+          overscroll-behavior: contain !important;
+        }
+        input,
+        textarea,
+        select,
+        [contenteditable='true'] {
+          touch-action: manipulation !important;
         }
         @media (max-width: 767px) {
           *,
@@ -177,72 +184,8 @@
       }
     };
 
-    const installFrameTouchBridge = (doc) => {
-      if (!doc || doc.getElementById("frame-parent-scroll-bridge")) return;
-      if (!window.matchMedia("(max-width: 767px), (pointer: coarse)").matches) return;
-      const script = doc.createElement("script");
-      script.id = "frame-parent-scroll-bridge";
-      script.textContent = `
-        (() => {
-          if (window.__drugviewParentScrollBridge) return;
-          window.__drugviewParentScrollBridge = true;
-          document.__drugviewParentScrollBridge = true;
-          let active = false;
-          let lastY = 0;
-          let startX = 0;
-          let startY = 0;
-          let pendingDelta = 0;
-          let scrollQueued = false;
-          const flushParentScroll = () => {
-            const amount = pendingDelta;
-            pendingDelta = 0;
-            scrollQueued = false;
-            if (Math.abs(amount) < 1) return;
-            const parentDocument = window.parent.document;
-            const scroller = parentDocument.scrollingElement || parentDocument.documentElement || parentDocument.body;
-            if (scroller) {
-              scroller.scrollTop += amount;
-            } else {
-              window.parent.scrollBy(0, amount);
-            }
-          };
-          const isTextControl = (target) => {
-            return !!(target && target.closest && target.closest("input, textarea, select, [contenteditable='true']"));
-          };
-          document.addEventListener("touchstart", (event) => {
-            if (event.touches.length !== 1) {
-              active = false;
-              return;
-            }
-            active = !isTextControl(event.target);
-            startX = event.touches[0].clientX;
-            startY = event.touches[0].clientY;
-            lastY = startY;
-          }, { passive: true, capture: true });
-          document.addEventListener("touchmove", (event) => {
-            if (!active || event.touches.length !== 1) return;
-            const touch = event.touches[0];
-            const totalX = Math.abs(touch.clientX - startX);
-            const totalY = Math.abs(touch.clientY - startY);
-            if (totalX > totalY && totalX > 12) {
-              active = false;
-              return;
-            }
-            const deltaY = lastY - touch.clientY;
-            if (Math.abs(deltaY) < 1) return;
-            try {
-              pendingDelta += deltaY;
-              if (!scrollQueued) {
-                scrollQueued = true;
-                window.parent.setTimeout(flushParentScroll, 0);
-              }
-              lastY = touch.clientY;
-              if (event.cancelable) event.preventDefault();
-            } catch (error) {}
-          }, { passive: false, capture: true });
-        })();
-      `;
-      doc.head.appendChild(script);
+    const installFrameTouchBridge = () => {
+      // The touch bridge lives inside the embedded module so it is ready before the first mobile drag.
     };
 
     const getFrameHeight = (doc) => {

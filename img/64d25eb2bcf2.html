@@ -1306,5 +1306,115 @@
       window.addEventListener("load", syncIframeHeight);
     }
   </script>
+  <script>
+    (function installEmbeddedScrollBridge() {
+      if (window.parent === window || window.__drugviewEmbeddedScrollBridge) return;
+
+      let parentScroller = null;
+      try {
+        const parentDocument = window.parent.document;
+        parentScroller = parentDocument.scrollingElement || parentDocument.documentElement || parentDocument.body;
+      } catch (error) {
+        return;
+      }
+      if (!parentScroller) return;
+
+      window.__drugviewEmbeddedScrollBridge = true;
+      window.__drugviewParentScrollBridge = true;
+      document.__drugviewParentScrollBridge = true;
+
+      const style = document.createElement("style");
+      style.id = "embedded-parent-scroll-bridge";
+      style.textContent = `
+        html,
+        body {
+          overscroll-behavior: contain !important;
+          touch-action: none !important;
+        }
+        input,
+        textarea,
+        select,
+        [contenteditable='true'] {
+          touch-action: manipulation !important;
+        }
+      `;
+      document.head.appendChild(style);
+
+      let active = false;
+      let startX = 0;
+      let startY = 0;
+      let lastY = 0;
+      let pendingDelta = 0;
+      let scrollQueued = false;
+      let startedOnTextControl = false;
+
+      const isTextControl = (target) => {
+        return !!(target && target.closest && target.closest("input, textarea, select, [contenteditable='true']"));
+      };
+
+      const getParentViewportPoint = (touch) => {
+        const frame = window.frameElement;
+        if (!frame) return { x: touch.clientX, y: touch.clientY };
+        const rect = frame.getBoundingClientRect();
+        return {
+          x: rect.left + touch.clientX,
+          y: rect.top + touch.clientY
+        };
+      };
+
+      const flushParentScroll = () => {
+        const amount = pendingDelta;
+        pendingDelta = 0;
+        scrollQueued = false;
+        if (Math.abs(amount) < 1) return;
+        parentScroller.scrollTop += amount;
+      };
+
+      document.addEventListener("touchstart", (event) => {
+        if (event.touches.length !== 1) {
+          active = false;
+          return;
+        }
+        active = false;
+        startedOnTextControl = isTextControl(event.target);
+        const point = getParentViewportPoint(event.touches[0]);
+        startX = point.x;
+        startY = point.y;
+        lastY = point.y;
+      }, { passive: true, capture: true });
+
+      document.addEventListener("touchmove", (event) => {
+        if (event.touches.length !== 1) return;
+        const touch = event.touches[0];
+        const point = getParentViewportPoint(touch);
+        const totalX = Math.abs(point.x - startX);
+        const totalY = Math.abs(point.y - startY);
+        if (!active) {
+          if (totalX > totalY && totalX > 12) return;
+          if (totalY < 8) return;
+          active = true;
+          if (startedOnTextControl && document.activeElement && document.activeElement.blur) {
+            document.activeElement.blur();
+          }
+        }
+        const deltaY = lastY - point.y;
+        if (Math.abs(deltaY) < 1) return;
+        pendingDelta += deltaY;
+        if (!scrollQueued) {
+          scrollQueued = true;
+          window.parent.setTimeout(flushParentScroll, 0);
+        }
+        lastY = point.y;
+        if (event.cancelable) event.preventDefault();
+      }, { passive: false, capture: true });
+
+      document.addEventListener("touchend", () => { active = false; }, { passive: true, capture: true });
+      document.addEventListener("touchcancel", () => {
+        active = false;
+        pendingDelta = 0;
+        scrollQueued = false;
+      }, { passive: true, capture: true });
+    })();
+  </script>
 </body>
 </html>
