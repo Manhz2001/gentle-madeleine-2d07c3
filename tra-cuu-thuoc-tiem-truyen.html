@@ -38,13 +38,11 @@
       --sh-lg: 0 18px 38px rgba(11, 83, 148, .12);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; min-width: 0; }
     html, body { min-height: 100%; overflow-x: hidden; }
     body {
       font-family: "Inter", system-ui, sans-serif;
-      background:
-        radial-gradient(circle at top right, rgba(11, 83, 148, .08), transparent 30%),
-        linear-gradient(180deg, #fbfdff 0%, #f2f7fd 100%);
+      background: #fff;
       color: var(--c-text);
       line-height: 1.6;
       padding: 18px;
@@ -123,7 +121,7 @@
 
     .app-title {
       font-family: "Be Vietnam Pro", sans-serif;
-      font-size: clamp(30px, 2.8vw, 42px);
+      font-size: clamp(28px, 2.35vw, 38px);
       line-height: 1.08;
       letter-spacing: -.02em;
       color: var(--c-brand-800);
@@ -727,37 +725,39 @@
       .info-item { padding: 12px 14px; }
     }
 
-    /* Google Sites embeds this page in its own frame. On touch devices the module
-       uses one internal scroller, so iOS/Google Sites do not fight over gestures. */
+    /* Normal document scrolling for desktop, mobile, and Google Sites embeds. */
     html,
     body {
       width: 100%;
       max-width: 100%;
+      min-height: 100%;
       overflow-x: hidden !important;
+      overflow-y: auto;
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
     }
 
     body {
-      overscroll-behavior-y: contain;
+      overscroll-behavior-y: auto;
+      touch-action: auto;
     }
 
     input,
     textarea,
-    select,
-    button {
+    select {
       font-size: 16px !important;
     }
 
     #searchInput {
       font-size: 16px !important;
       line-height: 1.45;
-      touch-action: manipulation;
+      min-height: 44px;
     }
 
     button,
     .drug-result-item,
-    .stat-item,
+    .top-search-item,
+    .monthly-top-item,
     .suggestions div {
       touch-action: manipulation;
     }
@@ -770,55 +770,38 @@
       touch-action: pan-y;
     }
 
-    @media (max-width: 767px), (hover: none) and (pointer: coarse) {
-      html,
-      body {
-        height: 100%;
-        min-height: 100%;
-        overflow: hidden !important;
+    .app-title,
+    .app-desc,
+    .drug-title,
+    .group-title,
+    .info-label,
+    .info-value,
+    .drug-result-name,
+    .drug-result-ingredient {
+      overflow-wrap: anywhere;
+      word-break: normal;
+    }
+
+    @media (min-width: 768px) {
+      .app-title {
+        white-space: nowrap;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .app-brand-lockup {
+        align-items: center;
       }
 
-      body {
-        position: fixed;
-        inset: 0;
-        margin: 0;
-        padding: 0 !important;
-        overscroll-behavior: none;
-      }
-
-      .app-shell {
-        width: 100%;
-        max-width: none;
-        height: 100vh;
-        max-height: 100vh;
-        margin: 0;
-        border-radius: 0;
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior: contain;
-        touch-action: pan-y;
-        scrollbar-gutter: stable;
-      }
-
-      @supports (height: 100dvh) {
-        .app-shell {
-          height: 100dvh;
-          max-height: 100dvh;
-        }
-      }
-
-      .search-box {
-        min-height: 54px;
+      .app-title {
+        font-size: clamp(20px, 5.2vw, 24px);
+        line-height: 1.15;
+        white-space: normal;
+        text-wrap: balance;
       }
 
       #searchInput {
-        min-height: 44px;
         padding: 10px 8px;
-      }
-
-      .suggestions {
-        max-height: min(300px, 42dvh);
       }
     }
   </style>
@@ -1376,12 +1359,7 @@
     let lastSyncedFrameHeight = 0;
     let syncFrameRaf = 0;
 
-    function useInternalMobileScroller() {
-      return window.matchMedia && window.matchMedia("(max-width: 767px), (hover: none) and (pointer: coarse)").matches;
-    }
-
     function syncIframeHeight() {
-      if (useInternalMobileScroller()) return;
       cancelAnimationFrame(syncFrameRaf);
       syncFrameRaf = window.requestAnimationFrame(() => {
         const doc = document.documentElement;
@@ -1394,12 +1372,14 @@
           doc.clientHeight
         );
 
-        if (window.frameElement) {
-          const nextHeight = height + 8;
-            if (Math.abs(nextHeight - lastSyncedFrameHeight) > 32) {
-            window.frameElement.style.height = `${nextHeight}px`;
-            lastSyncedFrameHeight = nextHeight;
-          }
+        const nextHeight = height + 8;
+        if (Math.abs(nextHeight - lastSyncedFrameHeight) <= 32) return;
+        lastSyncedFrameHeight = nextHeight;
+
+        try {
+          window.parent.postMessage({ type: "drugview-module-height", page: "tra-cuu-thuoc-tiem-truyen", height: nextHeight }, "*");
+        } catch (error) {
+          /* Parent pages that do not listen can ignore this safely. */
         }
       });
     }

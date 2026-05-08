@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
       --c-brand-50: #eaf1fb;
@@ -35,15 +36,14 @@
       --sh-lg: 0 18px 38px rgba(11, 83, 148, .12);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; min-width: 0; }
     html, body { min-height: 100%; overflow-x: hidden; }
     body {
       font-family: "Inter", system-ui, sans-serif;
-      background:
-        radial-gradient(circle at top right, rgba(11, 83, 148, .08), transparent 30%),
-        linear-gradient(180deg, #fbfdff 0%, #f2f7fd 100%);
+      background: #fff;
       color: var(--c-text);
       padding: 16px;
+      line-height: 1.6;
     }
 
     .compat-app {
@@ -58,10 +58,32 @@
     }
 
     .compat-header {
+      position: relative;
       padding: 26px 28px 22px;
       background:
         linear-gradient(135deg, rgba(255,255,255,.98) 0%, rgba(234,241,251,.98) 60%, rgba(213,227,248,.98) 100%);
       border-bottom: 1px solid rgba(11, 83, 148, .08);
+    }
+
+    .compat-header::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(11, 83, 148, .04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(11, 83, 148, .04) 1px, transparent 1px);
+      background-size: 36px 36px;
+      mask-image: radial-gradient(circle at center, black 35%, transparent 88%);
+      pointer-events: none;
+    }
+
+    .compat-header__inner {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, .7fr);
+      gap: 24px;
+      align-items: center;
     }
 
     .compat-kicker {
@@ -96,7 +118,7 @@
 
     .compat-title {
       font-family: "Be Vietnam Pro", sans-serif;
-      font-size: clamp(30px, 2.7vw, 40px);
+      font-size: clamp(28px, 2.35vw, 38px);
       line-height: 1.08;
       letter-spacing: -.02em;
       color: var(--c-brand-800);
@@ -107,6 +129,41 @@
       max-width: 72ch;
       color: var(--c-text-soft);
       font-size: 16px;
+    }
+
+    .compat-alert {
+      display: grid;
+      gap: 12px;
+    }
+
+    .compat-alert-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px 18px;
+      background: rgba(255, 255, 255, .92);
+      border: 1px solid rgba(11, 83, 148, .1);
+      border-radius: 18px;
+      box-shadow: var(--sh-sm);
+      color: var(--c-brand-800);
+    }
+
+    .compat-alert-card i {
+      margin-top: 2px;
+      color: var(--c-warning);
+      font-size: 18px;
+    }
+
+    .compat-alert-card strong {
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 15px;
+      color: var(--c-brand-800);
+    }
+
+    .compat-alert-card p {
+      margin-top: 4px;
+      font-size: 14px;
+      color: var(--c-text-soft);
     }
 
     .warning-bar {
@@ -124,15 +181,39 @@
 
     .search-shell {
       position: relative;
-      padding: 20px 28px;
+      padding: 24px 28px 18px;
       border-bottom: 1px solid var(--c-border);
       background: linear-gradient(180deg, rgba(247,249,252,.82) 0%, rgba(255,255,255,.96) 100%);
     }
 
+    .search-panel {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 22px;
+      position: relative;
+      background: var(--c-surface);
+      border: 1px solid rgba(11, 83, 148, .1);
+      border-radius: var(--rad-lg);
+      box-shadow: var(--sh-sm);
+    }
+
+    .search-panel__title {
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 21px;
+      color: var(--c-brand-800);
+      margin-bottom: 8px;
+    }
+
+    .search-panel__desc {
+      color: var(--c-text-soft);
+      font-size: 15px;
+    }
+
     .search-box {
       position: relative;
-      max-width: 980px;
+      max-width: none;
       margin: 0 auto;
+      margin-top: 18px;
     }
 
     #searchInput {
@@ -384,14 +465,16 @@
     @media (max-width: 767px) {
       body { padding: 6px; }
       .compat-app { border-radius: 20px; }
-      .compat-header,
-      .search-shell,
       .selected-panel,
       .table-panel { margin-left: 14px; margin-right: 14px; }
+      .compat-header,
+      .search-shell { margin-left: 0; margin-right: 0; }
       .compat-header { padding: 20px 18px; }
+      .compat-header__inner { grid-template-columns: 1fr; gap: 16px; }
       .compat-brand-lockup { align-items: flex-start; gap: 10px; }
       .compat-logo { width: 44px; height: 44px; }
       .search-shell { padding: 16px 14px; }
+      .search-panel { padding: 12px; }
       .selected-panel, .table-panel { margin-top: 16px; margin-bottom: 16px; }
       .action-row { grid-template-columns: 1fr; }
       .btn-primary, .btn-danger { width: 100%; }
@@ -422,10 +505,10 @@
     @media (max-width: 374px) {
       body { padding: 4px; }
       .compat-app { border-radius: 16px; }
-      .compat-header,
-      .search-shell,
       .selected-panel,
       .table-panel { margin-left: 8px; margin-right: 8px; }
+      .compat-header,
+      .search-shell { margin-left: 0; margin-right: 0; }
       .compat-header { padding: 16px 14px; }
       .search-shell { padding: 12px 10px; }
       #searchInput { padding: 14px 16px; font-size: 14px; }
@@ -444,41 +527,42 @@
       }
     }
 
-    /* Google Sites embeds this page in its own frame. On touch devices the module
-       uses one internal scroller, while the matrix keeps horizontal scroll only. */
+    /* Normal document scrolling for desktop, mobile, and Google Sites embeds. */
     html,
     body {
       width: 100%;
       max-width: 100%;
+      min-height: 100%;
       overflow-x: hidden !important;
+      overflow-y: auto;
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
     }
 
     body {
-      overscroll-behavior-y: contain;
+      overscroll-behavior-y: auto;
+      touch-action: auto;
     }
 
     input,
     textarea,
-    select,
-    button {
+    select {
       font-size: 16px !important;
     }
 
     #searchInput {
       font-size: 16px !important;
       line-height: 1.45;
-      touch-action: manipulation;
+      min-height: 50px;
     }
 
     button,
-    .selected-chip,
+    .selected-item,
     .suggestions div {
       touch-action: manipulation;
     }
 
-    .matrix-wrap {
+    .result-wrap {
       overflow-x: auto;
       overflow-y: visible;
       overscroll-behavior-x: contain;
@@ -494,56 +578,40 @@
       touch-action: pan-y;
     }
 
-    @media (max-width: 767px), (hover: none) and (pointer: coarse) {
-      html,
-      body {
-        height: 100%;
-        min-height: 100%;
-        overflow: hidden !important;
+    .compat-title,
+    .compat-desc,
+    .search-panel__title,
+    .search-panel__desc,
+    .selected-item__name,
+    th,
+    td {
+      overflow-wrap: anywhere;
+      word-break: normal;
+    }
+
+    @media (min-width: 768px) {
+      .compat-title {
+        white-space: nowrap;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .compat-brand-lockup {
+        align-items: center;
       }
 
-      body {
-        position: fixed;
-        inset: 0;
-        margin: 0;
-        padding: 0 !important;
-        overscroll-behavior: none;
+      .compat-title {
+        font-size: clamp(20px, 5.2vw, 24px);
+        line-height: 1.15;
+        text-wrap: balance;
       }
 
-      .compat-app {
-        width: 100%;
-        max-width: none;
-        height: 100vh;
-        max-height: 100vh;
-        margin: 0;
-        border-radius: 0;
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior: contain;
-        touch-action: pan-y;
-        scrollbar-gutter: stable;
-      }
-
-      @supports (height: 100dvh) {
-        .compat-app {
-          height: 100dvh;
-          max-height: 100dvh;
-        }
-      }
-
-      #searchInput {
-        min-height: 50px;
-        padding: 14px 16px;
+      .compat-alert-card {
+        padding: 14px;
       }
 
       .suggestions {
-        max-height: min(300px, 42dvh);
-      }
-
-      .matrix-wrap {
-        overflow-x: auto !important;
-        overflow-y: visible !important;
+        max-height: min(300px, 42vh);
       }
     }
   </style>
@@ -551,26 +619,40 @@
 <body>
   <div class="compat-app">
     <header class="compat-header">
-      <div class="compat-brand-lockup">
-        <img class="compat-logo" src="27ed86eb0b3d.png" alt="Logo Bệnh viện Đa khoa Tỉnh Ninh Bình" width="56" height="56" decoding="async">
-        <h1 class="compat-title">Tra cứu tương hợp - tương kỵ thuốc</h1>
+      <div class="compat-header__inner">
+        <div>
+          <div class="compat-brand-lockup">
+            <img class="compat-logo" src="27ed86eb0b3d.png" alt="Logo Bệnh viện Đa khoa Tỉnh Ninh Bình" width="56" height="56" decoding="async">
+            <h1 class="compat-title">Tra cứu tương hợp - tương kỵ thuốc</h1>
+          </div>
+          <p class="compat-desc">Kiểm tra nhanh khả năng tương hợp của nhiều hoạt chất khi phối hợp cùng một đường truyền. Dữ liệu giữ nguyên từ nguồn tra cứu hiện có.</p>
+        </div>
+        <div class="compat-alert">
+          <div class="compat-alert-card">
+            <i class="fas fa-triangle-exclamation"></i>
+            <div>
+              <strong>Thận trọng khi phối hợp</strong>
+              <p>Luôn đối chiếu y lệnh, đường dùng, dung môi và hướng dẫn chuyên môn trước khi thực hiện.</p>
+            </div>
+          </div>
+        </div>
       </div>
-      <p class="compat-desc">Kiểm tra nhanh khả năng tương hợp của nhiều hoạt chất khi phối hợp cùng một đường truyền. Dữ liệu giữ nguyên từ nguồn tra cứu hiện có.</p>
     </header>
 
-    <div class="warning-bar">
-      <span>THẬN TRỌNG: Luôn kiểm tra kỹ thông tin trước khi phối hợp thuốc</span>
-    </div>
-
     <section class="search-shell">
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Nhập hoạt chất để thêm vào danh sách" autocomplete="off">
-        <div class="suggestions" id="suggestions"></div>
-      </div>
+      <div class="search-panel">
+        <h2 class="search-panel__title">Tra cứu trực tiếp</h2>
+        <p class="search-panel__desc">Nhập hoạt chất để thêm vào danh sách, sau đó tra cứu ma trận tương hợp - tương kỵ.</p>
 
-      <div class="action-row">
-        <button type="button" class="btn-primary" onclick="searchCompatibility()">Tìm kiếm thông tin</button>
-        <button type="button" class="btn-danger" onclick="clearAllSelected()">Xóa tất cả</button>
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Nhập hoạt chất..." autocomplete="off">
+          <div class="suggestions" id="suggestions"></div>
+        </div>
+
+        <div class="action-row">
+          <button type="button" class="btn-primary" onclick="searchCompatibility()">Tìm kiếm thông tin</button>
+          <button type="button" class="btn-danger" onclick="clearAllSelected()">Xóa tất cả</button>
+        </div>
       </div>
     </section>
 
@@ -617,25 +699,14 @@
       return String(str || "").trim().toLowerCase().replace(/\s+/g, " ");
     }
 
-    function useInternalMobileScroller() {
-      return window.matchMedia && window.matchMedia("(max-width: 767px), (hover: none) and (pointer: coarse)").matches;
-    }
-
     function syncParentFrameHeight() {
-      if (useInternalMobileScroller()) return;
       cancelAnimationFrame(syncFrameRaf);
       syncFrameRaf = requestAnimationFrame(() => {
         const bodyHeight = document.body ? document.body.scrollHeight : 0;
         const htmlHeight = document.documentElement ? document.documentElement.scrollHeight : 0;
         const nextHeight = Math.max(bodyHeight, htmlHeight) + 16;
-      if (Math.abs(nextHeight - lastSyncedFrameHeight) <= 32) return;
+        if (Math.abs(nextHeight - lastSyncedFrameHeight) <= 32) return;
         lastSyncedFrameHeight = nextHeight;
-
-        try {
-          if (window.frameElement) {
-            window.frameElement.style.height = nextHeight + "px";
-          }
-        } catch (error) {}
 
         try {
           window.parent.postMessage({ type: "compat-frame-height", height: nextHeight }, "*");
