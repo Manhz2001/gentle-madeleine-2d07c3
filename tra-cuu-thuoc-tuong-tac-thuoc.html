@@ -552,6 +552,47 @@
         font-size: 13px;
       }
     }
+
+    /* Keep vertical scrolling on the page/frame itself in Google Sites. Panels
+       remain visually card-like, but they no longer become touch-capture boxes. */
+    html,
+    body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-x: hidden !important;
+      overflow-y: visible !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    body {
+      overscroll-behavior-y: auto;
+      touch-action: pan-y;
+    }
+
+    .interaction-app,
+    .chips-panel,
+    .results-panel,
+    .panel-body,
+    .mobile-interaction,
+    .mobile-results {
+      overflow: visible !important;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      overflow-y: visible;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x pan-y;
+    }
+
+    .suggestions__box {
+      max-height: min(280px, 50vh);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+    }
   </style>
 </head>
 <body>

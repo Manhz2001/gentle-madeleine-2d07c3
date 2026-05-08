@@ -443,6 +443,47 @@
         width: 42%;
       }
     }
+
+    /* Match the mobile scroll model of the simpler Y-site table: document scrolls
+       vertically; only the matrix can scroll horizontally. */
+    html,
+    body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-x: hidden !important;
+      overflow-y: visible !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    body {
+      overscroll-behavior-y: auto;
+      touch-action: pan-y;
+    }
+
+    .compat-app,
+    .search-shell,
+    .selected-panel,
+    .table-panel,
+    .selected-list,
+    .table-shell {
+      overflow: visible !important;
+    }
+
+    .matrix-wrap {
+      overflow-x: auto;
+      overflow-y: visible;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x pan-y;
+    }
+
+    .suggestions {
+      max-height: min(280px, 50vh);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+    }
   </style>
 </head>
 <body>

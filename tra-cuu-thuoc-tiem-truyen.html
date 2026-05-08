@@ -726,6 +726,41 @@
       .group-title { font-size: 15px; padding: 12px 14px; }
       .info-item { padding: 12px 14px; }
     }
+
+    /* Google Sites embeds this page in its own frame. Keep vertical scrolling on
+       the document and avoid card-level overflow traps that can capture iOS touch. */
+    html,
+    body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-x: hidden !important;
+      overflow-y: visible !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    body {
+      overscroll-behavior-y: auto;
+      touch-action: pan-y;
+    }
+
+    .app-shell,
+    .search-panel,
+    .side-panel,
+    .stats-grid,
+    .result-group,
+    .state-card,
+    .drug-image,
+    .info-item {
+      overflow: visible !important;
+    }
+
+    .suggestions {
+      max-height: min(280px, 50vh);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+    }
   </style>
 </head>
 <body>
