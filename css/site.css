@@ -1091,15 +1091,16 @@ body:not([data-page="home"]) .hero__lede {
 }
 .accordion__item[data-open="true"] .accordion__panel-inner { padding: 0 var(--sp-5) var(--sp-5); }
 
-body[data-page="phacdo"] .accordion__item[data-open="true"] .accordion__panel-inner,
-body[data-page="capnhat"] .accordion__item[data-open="true"] .accordion__panel-inner {
-  max-height: min(68vh, 640px);
+body[data-page="phacdo"] .accordion,
+body[data-page="capnhat"] .accordion {
+  max-height: min(72vh, 760px);
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior-y: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-gutter: stable;
   touch-action: pan-y;
+  padding-right: var(--sp-2);
 }
 
 /* doc list */
@@ -1612,10 +1613,10 @@ body[data-page="tracuu-tk"] .tool-embed iframe {
     padding-right: var(--sp-4);
   }
 
-  body[data-page="phacdo"] .accordion__item[data-open="true"] .accordion__panel-inner,
-  body[data-page="capnhat"] .accordion__item[data-open="true"] .accordion__panel-inner {
-    max-height: min(58vh, 460px);
-    padding-right: var(--sp-3);
+  body[data-page="phacdo"] .accordion,
+  body[data-page="capnhat"] .accordion {
+    max-height: min(62vh, 520px);
+    padding-right: var(--sp-1);
   }
 
   .tool-embed__caption {
@@ -2022,15 +2023,16 @@ body[data-embedded="google-sites"] .section--subtle {
     padding: 0 .75rem .75rem;
   }
 
-  body[data-embedded="google-sites"][data-page="phacdo"] .accordion__item[data-open="true"] .accordion__panel-inner,
-  body[data-embedded="google-sites"][data-page="capnhat"] .accordion__item[data-open="true"] .accordion__panel-inner {
-    max-height: min(54vh, 430px);
+  body[data-embedded="google-sites"][data-page="phacdo"] .accordion,
+  body[data-embedded="google-sites"][data-page="capnhat"] .accordion {
+    max-height: min(58vh, 470px);
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior-y: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-gutter: stable;
     touch-action: pan-y;
+    padding-right: .25rem;
   }
 
   body[data-embedded="google-sites"] .doc-list {
