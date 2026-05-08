@@ -1091,17 +1091,6 @@ body:not([data-page="home"]) .hero__lede {
 }
 .accordion__item[data-open="true"] .accordion__panel-inner { padding: 0 var(--sp-5) var(--sp-5); }
 
-body[data-page="phacdo"] .accordion {
-  max-height: min(84vh, 940px);
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior-y: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-gutter: stable;
-  touch-action: pan-y;
-  padding-right: var(--sp-2);
-}
-
 /* doc list */
 .doc-list {
   list-style: none;
@@ -1612,11 +1601,6 @@ body[data-page="tracuu-tk"] .tool-embed iframe {
     padding-right: var(--sp-4);
   }
 
-  body[data-page="phacdo"] .accordion {
-    max-height: min(76vh, 720px);
-    padding-right: var(--sp-1);
-  }
-
   .tool-embed__caption {
     padding: var(--sp-3);
   }
@@ -2019,17 +2003,6 @@ body[data-embedded="google-sites"] .section--subtle {
   body[data-embedded="google-sites"] .accordion__item[data-open="true"] .accordion__panel-inner {
     overflow: visible;
     padding: 0 .75rem .75rem;
-  }
-
-  body[data-embedded="google-sites"][data-page="phacdo"] .accordion {
-    max-height: min(76vh, 680px);
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior-y: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-gutter: stable;
-    touch-action: pan-y;
-    padding-right: .25rem;
   }
 
   body[data-embedded="google-sites"] .doc-list {

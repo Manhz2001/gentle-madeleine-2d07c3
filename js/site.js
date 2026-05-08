@@ -401,8 +401,8 @@
 
     const viewport = window.visualViewport;
     const viewportTop = viewport?.offsetTop || 0;
-    const viewportHeight = viewport?.height || window.innerHeight;
-    const desiredOffset = Math.min(150, Math.max(72, viewportHeight * 0.18));
+    const layoutHeight = window.innerHeight || viewport?.height || 0;
+    const desiredOffset = Math.min(285, Math.max(230, layoutHeight * 0.32));
     const top = Math.max(0, window.scrollY + anchor.getBoundingClientRect().top - viewportTop - desiredOffset);
     if (Math.abs(window.scrollY - top) > 2) {
       window.scrollTo({ top, left: 0, behavior: 'auto' });
@@ -415,6 +415,7 @@
     pinTimer = window.setTimeout(pinSearchNearTop, 90);
     window.setTimeout(pinSearchNearTop, 260);
     window.setTimeout(pinSearchNearTop, 520);
+    window.setTimeout(pinSearchNearTop, 900);
   };
 
   document.addEventListener('focusin', (event) => {
