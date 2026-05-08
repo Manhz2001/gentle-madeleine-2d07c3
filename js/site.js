@@ -330,6 +330,167 @@
 (function () {
   'use strict';
 
+  const MESSAGE_TYPE = 'drugview-scroll-handoff';
+  const MAX_DELTA = 900;
+  const EDGE_TOLERANCE = 2;
+
+  const clampDelta = (value) => {
+    const delta = Number(value) || 0;
+    if (!delta) return 0;
+    return Math.max(-MAX_DELTA, Math.min(MAX_DELTA, delta));
+  };
+
+  const getScrollRoot = () => document.scrollingElement || document.documentElement;
+
+  const getMaxScrollTop = (element) => Math.max(0, element.scrollHeight - element.clientHeight);
+
+  const canScrollElement = (element, deltaY) => {
+    if (!element) return false;
+    const maxTop = getMaxScrollTop(element);
+    if (maxTop <= EDGE_TOLERANCE) return false;
+    if (deltaY < 0) return element.scrollTop > EDGE_TOLERANCE;
+    if (deltaY > 0) return element.scrollTop < maxTop - EDGE_TOLERANCE;
+    return false;
+  };
+
+  const getScrollableAncestor = (target) => {
+    let node = target?.nodeType === 1 ? target : target?.parentElement;
+    while (node && node !== document.body && node !== document.documentElement) {
+      const style = window.getComputedStyle(node);
+      if (/(auto|scroll|overlay)/.test(style.overflowY) && getMaxScrollTop(node) > EDGE_TOLERANCE) {
+        return node;
+      }
+      node = node.parentElement;
+    }
+    return getScrollRoot();
+  };
+
+  const tryScrollWindow = (targetWindow, deltaY) => {
+    if (!targetWindow || targetWindow === window || !deltaY) return false;
+    let before = null;
+
+    try {
+      before = targetWindow.scrollY;
+    } catch (error) {}
+
+    try {
+      targetWindow.scrollBy({ top: deltaY, left: 0, behavior: 'auto' });
+      return before === null || Math.abs(targetWindow.scrollY - before) > 0;
+    } catch (error) {}
+
+    try {
+      targetWindow.scrollBy(0, deltaY);
+      return before === null || Math.abs(targetWindow.scrollY - before) > 0;
+    } catch (error) {}
+
+    return false;
+  };
+
+  const postScrollHandoff = (deltaY, inputType) => {
+    const payload = {
+      type: MESSAGE_TYPE,
+      deltaY,
+      inputType,
+      source: 'drugview',
+      href: window.location.href
+    };
+
+    try {
+      window.parent?.postMessage(payload, '*');
+    } catch (error) {}
+
+    try {
+      if (window.top && window.top !== window.parent) window.top.postMessage(payload, '*');
+    } catch (error) {}
+  };
+
+  const handoffScroll = (deltaY, inputType) => {
+    const delta = clampDelta(deltaY);
+    if (!delta) return false;
+
+    if (tryScrollWindow(window.parent, delta) || tryScrollWindow(window.top, delta)) {
+      return true;
+    }
+
+    postScrollHandoff(delta, inputType);
+    return false;
+  };
+
+  window.addEventListener('message', (event) => {
+    const data = event.data;
+    if (!data || data.type !== MESSAGE_TYPE || data.source !== 'drugview') return;
+
+    const delta = clampDelta(data.deltaY);
+    if (!delta) return;
+
+    window.scrollBy({ top: delta, left: 0, behavior: 'auto' });
+  });
+
+  let isEmbedded = false;
+  try {
+    isEmbedded = window.self !== window.top;
+  } catch (error) {
+    isEmbedded = true;
+  }
+
+  if (!isEmbedded) return;
+
+  let lastTouchY = null;
+  let lastTouchX = null;
+
+  const shouldHandoff = (target, deltaY) => {
+    const root = getScrollRoot();
+    const scroller = getScrollableAncestor(target);
+
+    if (scroller !== root && canScrollElement(scroller, deltaY)) return false;
+    if (canScrollElement(root, deltaY)) return false;
+
+    return true;
+  };
+
+  document.addEventListener('wheel', (event) => {
+    const deltaY = clampDelta(event.deltaY);
+    if (!deltaY || !shouldHandoff(event.target, deltaY)) return;
+
+    if (handoffScroll(deltaY, 'wheel')) event.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchstart', (event) => {
+    const touch = event.touches && event.touches[0];
+    if (!touch) return;
+    lastTouchY = touch.clientY;
+    lastTouchX = touch.clientX;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (event) => {
+    const touch = event.touches && event.touches[0];
+    if (!touch || lastTouchY === null || lastTouchX === null) return;
+
+    const deltaY = clampDelta(lastTouchY - touch.clientY);
+    const deltaX = lastTouchX - touch.clientX;
+    lastTouchY = touch.clientY;
+    lastTouchX = touch.clientX;
+
+    if (Math.abs(deltaY) < 4 || Math.abs(deltaY) < Math.abs(deltaX)) return;
+    if (!shouldHandoff(event.target, deltaY)) return;
+
+    if (handoffScroll(deltaY, 'touch')) event.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchend', () => {
+    lastTouchY = null;
+    lastTouchX = null;
+  }, { passive: true });
+
+  document.addEventListener('touchcancel', () => {
+    lastTouchY = null;
+    lastTouchX = null;
+  }, { passive: true });
+})();
+
+(function () {
+  'use strict';
+
   const MEASUREMENT_ID = 'G-NC0D1PTZ3L';
   const CLICK_EVENT_NAME = 'site_click';
   const IS_LOCAL_PREVIEW = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
