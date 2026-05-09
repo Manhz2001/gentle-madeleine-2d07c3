@@ -181,6 +181,21 @@
 (function () {
   'use strict';
 
+  const ua = navigator.userAgent || '';
+  const platform = navigator.platform || '';
+  const isIOS = /iP(ad|hone|od)/.test(ua) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isGoogleIOS = isIOS && /\b(GSA|CriOS)\//.test(ua);
+  const isOtherIOSBrowser = isIOS && /\b(FxiOS|EdgiOS|OPiOS)\//.test(ua);
+  const isSafariIOS = isIOS && /\bVersion\//.test(ua) && /\bSafari\//.test(ua) && !isGoogleIOS && !isOtherIOSBrowser;
+  const client = isSafariIOS ? 'ios-safari' : (isGoogleIOS ? 'ios-google' : (isIOS ? 'ios-webkit' : 'standard'));
+
+  document.documentElement.dataset.client = client;
+  document.body.dataset.client = client;
+})();
+
+(function () {
+  'use strict';
+
   const GOOGLE_SITE_ORIGIN = 'https://www.drugviewninhbinh.com';
   const GOOGLE_SITE_PAGE_MAP = {
     '/': '/trang-chủ',
@@ -311,6 +326,123 @@
     body[data-keyboard="true"] .site-footer,
     body[data-keyboard="true"] .to-top {
       display: none !important;
+    }
+
+    html[data-client="ios-safari"] body {
+      -webkit-text-size-adjust: 92%;
+      text-size-adjust: 92%;
+    }
+
+    @media (max-width: 767px) {
+      html[data-client="ios-safari"] .app-shell,
+      html[data-client="ios-safari"] .compat-app,
+      html[data-client="ios-safari"] .interaction-app {
+        border-left: 0 !important;
+        border-right: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
+
+      html[data-client="ios-safari"] .app-header,
+      html[data-client="ios-safari"] .compat-header,
+      html[data-client="ios-safari"] .interaction-header {
+        padding: 12px 12px 10px !important;
+      }
+
+      html[data-client="ios-safari"] .app-header__inner,
+      html[data-client="ios-safari"] .compat-header__inner,
+      html[data-client="ios-safari"] .interaction-header__inner {
+        gap: 10px !important;
+      }
+
+      html[data-client="ios-safari"] .app-brand-lockup,
+      html[data-client="ios-safari"] .compat-brand-lockup,
+      html[data-client="ios-safari"] .interaction-brand-lockup {
+        gap: 8px !important;
+        margin-bottom: 8px !important;
+      }
+
+      html[data-client="ios-safari"] .app-logo,
+      html[data-client="ios-safari"] .compat-logo,
+      html[data-client="ios-safari"] .interaction-logo {
+        width: 38px !important;
+        height: 38px !important;
+      }
+
+      html[data-client="ios-safari"] .app-title,
+      html[data-client="ios-safari"] .compat-title,
+      html[data-client="ios-safari"] .interaction-title {
+        font-size: clamp(22px, 5.8vw, 26px) !important;
+        line-height: 1.08 !important;
+        letter-spacing: 0 !important;
+      }
+
+      html[data-client="ios-safari"] .app-desc,
+      html[data-client="ios-safari"] .compat-desc,
+      html[data-client="ios-safari"] .interaction-desc {
+        font-size: 14px !important;
+        line-height: 1.36 !important;
+        margin-top: 8px !important;
+      }
+
+      html[data-client="ios-safari"] .alert-card,
+      html[data-client="ios-safari"] .compat-alert-card,
+      html[data-client="ios-safari"] .interaction-alert-card,
+      html[data-client="ios-safari"] .hero-mini {
+        margin-top: 10px !important;
+        padding: 10px 12px !important;
+        gap: 8px !important;
+        border-radius: 16px !important;
+      }
+
+      html[data-client="ios-safari"] .alert-card p,
+      html[data-client="ios-safari"] .compat-alert-card p,
+      html[data-client="ios-safari"] .interaction-alert-card p,
+      html[data-client="ios-safari"] .hero-mini p {
+        display: none !important;
+      }
+
+      html[data-client="ios-safari"] .alert-card strong,
+      html[data-client="ios-safari"] .compat-alert-card strong,
+      html[data-client="ios-safari"] .interaction-alert-card strong,
+      html[data-client="ios-safari"] .hero-mini strong {
+        font-size: 15px !important;
+        line-height: 1.25 !important;
+      }
+
+      html[data-client="ios-safari"] .search-area,
+      html[data-client="ios-safari"] .search-shell {
+        padding: 10px 10px 8px !important;
+      }
+
+      html[data-client="ios-safari"] .search-panel {
+        padding: 12px !important;
+        border-radius: 18px !important;
+      }
+
+      html[data-client="ios-safari"] .search-panel__title {
+        font-size: 23px !important;
+        line-height: 1.12 !important;
+        margin-bottom: 6px !important;
+      }
+
+      html[data-client="ios-safari"] .search-panel__desc {
+        font-size: 14px !important;
+        line-height: 1.36 !important;
+        margin-bottom: 10px !important;
+      }
+
+      html[data-client="ios-safari"] .results-section,
+      html[data-client="ios-safari"] .stats-grid {
+        padding: 10px !important;
+      }
+
+      html[data-client="ios-safari"] .selected-panel,
+      html[data-client="ios-safari"] .table-panel,
+      html[data-client="ios-safari"] .chips-panel,
+      html[data-client="ios-safari"] .results-panel {
+        margin: 10px !important;
+      }
     }
 
     @media (max-width: 900px) {
