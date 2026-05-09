@@ -283,7 +283,6 @@
   style.textContent = `
     :root {
       --mobile-browser-chrome: 96px;
-      --keyboard-spacer: min(64vh, 560px);
     }
 
     html,
@@ -308,24 +307,10 @@
       bottom: max(var(--sp-6, 1.5rem), calc(env(safe-area-inset-bottom) + var(--sp-4, 1rem)));
     }
 
-    body[data-keyboard="true"],
-    body[data-search-focused="true"] {
-      padding-bottom: calc(var(--keyboard-spacer) + env(safe-area-inset-bottom)) !important;
-    }
-
     body[data-keyboard="true"] footer,
     body[data-keyboard="true"] .site-footer,
     body[data-keyboard="true"] .to-top {
       display: none !important;
-    }
-
-    body[data-keyboard="true"] .app-shell::after,
-    body[data-keyboard="true"] .compat-app::after,
-    body[data-keyboard="true"] .interaction-app::after {
-      content: "";
-      display: block;
-      height: var(--keyboard-spacer);
-      background: #fff;
     }
 
     @media (max-width: 900px) {
@@ -356,20 +341,9 @@
   const originalViewport = viewport?.getAttribute('content') || '';
   let restoreTimer = null;
 
-  const updateKeyboardSpacer = () => {
-    const visualViewport = window.visualViewport;
-    const layoutHeight = window.innerHeight || visualViewport?.height || 0;
-    const visibleHeight = visualViewport?.height || layoutHeight;
-    const hiddenHeight = Math.max(0, layoutHeight - visibleHeight - (visualViewport?.offsetTop || 0));
-    const spacer = Math.round(Math.min(620, Math.max(420, hiddenHeight + layoutHeight * 0.18)));
-
-    document.documentElement.style.setProperty('--keyboard-spacer', `${spacer}px`);
-  };
-
   const setKeyboardMode = (enabled) => {
     document.documentElement.dataset.keyboard = enabled ? 'true' : 'false';
     document.body.dataset.keyboard = enabled ? 'true' : 'false';
-    if (enabled) updateKeyboardSpacer();
   };
 
   const lockViewport = () => {
@@ -407,9 +381,6 @@
     }, 200);
   }, true);
 
-  window.visualViewport?.addEventListener('resize', () => {
-    if (document.documentElement.dataset.keyboard === 'true') updateKeyboardSpacer();
-  }, { passive: true });
 })();
 
 (function () {
@@ -434,7 +405,7 @@
     const viewport = window.visualViewport;
     const viewportTop = viewport?.offsetTop || 0;
     const layoutHeight = window.innerHeight || viewport?.height || 0;
-    const desiredOffset = Math.min(360, Math.max(300, layoutHeight * 0.4));
+    const desiredOffset = Math.min(430, Math.max(390, layoutHeight * 0.48));
     const top = Math.max(0, window.scrollY + anchor.getBoundingClientRect().top - viewportTop - desiredOffset);
     if (Math.abs(window.scrollY - top) > 2) {
       window.scrollTo({ top, left: 0, behavior: 'auto' });
