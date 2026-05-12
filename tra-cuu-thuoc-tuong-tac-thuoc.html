@@ -194,6 +194,7 @@
     }
 
     .search-box {
+      position: relative;
       max-width: none;
       margin: 0 auto;
       margin-top: 18px;
@@ -203,40 +204,48 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      padding: 10px;
+      border-radius: var(--rad-pill);
+      background: var(--c-surface);
+      border: 2px solid var(--c-brand-200);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.75), var(--sh-sm);
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .search-row:focus-within {
+      border-color: var(--c-brand-500);
+      box-shadow: 0 0 0 4px rgba(11, 83, 148, .12), var(--sh-sm);
     }
 
     #searchInput {
       flex: 1;
+      min-width: 0;
       width: 100%;
-      padding: 18px 22px;
-      border-radius: var(--rad-pill);
-      border: 2px solid var(--c-brand-200);
+      padding: 10px 12px;
+      border: 0;
       outline: none;
       font-size: 16px;
       font-family: inherit;
       color: var(--c-text);
-      box-shadow: var(--sh-sm);
-      transition: border-color .2s ease, box-shadow .2s ease;
-    }
-
-    #searchInput:focus {
-      border-color: var(--c-brand-500);
-      box-shadow: 0 0 0 4px rgba(11, 83, 148, .12), var(--sh-sm);
+      background: transparent;
     }
 
     #searchInput::placeholder { color: #8ba0bd; }
 
     #btnSearch {
+      flex: 0 0 52px;
+      width: 52px;
+      height: 52px;
       border: 0;
-      border-radius: var(--rad-pill);
-      padding: 16px 22px;
+      border-radius: 50%;
+      padding: 0;
       background: linear-gradient(180deg, var(--c-brand-500), var(--c-brand-700));
       color: #fff;
-      font-weight: 700;
-      font-family: inherit;
-      font-size: 15px;
-      white-space: nowrap;
+      font-size: 18px;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       box-shadow: 0 10px 20px rgba(11, 83, 148, .22);
       transition: transform .12s ease, box-shadow .2s ease, filter .2s ease;
     }
@@ -554,8 +563,8 @@
       }
 
       .search-row {
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row;
+        align-items: center;
       }
 
       .search-panel {
@@ -563,7 +572,9 @@
       }
 
       #btnSearch {
-        width: 100%;
+        flex-basis: 52px;
+        width: 52px;
+        height: 52px;
       }
 
       .chips-panel,
@@ -615,8 +626,8 @@
       .results-panel { margin: 8px; }
       .panel-head { padding: 14px 12px; }
       .panel-body { padding: 10px; }
-      #searchInput { padding: 14px 16px; font-size: 14px; }
-      #btnSearch { padding: 14px 12px; }
+      #searchInput { padding: 10px 8px; font-size: 14px; }
+      #btnSearch { flex-basis: 46px; width: 46px; height: 46px; padding: 0; }
       .mobile-group-title {
         font-size: 16px;
         padding: 12px 14px;
@@ -827,7 +838,7 @@
         <div class="search-box">
           <div class="search-row">
             <input id="searchInput" type="text" placeholder="Nhập hoạt chất..." autocomplete="off">
-            <button id="btnSearch" type="button">Tra cứu tương tác</button>
+            <button id="btnSearch" type="button" aria-label="Tra cứu"><i class="fas fa-search"></i></button>
           </div>
           <div class="suggestions">
             <div id="suggestionsBox" class="suggestions__box"></div>
