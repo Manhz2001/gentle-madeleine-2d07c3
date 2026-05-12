@@ -375,12 +375,16 @@
     }
 
     .selected-item__name {
+      flex: 1 1 auto;
+      min-width: 0;
       font-weight: 700;
       color: var(--c-brand-800);
       text-align: left;
+      overflow-wrap: anywhere;
     }
 
     .delete-btn {
+      flex: 0 0 42px;
       width: 42px;
       height: 42px;
       display: inline-flex;
