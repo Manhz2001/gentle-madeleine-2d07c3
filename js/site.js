@@ -303,6 +303,232 @@
       background: #fff;
     }
 
+    html[data-module-frame-fit="true"],
+    html[data-module-frame-fit="true"] body {
+      background: #fff !important;
+    }
+
+    html[data-module-frame-fit="true"] body {
+      overflow-x: hidden;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    html[data-module-frame-fit="true"] .app-shell,
+    html[data-module-frame-fit="true"] .compat-app,
+    html[data-module-frame-fit="true"] .interaction-app {
+      width: 100% !important;
+      max-width: none !important;
+    }
+
+    html[data-module-frame-fit="true"] input,
+    html[data-module-frame-fit="true"] textarea,
+    html[data-module-frame-fit="true"] select {
+      font-size: max(16px, 1rem) !important;
+    }
+
+    html[data-module-frame-fit="true"] .result-wrap,
+    html[data-module-frame-fit="true"] .interaction-table-wrap,
+    html[data-module-frame-fit="true"] .table-shell {
+      max-width: 100%;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .app-header,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .compat-header,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .interaction-header {
+      padding: 18px 14px 16px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .app-header__inner,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .compat-header__inner,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .interaction-header__inner {
+      gap: 14px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .app-logo,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .compat-logo,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .interaction-logo {
+      width: 42px !important;
+      height: 42px !important;
+      flex-basis: 42px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .app-title,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .compat-title,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .interaction-title {
+      font-size: clamp(1.72rem, 7vw, 2.65rem) !important;
+      line-height: 1.04 !important;
+      margin-bottom: .55rem !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .app-desc,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .compat-desc,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .interaction-desc {
+      font-size: clamp(1rem, 4vw, 1.28rem) !important;
+      line-height: 1.38 !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .hero-mini,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .alert-card,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .compat-alert-card,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .interaction-alert-card,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .search-panel,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .selected-panel,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .table-panel,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .chips-panel,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .results-panel {
+      margin-top: 12px !important;
+      margin-bottom: 12px !important;
+      padding: 16px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .search-panel__title {
+      font-size: clamp(1.35rem, 5.5vw, 1.9rem) !important;
+      line-height: 1.1 !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .search-panel__desc,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .hero-mini p,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .alert-card p,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .compat-alert-card p,
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .interaction-alert-card p {
+      font-size: .96rem !important;
+      line-height: 1.45 !important;
+      margin-bottom: .75rem !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .stats-grid {
+      gap: 10px !important;
+      padding-top: 10px !important;
+      padding-bottom: 10px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .initial-prompt {
+      margin-top: 12px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="compact"] .state-card {
+      padding: 24px 16px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .app-header,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .compat-header,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .interaction-header {
+      padding: 12px 10px 10px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .app-header__inner,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .compat-header__inner,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .interaction-header__inner {
+      gap: 10px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .app-logo,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .compat-logo,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .interaction-logo {
+      width: 34px !important;
+      height: 34px !important;
+      flex-basis: 34px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .app-title,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .compat-title,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .interaction-title {
+      font-size: clamp(1.45rem, 6.2vw, 2.1rem) !important;
+      line-height: 1.02 !important;
+      margin-bottom: .35rem !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .app-desc,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .compat-desc,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .interaction-desc {
+      font-size: .98rem !important;
+      line-height: 1.34 !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .hero-mini,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .alert-card,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .compat-alert-card,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .interaction-alert-card {
+      margin: 8px 0 0 !important;
+      padding: 12px !important;
+      border-radius: 18px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .hero-mini p,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .alert-card p,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .compat-alert-card p,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .interaction-alert-card p {
+      display: none !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .search-area,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .search-shell {
+      padding: 10px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .search-panel,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .selected-panel,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .table-panel,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .chips-panel,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .results-panel {
+      margin: 8px !important;
+      padding: 12px !important;
+      border-radius: 18px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .search-panel__title {
+      font-size: clamp(1.25rem, 5vw, 1.62rem) !important;
+      line-height: 1.08 !important;
+      margin-bottom: .35rem !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .search-panel__desc {
+      font-size: .92rem !important;
+      line-height: 1.34 !important;
+      margin-bottom: .6rem !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .search-box,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .search-row {
+      min-height: 52px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .filter-pills,
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .search-tags {
+      gap: 8px !important;
+      margin-top: 10px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .stats-grid {
+      display: none !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .initial-prompt {
+      margin-top: 8px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .state-card {
+      padding: 18px 12px !important;
+      min-height: auto !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .state-card i {
+      font-size: 36px !important;
+      margin-bottom: 8px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .state-card h3 {
+      font-size: 1.18rem !important;
+      line-height: 1.15 !important;
+      margin-bottom: 6px !important;
+    }
+
+    html[data-module-frame-fit="true"][data-frame-fit="tight"] .state-card p {
+      font-size: .9rem !important;
+      line-height: 1.35 !important;
+    }
+
     .to-top {
       bottom: max(var(--sp-6, 1.5rem), calc(env(safe-area-inset-bottom) + var(--sp-4, 1rem)));
     }
@@ -331,6 +557,144 @@
     }
   `;
   document.head.appendChild(style);
+})();
+
+(function () {
+  'use strict';
+
+  const MODULE_META_SELECTOR = 'meta[name="x-drugview-module-mode"]';
+  const FORCE_EMBED_PARAM = 'embed';
+  const FIT_STATES = ['comfortable', 'compact', 'tight'];
+  const OBSERVE_SELECTOR = [
+    '.app-shell',
+    '.compat-app',
+    '.interaction-app',
+    '.results-section',
+    '.results-panel',
+    '.table-panel',
+    '.chips-panel',
+    '.selected-panel',
+    '#resultsList',
+    '#tableBody',
+    '#interactionResults'
+  ].join(',');
+
+  if (!document.querySelector(MODULE_META_SELECTOR)) return;
+
+  const isForcedEmbed = () => {
+    try {
+      return new URLSearchParams(window.location.search).get(FORCE_EMBED_PARAM) === '1';
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const isFramed = () => {
+    try {
+      return window.self !== window.top;
+    } catch (error) {
+      return true;
+    }
+  };
+
+  if (!isFramed() && !isForcedEmbed()) return;
+
+  const root = document.documentElement;
+  let measureTimer = 0;
+  let lastFit = '';
+
+  const getViewportHeight = () => {
+    const visualHeight = window.visualViewport?.height || 0;
+    return Math.round(visualHeight || window.innerHeight || document.documentElement.clientHeight || 0);
+  };
+
+  const getContentHeight = () => {
+    const body = document.body;
+    const doc = document.documentElement;
+    return Math.ceil(Math.max(
+      body?.scrollHeight || 0,
+      body?.offsetHeight || 0,
+      doc?.scrollHeight || 0,
+      doc?.offsetHeight || 0
+    ));
+  };
+
+  const chooseBaseFit = (height) => {
+    if (height && height <= 640) return 'tight';
+    if (height && height <= 820) return 'compact';
+    return 'comfortable';
+  };
+
+  const stepDownFit = (fit) => {
+    const index = FIT_STATES.indexOf(fit);
+    return FIT_STATES[Math.min(FIT_STATES.length - 1, index + 1)] || fit;
+  };
+
+  const applyFit = (fit) => {
+    if (fit === lastFit) return;
+    lastFit = fit;
+    root.dataset.moduleFrameFit = 'true';
+    root.dataset.frameFit = fit;
+    if (document.body) {
+      document.body.dataset.moduleFrameFit = 'true';
+      document.body.dataset.frameFit = fit;
+    }
+  };
+
+  const measureAndApplyFit = () => {
+    const viewportHeight = getViewportHeight();
+    let fit = chooseBaseFit(viewportHeight);
+    applyFit(fit);
+
+    window.requestAnimationFrame(() => {
+      const contentHeight = getContentHeight();
+      const overflow = contentHeight - viewportHeight;
+      if (overflow > Math.max(180, viewportHeight * 0.24)) {
+        fit = stepDownFit(fit);
+      }
+      if (fit !== 'tight' && overflow > Math.max(300, viewportHeight * 0.36)) {
+        fit = stepDownFit(fit);
+      }
+      applyFit(fit);
+    });
+  };
+
+  const scheduleMeasure = () => {
+    window.clearTimeout(measureTimer);
+    window.requestAnimationFrame(measureAndApplyFit);
+    measureTimer = window.setTimeout(measureAndApplyFit, 160);
+  };
+
+  const start = () => {
+    applyFit(chooseBaseFit(getViewportHeight()));
+    scheduleMeasure();
+
+    if ('ResizeObserver' in window) {
+      const resizeObserver = new ResizeObserver(scheduleMeasure);
+      resizeObserver.observe(document.documentElement);
+      if (document.body) resizeObserver.observe(document.body);
+      document.querySelectorAll(OBSERVE_SELECTOR).forEach(element => resizeObserver.observe(element));
+    }
+
+    const mutationObserver = new MutationObserver(scheduleMeasure);
+    mutationObserver.observe(document.body || document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style', 'hidden', 'aria-expanded']
+    });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+
+  window.addEventListener('load', scheduleMeasure, { passive: true });
+  window.addEventListener('resize', scheduleMeasure, { passive: true });
+  window.addEventListener('orientationchange', scheduleMeasure, { passive: true });
+  window.visualViewport?.addEventListener('resize', scheduleMeasure, { passive: true });
 })();
 
 (function () {
@@ -381,70 +745,6 @@
     }, 200);
   }, true);
 
-})();
-
-(function () {
-  'use strict';
-
-  const SEARCH_INPUT_SELECTOR = '#searchInput';
-  const SEARCH_ANCHOR_SELECTOR = '.search-box, .search-row, .search-panel, .search-area, .search-shell';
-  const supportsTouch = window.matchMedia?.('(hover: none) and (pointer: coarse)').matches;
-  if (!supportsTouch) return;
-
-  let activeInput = null;
-  let pinTimer = 0;
-
-  const getAnchor = (input) => input?.closest?.(SEARCH_ANCHOR_SELECTOR) || input;
-
-  const pinSearchNearTop = () => {
-    if (!activeInput || document.activeElement !== activeInput) return;
-
-    const anchor = getAnchor(activeInput);
-    if (!anchor) return;
-
-    const viewport = window.visualViewport;
-    const viewportTop = viewport?.offsetTop || 0;
-    const layoutHeight = window.innerHeight || viewport?.height || 0;
-    const desiredOffset = Math.min(430, Math.max(390, layoutHeight * 0.48));
-    const top = Math.max(0, window.scrollY + anchor.getBoundingClientRect().top - viewportTop - desiredOffset);
-    if (Math.abs(window.scrollY - top) > 2) {
-      window.scrollTo({ top, left: 0, behavior: 'auto' });
-    }
-  };
-
-  const schedulePin = () => {
-    window.clearTimeout(pinTimer);
-    window.requestAnimationFrame(pinSearchNearTop);
-    pinTimer = window.setTimeout(pinSearchNearTop, 90);
-    window.setTimeout(pinSearchNearTop, 260);
-    window.setTimeout(pinSearchNearTop, 520);
-    window.setTimeout(pinSearchNearTop, 900);
-    window.setTimeout(pinSearchNearTop, 1300);
-  };
-
-  document.addEventListener('focusin', (event) => {
-    const input = event.target?.matches?.(SEARCH_INPUT_SELECTOR) ? event.target : null;
-    if (!input) return;
-
-    activeInput = input;
-    document.body.dataset.searchFocused = 'true';
-    schedulePin();
-  }, true);
-
-  document.addEventListener('focusout', (event) => {
-    if (event.target !== activeInput) return;
-
-    activeInput = null;
-    window.clearTimeout(pinTimer);
-    window.setTimeout(() => {
-      if (!document.activeElement?.matches?.(SEARCH_INPUT_SELECTOR)) {
-        document.body.dataset.searchFocused = 'false';
-      }
-    }, 180);
-  }, true);
-
-  window.visualViewport?.addEventListener('resize', schedulePin, { passive: true });
-  window.visualViewport?.addEventListener('scroll', schedulePin, { passive: true });
 })();
 
 (function () {
