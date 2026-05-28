@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="x-drugview-module-mode" content="direct-no-inner-iframe">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tính MLCT và tra cứu liều</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="/js/site.js" defer></script>
+  <style>
+    :root {
+      --c-brand-50: #eaf1fb;
+      --c-brand-100: #d5e3f8;
+      --c-brand-200: #a7c4ea;
+      --c-brand-300: #6ea0d6;
+      --c-brand-500: #0b5394;
+      --c-brand-700: #083d6f;
+      --c-brand-800: #073a6a;
+      --c-green: #12805c;
+      --c-green-soft: #e9f8f1;
+      --c-red: #cc0000;
+      --c-orange: #b86b00;
+      --c-bg: #ffffff;
+      --c-surface: #ffffff;
+      --c-surface-soft: #f7fafd;
+      --c-border: #dfe7f0;
+      --c-text: #1a2536;
+      --c-soft: #4b5766;
+      --c-muted: #6b7684;
+      --rad-md: 16px;
+      --rad-lg: 22px;
+      --rad-pill: 999px;
+      --sh-sm: 0 3px 10px rgba(11, 83, 148, .08);
+      --sh-md: 0 12px 28px rgba(11, 83, 148, .1);
+      --sh-lg: 0 18px 38px rgba(11, 83, 148, .12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; min-width: 0; }
+    html, body { min-height: 100%; overflow-x: hidden; }
+    body {
+      font-family: "Inter", "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: #fff;
+      color: var(--c-text);
+      line-height: 1.6;
+      padding: 18px;
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    input,
+    select {
+      min-height: 48px;
+      font-size: 16px;
+    }
+
+    .mlct-app {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, .94);
+      border: 1px solid rgba(11, 83, 148, .08);
+      border-radius: 28px;
+      box-shadow: var(--sh-lg);
+      overflow: hidden;
+    }
+
+    .app-header {
+      position: relative;
+      padding: 28px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, .98) 0%, rgba(234, 241, 251, .98) 58%, rgba(213, 227, 248, .98) 100%);
+      border-bottom: 1px solid rgba(11, 83, 148, .08);
+    }
+
+    .app-header::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(11, 83, 148, .04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(11, 83, 148, .04) 1px, transparent 1px);
+      background-size: 36px 36px;
+      mask-image: radial-gradient(circle at center, black 35%, transparent 88%);
+      pointer-events: none;
+    }
+
+    .app-header__inner {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .brand-lockup {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .app-logo {
+      flex: 0 0 58px;
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: var(--sh-sm);
+    }
+
+    .app-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--c-brand-500);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .app-title {
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: clamp(2rem, 4vw, 3.45rem);
+      line-height: 1.06;
+      color: var(--c-brand-800);
+      letter-spacing: 0;
+    }
+
+    .app-desc {
+      max-width: 780px;
+      color: var(--c-soft);
+      font-size: clamp(1rem, 1.6vw, 1.22rem);
+      margin-top: 10px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: var(--rad-pill);
+      padding: 12px 18px;
+      min-height: 46px;
+      cursor: pointer;
+      font-weight: 800;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 10px 20px rgba(11, 83, 148, .18);
+      transition: transform .12s ease, filter .2s ease, box-shadow .2s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn:hover { transform: translateY(-1px); filter: saturate(1.04); }
+    .btn:disabled { cursor: not-allowed; opacity: .55; transform: none; box-shadow: none; }
+    .btn-primary { background: linear-gradient(180deg, var(--c-brand-500), var(--c-brand-700)); }
+    .btn-success { background: linear-gradient(180deg, #16966d, #0c684c); }
+    .btn-muted {
+      background: #fff;
+      color: var(--c-brand-800);
+      border: 1px solid var(--c-border);
+      box-shadow: var(--sh-sm);
+    }
+
+    .app-body {
+      display: grid;
+      grid-template-columns: minmax(320px, .88fr) minmax(0, 1.12fr);
+      gap: 18px;
+      padding: 18px;
+      background: #fff;
+    }
+
+    .panel {
+      background: var(--c-surface);
+      border: 1px solid rgba(11, 83, 148, .1);
+      border-radius: var(--rad-lg);
+      box-shadow: var(--sh-sm);
+      overflow: hidden;
+    }
+
+    .panel__head {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+      padding: 20px;
+      border-bottom: 1px solid var(--c-border);
+      background: linear-gradient(180deg, rgba(247, 250, 253, .9), #fff);
+    }
+
+    .panel__icon {
+      flex: 0 0 46px;
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--c-brand-500);
+      background: var(--c-brand-50);
+      font-size: 20px;
+    }
+
+    .panel__icon--green {
+      color: var(--c-green);
+      background: var(--c-green-soft);
+    }
+
+    .panel h2 {
+      font-family: "Be Vietnam Pro", sans-serif;
+      color: var(--c-brand-800);
+      font-size: 1.35rem;
+      line-height: 1.18;
+      margin-bottom: 4px;
+    }
+
+    .panel p {
+      color: var(--c-soft);
+    }
+
+    .panel__body {
+      padding: 20px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field--full { grid-column: 1 / -1; }
+
+    .label {
+      font-weight: 800;
+      color: var(--c-brand-800);
+      font-size: .95rem;
+    }
+
+    .input,
+    .select {
+      width: 100%;
+      border: 1px solid var(--c-border);
+      border-radius: 14px;
+      background: #fff;
+      color: var(--c-text);
+      padding: 11px 13px;
+      outline: none;
+      transition: border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .input:focus,
+    .select:focus {
+      border-color: var(--c-brand-500);
+      box-shadow: 0 0 0 4px rgba(11, 83, 148, .12);
+    }
+
+    .hint {
+      color: var(--c-muted);
+      font-size: .9rem;
+    }
+
+    .search-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 2px solid var(--c-brand-200);
+      border-radius: var(--rad-pill);
+      padding: 8px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.75), var(--sh-sm);
+      background: #fff;
+    }
+
+    .search-box:focus-within {
+      border-color: var(--c-brand-500);
+      box-shadow: 0 0 0 4px rgba(11,83,148,.12), var(--sh-sm);
+    }
+
+    .search-box input {
+      flex: 1 1 auto;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      padding: 9px 11px;
+      min-height: 42px;
+    }
+
+    .search-button {
+      flex: 0 0 50px;
+      width: 50px;
+      height: 50px;
+      border: 0;
+      border-radius: 50%;
+      background: linear-gradient(180deg, var(--c-brand-500), var(--c-brand-700));
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(11,83,148,.22);
+    }
+
+    .autocomplete {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 8px);
+      max-height: 280px;
+      overflow-y: auto;
+      z-index: 10;
+      display: none;
+      background: #fff;
+      border: 1px solid rgba(11,83,148,.14);
+      border-radius: 16px;
+      box-shadow: var(--sh-md);
+    }
+
+    .autocomplete[data-open="true"] { display: block; }
+
+    .autocomplete__item {
+      padding: 12px 15px;
+      border-bottom: 1px solid #eef4fb;
+      cursor: pointer;
+      color: var(--c-text);
+      font-weight: 700;
+    }
+
+    .autocomplete__item:hover {
+      background: var(--c-brand-50);
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .summary-card,
+    .result-card,
+    .empty-card {
+      border: 1px solid var(--c-border);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #fbfdff, #fff);
+      padding: 16px;
+      margin-top: 18px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .metric {
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid #e8eef6;
+      padding: 14px;
+    }
+
+    .metric__label {
+      font-size: .78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--c-muted);
+      letter-spacing: .08em;
+      margin-bottom: 5px;
+    }
+
+    .metric__value {
+      font-family: "Be Vietnam Pro", sans-serif;
+      font-size: 2rem;
+      line-height: 1;
+      color: var(--c-brand-800);
+      font-weight: 800;
+    }
+
+    .metric__note {
+      color: var(--c-muted);
+      font-size: .92rem;
+      margin-top: 4px;
+    }
+
+    .alert {
+      border-radius: 16px;
+      padding: 13px 14px;
+      margin-top: 12px;
+      border: 1px solid transparent;
+    }
+
+    .alert-info {
+      background: var(--c-brand-50);
+      border-color: var(--c-brand-100);
+      color: var(--c-brand-800);
+    }
+
+    .alert-warning {
+      background: #fff7e8;
+      border-color: #ffd89b;
+      color: #6a3c00;
+    }
+
+    .alert-danger {
+      background: #fff0f0;
+      border-color: #ffc5c5;
+      color: #7b0000;
+    }
+
+    .alert-success {
+      background: var(--c-green-soft);
+      border-color: #b9ead7;
+      color: #064832;
+    }
+
+    .hidden { display: none !important; }
+
+    .dose-form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .dose-result__top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: var(--rad-pill);
+      padding: 6px 10px;
+      font-size: .84rem;
+      font-weight: 800;
+      background: var(--c-brand-50);
+      color: var(--c-brand-800);
+    }
+
+    .badge--green {
+      background: var(--c-green-soft);
+      color: #07573e;
+    }
+
+    .badge--orange {
+      background: #fff3dc;
+      color: var(--c-orange);
+    }
+
+    .result-section {
+      border-top: 1px solid var(--c-border);
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+
+    .result-section h3 {
+      font-family: "Be Vietnam Pro", sans-serif;
+      color: var(--c-brand-800);
+      font-size: 1rem;
+      margin-bottom: 7px;
+    }
+
+    .dose-text {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .source-link {
+      color: var(--c-brand-700);
+      font-weight: 800;
+    }
+
+    .empty-card {
+      text-align: center;
+      border-style: dashed;
+      background: linear-gradient(180deg, #fbfdff, #f8fbff);
+    }
+
+    .empty-card i {
+      display: block;
+      color: var(--c-green);
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+    }
+
+    .app-footer {
+      padding: 16px 20px 22px;
+      color: var(--c-muted);
+      font-size: .9rem;
+      text-align: center;
+      border-top: 1px solid var(--c-border);
+      background: #fff;
+    }
+
+    @media (max-width: 980px) {
+      body { padding: 0; }
+      .mlct-app {
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+        box-shadow: none;
+      }
+      .app-header__inner,
+      .app-body {
+        grid-template-columns: 1fr;
+      }
+      .header-actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app-header { padding: 20px 16px; }
+      .app-body { padding: 12px; gap: 12px; }
+      .panel__head,
+      .panel__body { padding: 14px; }
+      .brand-lockup { align-items: center; }
+      .app-logo { width: 46px; height: 46px; flex-basis: 46px; }
+      .app-title { font-size: clamp(1.55rem, 7vw, 2.25rem); line-height: 1.1; }
+      .app-desc { font-size: .98rem; line-height: 1.5; }
+      .form-grid,
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+      .btn { width: 100%; }
+      .header-actions .btn { width: auto; flex: 1 1 160px; }
+      .search-button { flex-basis: 46px; width: 46px; height: 46px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="mlct-app">
+    <header class="app-header">
+      <div class="app-header__inner">
+        <div>
+          <div class="app-kicker"><i class="fas fa-heart-pulse"></i> Công cụ tra cứu liều</div>
+          <div class="brand-lockup">
+            <img class="app-logo" src="img/27ed86eb0b3d.png" alt="">
+            <h1 class="app-title">Tính MLCT và tra cứu liều theo chức năng thận</h1>
+          </div>
+          <p class="app-desc">Tính CrCl/eGFR nhanh, sau đó tra cứu khuyến cáo liều theo hoạt chất, nguồn, đường dùng và chỉ định từ dữ liệu chuẩn hóa của Khoa Dược.</p>
+        </div>
+
+        <div class="header-actions">
+          <button type="button" class="btn btn-primary" data-scroll-target="#mlctSection"><i class="fas fa-calculator"></i> Tính MLCT</button>
+          <button type="button" class="btn btn-success" data-scroll-target="#doseSection"><i class="fas fa-capsules"></i> Tra liều thuốc</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="app-body">
+      <article class="panel" id="mlctSection">
+        <div class="panel__head">
+          <div class="panel__icon"><i class="fas fa-calculator"></i></div>
+          <div>
+            <h2>Tính mức lọc cầu thận</h2>
+            <p>Dùng khi chưa có sẵn MLCT/CrCl. Kết quả có thể chuyển tự động sang phần tra liều.</p>
+          </div>
+        </div>
+
+        <div class="panel__body">
+          <form id="renalForm" novalidate>
+            <div class="form-grid">
+              <label class="field field--full">
+                <span class="label">Phương pháp tính</span>
+                <select id="method" class="select">
+                  <option value="cockcroft" selected>Cockcroft-Gault</option>
+                  <option value="ckd_epi">CKD-EPI 2021</option>
+                  <option value="mdrd">MDRD</option>
+                  <option value="schwartz">Schwartz cho trẻ em</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="label">Đơn vị Creatinin</span>
+                <select id="scrUnit" class="select">
+                  <option value="umol" selected>µmol/L</option>
+                  <option value="mgdl">mg/dL</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="label">Năm sinh</span>
+                <input id="birthYear" class="input" type="number" placeholder="VD: 1990" min="1900" max="2100">
+              </label>
+
+              <label class="field">
+                <span class="label">Tuổi</span>
+                <input id="age" class="input" type="number" placeholder="VD: 35" min="0" max="120">
+              </label>
+
+              <label class="field">
+                <span class="label">Giới tính</span>
+                <select id="gender" class="select">
+                  <option value="male" selected>Nam</option>
+                  <option value="female">Nữ</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="label">Cân nặng (kg)</span>
+                <input id="weight" class="input" type="number" placeholder="VD: 60" min="1" step="0.1">
+              </label>
+
+              <label class="field hidden" id="heightWrap">
+                <span class="label">Chiều cao (cm)</span>
+                <input id="height" class="input" type="number" placeholder="VD: 150" min="1" step="0.1">
+              </label>
+
+              <label class="field field--full">
+                <span class="label">Creatinin huyết thanh</span>
+                <input id="scr" class="input" type="number" placeholder="VD: 92.2" min="0.01" step="0.01">
+              </label>
+            </div>
+
+            <div class="action-row">
+              <button type="submit" class="btn btn-primary"><i class="fas fa-play"></i> Tính kết quả</button>
+              <button type="button" id="btnResetRenal" class="btn btn-muted"><i class="fas fa-rotate-left"></i> Làm mới</button>
+            </div>
+          </form>
+
+          <div class="summary-card" aria-live="polite">
+            <div class="summary-grid">
+              <div class="metric">
+                <div class="metric__label">MLCT / CrCl</div>
+                <div class="metric__value" id="resultValue">--</div>
+                <div class="metric__note" id="resultUnit">mL/phút</div>
+              </div>
+
+              <div class="metric">
+                <div class="metric__label">Phân độ CKD</div>
+                <div class="metric__value" id="resultStage">--</div>
+                <div class="metric__note" id="resultStageDesc">Chưa có dữ liệu</div>
+              </div>
+            </div>
+
+            <div id="renalMessage" class="alert alert-info">Chưa có kết quả tính MLCT.</div>
+            <div id="renalDangerAlertWrap" class="hidden">
+              <div class="alert alert-danger"><strong><i class="fas fa-triangle-exclamation"></i> Cảnh báo nguy cơ cao:</strong> <span id="renalDangerAlertText">Người bệnh suy thận nặng, cần đặc biệt thận trọng khi áp liều.</span></div>
+            </div>
+            <div id="renalClinicalNoteWrap" class="hidden">
+              <div class="alert alert-warning"><strong><i class="fas fa-shield-heart"></i> Cảnh báo lâm sàng:</strong> <span id="renalClinicalNoteText">Kết quả cần được diễn giải trong bối cảnh lâm sàng cụ thể.</span></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel" id="doseSection">
+        <div class="panel__head">
+          <div class="panel__icon panel__icon--green"><i class="fas fa-capsules"></i></div>
+          <div>
+            <h2>Tra cứu và áp liều thuốc</h2>
+            <p>Chọn hoạt chất, nguồn, đường dùng và chỉ định. MLCT/CrCl có thể nhập trực tiếp hoặc lấy từ kết quả tính bên trái.</p>
+          </div>
+        </div>
+
+        <div class="panel__body">
+          <div id="connectionMessage" class="alert alert-info">Đang kiểm tra kết nối dữ liệu Apps Script...</div>
+
+          <div class="dose-form">
+            <div class="form-grid">
+              <label class="field">
+                <span class="label">Nhóm bệnh nhân</span>
+                <select id="patientMode" class="select">
+                  <option value="non_dialysis" selected>Không chạy thận</option>
+                  <option value="dialysis">Chạy thận/Lọc máu</option>
+                </select>
+              </label>
+
+              <label class="field hidden" id="dialysisTypeWrap">
+                <span class="label">Hình thức lọc máu</span>
+                <select id="dialysisType" class="select">
+                  <option value="">Chọn hình thức lọc máu</option>
+                  <option value="IHD">IHD</option>
+                  <option value="CAPD">CAPD / PD</option>
+                  <option value="CRRT">CRRT / PIRRT</option>
+                </select>
+              </label>
+
+              <div class="field field--full">
+                <span class="label">Hoạt chất</span>
+                <div class="search-box">
+                  <input id="drugSearch" type="text" placeholder="Gõ tên hoạt chất, ví dụ: Vancomycin" autocomplete="off">
+                  <button id="btnDrugSearch" class="search-button" type="button" aria-label="Tìm hoạt chất"><i class="fas fa-search"></i></button>
+                  <div id="drugAutocompleteList" class="autocomplete"></div>
+                </div>
+                <span id="drugLoadingHint" class="hint">Danh sách hoạt chất sẽ tự tải sau khi giao diện hiển thị.</span>
+              </div>
+
+              <label class="field field--full">
+                <span class="label">Nguồn</span>
+                <select id="sourceSelect" class="select" disabled>
+                  <option value="">Chọn nguồn</option>
+                </select>
+                <span class="hint">Nếu một hoạt chất có nhiều nguồn, hãy chọn nguồn trước khi chọn đường dùng và chỉ định.</span>
+              </label>
+
+              <label class="field">
+                <span class="label">Đường dùng</span>
+                <select id="routeSelect" class="select" disabled>
+                  <option value="">Chọn đường dùng</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="label">Chỉ định</span>
+                <select id="indicationSelect" class="select" disabled>
+                  <option value="">Chọn chỉ định</option>
+                </select>
+              </label>
+
+              <label class="field field--full" id="manualMlctCrclWrap">
+                <span class="label">MLCT/CrCl nhập trực tiếp nếu có</span>
+                <input id="manualMlctCrcl" class="input" type="number" placeholder="VD: 35" min="0" step="0.1">
+                <span class="hint">Có thể bỏ trống nếu thuốc không cần MLCT/CrCl hoặc chưa muốn áp chỉnh liều theo MLCT.</span>
+              </label>
+            </div>
+
+            <div id="renalModeHint" class="alert alert-warning hidden">Đang ở chế độ chạy thận/lọc máu. Hệ thống ưu tiên cột liều theo IHD, CAPD/PD hoặc CRRT/PIRRT tùy lựa chọn.</div>
+
+            <div class="action-row">
+              <button type="button" id="btnApplyDose" class="btn btn-success" disabled><i class="fas fa-circle-check"></i> Áp liều</button>
+              <button type="button" id="btnResetDrug" class="btn btn-muted"><i class="fas fa-rotate-left"></i> Làm mới tra thuốc</button>
+            </div>
+          </div>
+
+          <div id="doseValidationMessage"></div>
+
+          <div id="doseResultWrap">
+            <div class="empty-card">
+              <i class="fas fa-capsules"></i>
+              <h3>Chưa có kết quả áp liều</h3>
+              <p>Chọn thuốc, nguồn, đường dùng, chỉ định và bấm Áp liều để xem khuyến cáo.</p>
+            </div>
+          </div>
+
+          <div class="alert alert-warning"><strong>Lưu ý:</strong> Công cụ chỉ hỗ trợ tra cứu và gợi ý liều theo dữ liệu đã nhập trong Google Sheet. Cần đối chiếu lâm sàng, cân nặng, mức độ nhiễm khuẩn, nồng độ thuốc nếu có và phác đồ tại cơ sở điều trị.</div>
+        </div>
+      </article>
+    </section>
+
+    <footer class="app-footer">Công cụ hỗ trợ tính MLCT và tra cứu liều thuốc theo dữ liệu chuẩn hóa.</footer>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const $ = (selector) => document.querySelector(selector);
+      const state = {
+        drugNames: [],
+        currentDrugRows: [],
+        calculatedCrCl: null,
+        selectedDrugName: ""
+      };
+      const apiUrl = (() => {
+        const params = new URLSearchParams(window.location.search);
+        return window.DRUGVIEW_MLCT_API_URL || params.get("api") || "";
+      })();
+
+      const el = {
+        method: $("#method"),
+        scrUnit: $("#scrUnit"),
+        birthYear: $("#birthYear"),
+        age: $("#age"),
+        gender: $("#gender"),
+        weight: $("#weight"),
+        height: $("#height"),
+        heightWrap: $("#heightWrap"),
+        scr: $("#scr"),
+        renalForm: $("#renalForm"),
+        resultValue: $("#resultValue"),
+        resultUnit: $("#resultUnit"),
+        resultStage: $("#resultStage"),
+        resultStageDesc: $("#resultStageDesc"),
+        renalMessage: $("#renalMessage"),
+        renalDangerAlertWrap: $("#renalDangerAlertWrap"),
+        renalClinicalNoteWrap: $("#renalClinicalNoteWrap"),
+        btnResetRenal: $("#btnResetRenal"),
+        patientMode: $("#patientMode"),
+        dialysisTypeWrap: $("#dialysisTypeWrap"),
+        dialysisType: $("#dialysisType"),
+        drugSearch: $("#drugSearch"),
+        btnDrugSearch: $("#btnDrugSearch"),
+        drugAutocompleteList: $("#drugAutocompleteList"),
+        drugLoadingHint: $("#drugLoadingHint"),
+        sourceSelect: $("#sourceSelect"),
+        routeSelect: $("#routeSelect"),
+        indicationSelect: $("#indicationSelect"),
+        manualMlctCrcl: $("#manualMlctCrcl"),
+        renalModeHint: $("#renalModeHint"),
+        btnApplyDose: $("#btnApplyDose"),
+        btnResetDrug: $("#btnResetDrug"),
+        doseValidationMessage: $("#doseValidationMessage"),
+        doseResultWrap: $("#doseResultWrap"),
+        connectionMessage: $("#connectionMessage")
+      };
+
+      const hasAppsScript = () => Boolean(window.google?.script?.run);
+
+      const normalize = (value) => String(value || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ");
+
+      const clean = (value) => String(value || "")
+        .replace(/\r/g, "\n")
+        .replace(/\u00A0/g, " ")
+        .replace(/[ \t]+/g, " ")
+        .replace(/\n[ \t]+/g, "\n")
+        .trim();
+
+      const unique = (items) => {
+        const seen = new Set();
+        const out = [];
+        items.forEach((item) => {
+          const text = clean(item);
+          if (!text) return;
+          const key = normalize(text);
+          if (seen.has(key)) return;
+          seen.add(key);
+          out.push(text);
+        });
+        return out;
+      };
+
+      const callServer = (name, ...args) => {
+        if (hasAppsScript()) {
+          return new Promise((resolve, reject) => {
+            google.script.run
+              .withSuccessHandler(resolve)
+              .withFailureHandler(reject)[name](...args);
+          });
+        }
+
+        if (apiUrl) {
+          const url = new URL(apiUrl, window.location.href);
+          url.searchParams.set("action", name);
+          if (name === "getDrugDataByHoatChat") url.searchParams.set("drugName", args[0] || "");
+
+          return fetch(url.toString(), { method: "GET" })
+            .then((response) => {
+              if (!response.ok) throw new Error("HTTP " + response.status);
+              return response.json();
+            })
+            .then((payload) => {
+              if (payload && payload.ok === false) throw new Error(payload.error || "Lỗi dữ liệu");
+              return payload && Object.prototype.hasOwnProperty.call(payload, "data") ? payload.data : payload;
+            });
+        }
+
+        return Promise.reject(new Error("Trang Netlify cần URL Apps Script JSON để tra cứu dữ liệu thuốc."));
+      };
+
+      const showConnection = (type, text) => {
+        el.connectionMessage.className = "alert alert-" + type;
+        el.connectionMessage.textContent = text;
+      };
+
+      const setOptions = (select, values, placeholder) => {
+        select.innerHTML = "";
+        const first = document.createElement("option");
+        first.value = "";
+        first.textContent = placeholder;
+        select.appendChild(first);
+        values.forEach((value) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = value;
+          select.appendChild(option);
+        });
+        select.disabled = values.length === 0;
+      };
+
+      const getAge = () => {
+        const age = Number(el.age.value);
+        if (age > 0) return age;
+
+        const birthYear = Number(el.birthYear.value);
+        const currentYear = new Date().getFullYear();
+        if (birthYear >= 1900 && birthYear <= currentYear) {
+          const computedAge = currentYear - birthYear;
+          el.age.value = String(computedAge);
+          return computedAge;
+        }
+
+        return NaN;
+      };
+
+      const getScrMgDl = () => {
+        const scr = Number(el.scr.value);
+        if (!(scr > 0)) return NaN;
+        return el.scrUnit.value === "umol" ? scr / 88.4 : scr;
+      };
+
+      const getCkdStage = (value) => {
+        if (!(value >= 0)) return { stage: "--", desc: "Chưa có dữ liệu", danger: false };
+        if (value >= 90) return { stage: "G1", desc: "Bình thường hoặc tăng", danger: false };
+        if (value >= 60) return { stage: "G2", desc: "Giảm nhẹ", danger: false };
+        if (value >= 45) return { stage: "G3a", desc: "Giảm nhẹ đến trung bình", danger: false };
+        if (value >= 30) return { stage: "G3b", desc: "Giảm trung bình đến nặng", danger: false };
+        if (value >= 15) return { stage: "G4", desc: "Giảm nặng", danger: true };
+        return { stage: "G5", desc: "Suy thận", danger: true };
+      };
+
+      const calculateRenal = () => {
+        const age = getAge();
+        const scrMgDl = getScrMgDl();
+        const weight = Number(el.weight.value);
+        const height = Number(el.height.value);
+        const isFemale = el.gender.value === "female";
+        const method = el.method.value;
+
+        if (!(age > 0) || !(scrMgDl > 0)) {
+          throw new Error("Vui lòng nhập tuổi/năm sinh và creatinin hợp lệ.");
+        }
+
+        if (method === "cockcroft") {
+          if (!(weight > 0)) throw new Error("Cockcroft-Gault cần cân nặng.");
+          return ((140 - age) * weight * (isFemale ? 0.85 : 1)) / (72 * scrMgDl);
+        }
+
+        if (method === "ckd_epi") {
+          const k = isFemale ? 0.7 : 0.9;
+          const a = isFemale ? -0.241 : -0.302;
+          return 142 * Math.pow(Math.min(scrMgDl / k, 1), a) * Math.pow(Math.max(scrMgDl / k, 1), -1.2) * Math.pow(0.9938, age) * (isFemale ? 1.012 : 1);
+        }
+
+        if (method === "mdrd") {
+          return 175 * Math.pow(scrMgDl, -1.154) * Math.pow(age, -0.203) * (isFemale ? 0.742 : 1);
+        }
+
+        if (method === "schwartz") {
+          if (!(height > 0)) throw new Error("Schwartz cần chiều cao.");
+          return 0.413 * height / scrMgDl;
+        }
+
+        throw new Error("Phương pháp tính không hợp lệ.");
+      };
+
+      const updateRenalResult = (value) => {
+        const rounded = Math.round(value * 10) / 10;
+        const stage = getCkdStage(rounded);
+        state.calculatedCrCl = rounded;
+        el.manualMlctCrcl.value = String(rounded);
+        el.resultValue.textContent = String(rounded);
+        el.resultUnit.textContent = el.method.value === "cockcroft" ? "mL/phút (CrCl)" : "mL/phút/1,73m²";
+        el.resultStage.textContent = stage.stage;
+        el.resultStageDesc.textContent = stage.desc;
+        el.renalMessage.className = "alert alert-success";
+        el.renalMessage.innerHTML = "<strong>Đã tính xong.</strong> Kết quả đã được chuyển sang ô MLCT/CrCl ở phần tra liều.";
+        el.renalDangerAlertWrap.classList.toggle("hidden", !stage.danger);
+        el.renalClinicalNoteWrap.classList.toggle("hidden", el.method.value === "cockcroft");
+      };
+
+      const resetRenal = () => {
+        el.renalForm.reset();
+        el.method.value = "cockcroft";
+        el.scrUnit.value = "umol";
+        el.resultValue.textContent = "--";
+        el.resultUnit.textContent = "mL/phút";
+        el.resultStage.textContent = "--";
+        el.resultStageDesc.textContent = "Chưa có dữ liệu";
+        el.renalMessage.className = "alert alert-info";
+        el.renalMessage.textContent = "Chưa có kết quả tính MLCT.";
+        el.renalDangerAlertWrap.classList.add("hidden");
+        el.renalClinicalNoteWrap.classList.add("hidden");
+        state.calculatedCrCl = null;
+        updateMethodVisibility();
+      };
+
+      const updateMethodVisibility = () => {
+        el.heightWrap.classList.toggle("hidden", el.method.value !== "schwartz");
+      };
+
+      const showAutocomplete = () => {
+        const keyword = normalize(el.drugSearch.value);
+        if (!keyword || !state.drugNames.length) {
+          el.drugAutocompleteList.dataset.open = "false";
+          el.drugAutocompleteList.innerHTML = "";
+          return;
+        }
+
+        const matches = state.drugNames
+          .filter(name => normalize(name).includes(keyword))
+          .slice(0, 20);
+
+        if (!matches.length) {
+          el.drugAutocompleteList.dataset.open = "false";
+          el.drugAutocompleteList.innerHTML = "";
+          return;
+        }
+
+        el.drugAutocompleteList.innerHTML = matches.map((name) => (
+          `<div class="autocomplete__item" data-drug="${String(name).replace(/"/g, "&quot;")}">${name}</div>`
+        )).join("");
+        el.drugAutocompleteList.dataset.open = "true";
+      };
+
+      const hideAutocomplete = () => {
+        el.drugAutocompleteList.dataset.open = "false";
+      };
+
+      const loadDrugNames = async () => {
+        if (!hasAppsScript() && !apiUrl) {
+          showConnection("warning", "Chưa cấu hình URL dữ liệu Apps Script. Phần tính MLCT vẫn dùng được; phần tra liều sẽ hoạt động sau khi gắn endpoint JSON.");
+          el.drugLoadingHint.textContent = "Chưa có kết nối danh sách hoạt chất.";
+          return;
+        }
+
+        try {
+          const names = await callServer("getUniqueDrugNames");
+          state.drugNames = Array.isArray(names) ? names : [];
+          showConnection("success", "Đã kết nối dữ liệu. Có thể tìm hoạt chất và áp liều.");
+          el.drugLoadingHint.textContent = "Đã tải " + state.drugNames.length + " hoạt chất.";
+        } catch (error) {
+          showConnection("danger", "Không tải được danh sách hoạt chất: " + (error.message || error));
+          el.drugLoadingHint.textContent = "Lỗi tải danh sách hoạt chất.";
+        }
+      };
+
+      const selectDrug = async (drugName) => {
+        const name = clean(drugName || el.drugSearch.value);
+        if (!name) return;
+
+        el.drugSearch.value = name;
+        state.selectedDrugName = name;
+        hideAutocomplete();
+        el.btnApplyDose.disabled = true;
+        setOptions(el.sourceSelect, [], "Đang tải dữ liệu...");
+        setOptions(el.routeSelect, [], "Chọn đường dùng");
+        setOptions(el.indicationSelect, [], "Chọn chỉ định");
+
+        try {
+          const rows = await callServer("getDrugDataByHoatChat", name);
+          state.currentDrugRows = Array.isArray(rows) ? rows : [];
+          const sources = unique(state.currentDrugRows.map(row => row.Source || row.Nguon || row.GhiChuNguon || "Không ghi nguồn"));
+          setOptions(el.sourceSelect, sources, "Chọn nguồn");
+          if (sources.length === 1) {
+            el.sourceSelect.value = sources[0];
+            populateRoutes();
+          }
+          validateDoseReady();
+        } catch (error) {
+          state.currentDrugRows = [];
+          showDoseMessage("danger", "Không tải được dữ liệu thuốc: " + (error.message || error));
+          setOptions(el.sourceSelect, [], "Chọn nguồn");
+        }
+      };
+
+      const getFilteredRows = () => {
+        const source = normalize(el.sourceSelect.value);
+        const route = normalize(el.routeSelect.value);
+        const indication = normalize(el.indicationSelect.value);
+        return state.currentDrugRows.filter((row) => {
+          const rowSource = normalize(row.Source || row.Nguon || row.GhiChuNguon || "Không ghi nguồn");
+          if (source && rowSource !== source) return false;
+          if (route && normalize(row.DuongDung) !== route) return false;
+          if (indication && normalize(row.ChiDinh) !== indication) return false;
+          return true;
+        });
+      };
+
+      const populateRoutes = () => {
+        const source = normalize(el.sourceSelect.value);
+        const rows = state.currentDrugRows.filter((row) => normalize(row.Source || row.Nguon || row.GhiChuNguon || "Không ghi nguồn") === source);
+        setOptions(el.routeSelect, unique(rows.map(row => row.DuongDung || "Chưa ghi đường dùng")), "Chọn đường dùng");
+        setOptions(el.indicationSelect, [], "Chọn chỉ định");
+        validateDoseReady();
+      };
+
+      const populateIndications = () => {
+        const source = normalize(el.sourceSelect.value);
+        const route = normalize(el.routeSelect.value);
+        const rows = state.currentDrugRows.filter((row) => {
+          const rowSource = normalize(row.Source || row.Nguon || row.GhiChuNguon || "Không ghi nguồn");
+          return rowSource === source && normalize(row.DuongDung || "Chưa ghi đường dùng") === route;
+        });
+        setOptions(el.indicationSelect, unique(rows.map(row => row.ChiDinh || "Chưa ghi chỉ định")), "Chọn chỉ định");
+        validateDoseReady();
+      };
+
+      const validateDoseReady = () => {
+        const ready = Boolean(state.currentDrugRows.length && el.sourceSelect.value && el.routeSelect.value && el.indicationSelect.value);
+        el.btnApplyDose.disabled = !ready;
+      };
+
+      const showDoseMessage = (type, text) => {
+        el.doseValidationMessage.innerHTML = text ? `<div class="alert alert-${type}">${text}</div>` : "";
+      };
+
+      const matchesCrClRule = (row, crcl) => {
+        const rules = Array.isArray(row._CrClRules) ? row._CrClRules : [];
+        if (!rules.length) return true;
+        return rules.some((rule) => {
+          if (rule.type === "all") return true;
+          if (rule.type !== "range") return false;
+          const minOk = rule.min === null || rule.min === undefined || (rule.minInclusive === false ? crcl > Number(rule.min) : crcl >= Number(rule.min));
+          const maxOk = rule.max === null || rule.max === undefined || (rule.maxInclusive === false ? crcl < Number(rule.max) : crcl <= Number(rule.max));
+          return minOk && maxOk;
+        });
+      };
+
+      const pickDoseRows = () => {
+        const rows = getFilteredRows();
+        if (el.patientMode.value === "dialysis") return rows;
+
+        const crcl = Number(el.manualMlctCrcl.value);
+        if (!(crcl >= 0)) return rows;
+
+        const matched = rows.filter(row => matchesCrClRule(row, crcl));
+        return matched.length ? matched : rows;
+      };
+
+      const formatLink = (url) => {
+        const cleanUrl = clean(url);
+        if (!cleanUrl) return "";
+        const safe = cleanUrl.replace(/"/g, "&quot;");
+        return `<a class="source-link" href="${safe}" target="_blank" rel="noopener">Mở nguồn</a>`;
+      };
+
+      const renderDoseResult = (rows) => {
+        const mode = el.patientMode.value;
+        const dialysisType = el.dialysisType.value;
+        const crcl = clean(el.manualMlctCrcl.value);
+        const row = rows[0] || {};
+        let suggestedDose = "";
+        let doseTitle = "Liều gợi ý";
+
+        if (mode === "dialysis") {
+          suggestedDose = clean(row[dialysisType]) || "Chưa có dữ liệu liều cho hình thức lọc máu đã chọn.";
+          doseTitle = "Liều theo " + dialysisType;
+        } else {
+          suggestedDose = clean(row.LieuTheoMLCTTach || row.LieuChuanHoaTach || row.LieuTheoMLCT || row.LieuChuanHoa || row.LieuThongThuong);
+        }
+
+        const renalDetail = clean(row.LieuTheoMLCTDongDayDu || row.LieuChuanHoaDongDayDu || row.LieuTheoMLCT || row.LieuChuanHoa);
+        const source = clean(row.Source || row.Nguon || row.GhiChuNguon || "Không ghi nguồn");
+        const sourceLink = formatLink(row.GhiChuNguonLink);
+
+        el.doseResultWrap.innerHTML = `
+          <article class="result-card">
+            <div class="dose-result__top">
+              <span class="badge"><i class="fas fa-capsules"></i> ${clean(row.HoatChat || state.selectedDrugName)}</span>
+              <span class="badge badge--green">${clean(row.DuongDung || el.routeSelect.value)}</span>
+              ${mode === "dialysis" ? `<span class="badge badge--orange">${dialysisType}</span>` : crcl ? `<span class="badge badge--orange">MLCT/CrCl ${crcl} mL/phút</span>` : ""}
+            </div>
+
+            <div class="result-section">
+              <h3>Chỉ định</h3>
+              <div class="dose-text">${clean(row.ChiDinh || el.indicationSelect.value)}</div>
+            </div>
+
+            <div class="result-section">
+              <h3>${doseTitle}</h3>
+              <div class="dose-text">${suggestedDose || "Chưa có dữ liệu liều gợi ý."}</div>
+            </div>
+
+            <div class="result-section">
+              <h3>Liều thông thường</h3>
+              <div class="dose-text">${clean(row.LieuThongThuong) || "Chưa ghi liều thông thường."}</div>
+            </div>
+
+            <div class="result-section">
+              <h3>Hiệu chỉnh theo MLCT/CrCl</h3>
+              <div class="dose-text">${renalDetail || "Chưa ghi hiệu chỉnh theo MLCT/CrCl."}</div>
+            </div>
+
+            <div class="result-section">
+              <h3>Nguồn</h3>
+              <div class="dose-text">${source}${sourceLink ? " · " + sourceLink : ""}</div>
+            </div>
+          </article>
+        `;
+      };
+
+      const applyDose = () => {
+        showDoseMessage("", "");
+
+        if (!state.currentDrugRows.length) {
+          showDoseMessage("danger", "Vui lòng chọn hoạt chất trước.");
+          return;
+        }
+
+        if (!el.sourceSelect.value || !el.routeSelect.value || !el.indicationSelect.value) {
+          showDoseMessage("danger", "Vui lòng chọn đủ nguồn, đường dùng và chỉ định.");
+          return;
+        }
+
+        if (el.patientMode.value === "dialysis" && !el.dialysisType.value) {
+          showDoseMessage("danger", "Vui lòng chọn hình thức lọc máu.");
+          return;
+        }
+
+        const rows = pickDoseRows();
+        if (!rows.length) {
+          showDoseMessage("warning", "Không tìm thấy dòng dữ liệu phù hợp với lựa chọn hiện tại.");
+          return;
+        }
+
+        renderDoseResult(rows);
+      };
+
+      const resetDrug = () => {
+        state.currentDrugRows = [];
+        state.selectedDrugName = "";
+        el.drugSearch.value = "";
+        setOptions(el.sourceSelect, [], "Chọn nguồn");
+        setOptions(el.routeSelect, [], "Chọn đường dùng");
+        setOptions(el.indicationSelect, [], "Chọn chỉ định");
+        el.patientMode.value = "non_dialysis";
+        el.dialysisType.value = "";
+        el.dialysisTypeWrap.classList.add("hidden");
+        el.renalModeHint.classList.add("hidden");
+        el.btnApplyDose.disabled = true;
+        showDoseMessage("", "");
+        el.doseResultWrap.innerHTML = `
+          <div class="empty-card">
+            <i class="fas fa-capsules"></i>
+            <h3>Chưa có kết quả áp liều</h3>
+            <p>Chọn thuốc, nguồn, đường dùng, chỉ định và bấm Áp liều để xem khuyến cáo.</p>
+          </div>
+        `;
+      };
+
+      const setupEvents = () => {
+        document.querySelectorAll("[data-scroll-target]").forEach((button) => {
+          button.addEventListener("click", () => {
+            document.querySelector(button.dataset.scrollTarget)?.scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+        });
+
+        el.method.addEventListener("change", updateMethodVisibility);
+        el.birthYear.addEventListener("input", () => {
+          const year = Number(el.birthYear.value);
+          const currentYear = new Date().getFullYear();
+          if (year >= 1900 && year <= currentYear) el.age.value = String(currentYear - year);
+        });
+
+        el.renalForm.addEventListener("submit", (event) => {
+          event.preventDefault();
+          try {
+            updateRenalResult(calculateRenal());
+          } catch (error) {
+            el.renalMessage.className = "alert alert-danger";
+            el.renalMessage.textContent = error.message || String(error);
+          }
+        });
+
+        el.btnResetRenal.addEventListener("click", resetRenal);
+
+        el.drugSearch.addEventListener("input", showAutocomplete);
+        el.drugSearch.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            const first = el.drugAutocompleteList.querySelector(".autocomplete__item");
+            selectDrug(first?.dataset.drug || el.drugSearch.value);
+          }
+        });
+        el.btnDrugSearch.addEventListener("click", () => selectDrug(el.drugSearch.value));
+        el.drugAutocompleteList.addEventListener("click", (event) => {
+          const item = event.target.closest(".autocomplete__item");
+          if (!item) return;
+          selectDrug(item.dataset.drug);
+        });
+        document.addEventListener("click", (event) => {
+          if (!event.target.closest(".search-box")) hideAutocomplete();
+        });
+
+        el.sourceSelect.addEventListener("change", populateRoutes);
+        el.routeSelect.addEventListener("change", populateIndications);
+        el.indicationSelect.addEventListener("change", validateDoseReady);
+        el.patientMode.addEventListener("change", () => {
+          const dialysis = el.patientMode.value === "dialysis";
+          el.dialysisTypeWrap.classList.toggle("hidden", !dialysis);
+          el.renalModeHint.classList.toggle("hidden", !dialysis);
+          validateDoseReady();
+        });
+        el.btnApplyDose.addEventListener("click", applyDose);
+        el.btnResetDrug.addEventListener("click", resetDrug);
+      };
+
+      window.addEventListener("load", () => {
+        setupEvents();
+        updateMethodVisibility();
+        loadDrugNames();
+      });
+    })();
+  </script>
+</body>
+</html>
