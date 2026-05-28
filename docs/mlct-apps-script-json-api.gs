@@ -8,6 +8,8 @@
   3. Gắn URL Web app vào module Netlify bằng một trong hai cách:
      - thêm ?api=URL_WEB_APP vào link nhúng; hoặc
      - đặt window.DRUGVIEW_MLCT_API_URL = 'URL_WEB_APP' trước script của module.
+
+  Module Netlify dùng JSONP để tránh lỗi CORS khi gọi Apps Script từ domain khác.
 */
 
 function doGet(e) {
@@ -36,19 +38,33 @@ function handleMlctJsonApi_(e) {
       throw new Error('Action không hợp lệ: ' + action);
     }
 
-    return makeMlctJsonOutput_({
+    return makeMlctApiOutput_(e, {
       ok: true,
       data: data
     });
   } catch (error) {
-    return makeMlctJsonOutput_({
+    return makeMlctApiOutput_(e, {
       ok: false,
       error: error && error.message ? error.message : String(error)
     });
   }
 }
 
-function makeMlctJsonOutput_(payload) {
+function makeMlctApiOutput_(e, payload) {
+  const callback = e && e.parameter ? String(e.parameter.callback || '').trim() : '';
+
+  if (callback) {
+    if (!/^[A-Za-z_$][0-9A-Za-z_$]*(\.[A-Za-z_$][0-9A-Za-z_$]*)*$/.test(callback)) {
+      return ContentService
+        .createTextOutput('throw new Error("Invalid JSONP callback");')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+
+    return ContentService
+      .createTextOutput(callback + '(' + JSON.stringify(payload) + ');')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+
   return ContentService
     .createTextOutput(JSON.stringify(payload))
     .setMimeType(ContentService.MimeType.JSON);

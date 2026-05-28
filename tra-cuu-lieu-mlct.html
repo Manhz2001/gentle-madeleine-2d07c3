@@ -781,9 +781,10 @@
         calculatedCrCl: null,
         selectedDrugName: ""
       };
+      const DEFAULT_MLCT_API_URL = "https://script.google.com/macros/s/AKfycbw0ETWi5-IYppKB8F0AYCqNV4U-fvhE2p4_CDrYgp44cOqlfve-oakwgddGKjPvvW4x/exec";
       const apiUrl = (() => {
         const params = new URLSearchParams(window.location.search);
-        return window.DRUGVIEW_MLCT_API_URL || params.get("api") || "";
+        return window.DRUGVIEW_MLCT_API_URL || params.get("api") || DEFAULT_MLCT_API_URL;
       })();
 
       const el = {
@@ -863,24 +864,47 @@
           });
         }
 
-        if (apiUrl) {
-          const url = new URL(apiUrl, window.location.href);
-          url.searchParams.set("action", name);
-          if (name === "getDrugDataByHoatChat") url.searchParams.set("drugName", args[0] || "");
-
-          return fetch(url.toString(), { method: "GET" })
-            .then((response) => {
-              if (!response.ok) throw new Error("HTTP " + response.status);
-              return response.json();
-            })
-            .then((payload) => {
-              if (payload && payload.ok === false) throw new Error(payload.error || "Lỗi dữ liệu");
-              return payload && Object.prototype.hasOwnProperty.call(payload, "data") ? payload.data : payload;
-            });
-        }
+        if (apiUrl) return callJsonpApi(name, ...args);
 
         return Promise.reject(new Error("Trang Netlify cần URL Apps Script JSON để tra cứu dữ liệu thuốc."));
       };
+
+      const callJsonpApi = (name, ...args) => new Promise((resolve, reject) => {
+        const callbackName = "__drugviewMlctJsonp_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+        const script = document.createElement("script");
+        const url = new URL(apiUrl, window.location.href);
+        const timeout = window.setTimeout(() => {
+          cleanup();
+          reject(new Error("Apps Script chưa phản hồi JSONP. Hãy cập nhật doGet(e) theo file docs/mlct-apps-script-json-api.gs rồi deploy lại."));
+        }, 20000);
+
+        const cleanup = () => {
+          window.clearTimeout(timeout);
+          delete window[callbackName];
+          script.remove();
+        };
+
+        window[callbackName] = (payload) => {
+          cleanup();
+          if (payload && payload.ok === false) {
+            reject(new Error(payload.error || "Lỗi dữ liệu"));
+            return;
+          }
+          resolve(payload && Object.prototype.hasOwnProperty.call(payload, "data") ? payload.data : payload);
+        };
+
+        url.searchParams.set("action", name);
+        url.searchParams.set("callback", callbackName);
+        if (name === "getDrugDataByHoatChat") url.searchParams.set("drugName", args[0] || "");
+
+        script.src = url.toString();
+        script.async = true;
+        script.onerror = () => {
+          cleanup();
+          reject(new Error("Apps Script URL chưa hỗ trợ JSONP endpoint. Hãy cập nhật doGet(e) theo file docs/mlct-apps-script-json-api.gs rồi deploy lại."));
+        };
+        document.head.appendChild(script);
+      });
 
       const showConnection = (type, text) => {
         el.connectionMessage.className = "alert alert-" + type;
