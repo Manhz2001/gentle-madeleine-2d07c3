@@ -81,6 +81,314 @@
     });
   });
 
+  // ---- 3b. Document browser for protocol and professional update pages ----
+  const normalizeText = (value) => String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const extractDate = (text) => {
+    const match = String(text || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (!match) return { label: 'Chưa rõ', value: 0 };
+    const day = Number(match[1]);
+    const month = Number(match[2]);
+    const year = Number(match[3]);
+    return {
+      label: `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`,
+      value: new Date(year, month - 1, day).getTime()
+    };
+  };
+
+  const extractDecision = (text) => {
+    const value = String(text || '');
+    const patterns = [
+      /(?:số|so)\s*([0-9]{1,5}\/[0-9A-ZĐa-zđ/\-.]+)/i,
+      /\(([0-9]{1,5}\/(?:QĐ|QD|TT|NĐ|ND|QH|VBHN|BYT|BTC)[^) ]*)/i,
+      /([0-9]{1,5}\/(?:QĐ|QD|TT|NĐ|ND|QH|VBHN|BYT|BTC)[0-9A-ZĐa-zđ/\-.]*)/i
+    ];
+    for (const pattern of patterns) {
+      const match = value.match(pattern);
+      if (match?.[1]) return match[1].replace(/[,.]$/, '');
+    }
+    return 'Chưa rõ';
+  };
+
+  const sourceFromCategory = (category, pageType) => {
+    const key = normalizeText(category);
+    if (pageType === 'capnhat') {
+      if (key.includes('tap huan')) return 'Khoa Dược';
+      return 'Văn bản pháp quy';
+    }
+    if (key.includes('bo y te')) return 'Bộ Y tế';
+    if (key.includes('tim mach')) return 'Hội Tim mạch học Việt Nam';
+    if (key.includes('ho hap')) return 'Hội Hô hấp Việt Nam';
+    if (key.includes('tiet nieu') || key.includes('vuna')) return 'Hội Tiết niệu - Thận học Việt Nam';
+    return 'Nguồn chuyên môn';
+  };
+
+  const shortCategory = (category) => {
+    const text = String(category || '').replace(/^Phác đồ điều trị của\s*/i, '').replace(/^Tập huấn chuyên môn\s*[—-]\s*/i, '');
+    const key = normalizeText(text);
+    if (key.includes('bo y te')) return 'Bộ Y tế';
+    if (key.includes('thong tin thuoc')) return 'Tập huấn';
+    if (key.includes('luat') || key.includes('thong tu')) return 'Văn bản dược';
+    if (key.includes('tim mach')) return 'Tim mạch';
+    if (key.includes('ho hap')) return 'Hô hấp';
+    if (key.includes('tiet nieu') || key.includes('vuna')) return 'Thận - Tiết niệu';
+    return text.length > 28 ? `${text.slice(0, 26)}...` : text;
+  };
+
+  const createOption = (value, label) => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    return option;
+  };
+
+  const getDocumentPageConfig = () => {
+    const page = document.body.dataset.page;
+    if (page === 'phacdo') {
+      return {
+        type: 'phacdo',
+        title: 'Hướng dẫn và phác đồ điều trị',
+        searchPlaceholder: 'Tìm: tim, thận, COPD, tăng huyết áp...',
+        categoryLabel: 'Chuyên khoa',
+        decisionPlaceholder: 'Ví dụ: 1857/QĐ-BYT'
+      };
+    }
+    if (page === 'capnhat') {
+      return {
+        type: 'capnhat',
+        title: 'Cập nhật chuyên môn dược',
+        searchPlaceholder: 'Tìm: luật dược, kê đơn, kháng sinh, ADR...',
+        categoryLabel: 'Nhóm tài liệu',
+        decisionPlaceholder: 'Ví dụ: 26/2025/TT-BYT'
+      };
+    }
+    return null;
+  };
+
+  const ensureDocumentModal = () => {
+    let modal = document.querySelector('.document-modal');
+    if (modal) return modal;
+    modal = document.createElement('div');
+    modal.className = 'document-modal';
+    modal.setAttribute('aria-hidden', 'true');
+    modal.innerHTML = `
+      <div class="document-modal__backdrop" data-doc-modal-close></div>
+      <div class="document-modal__panel" role="dialog" aria-modal="true" aria-labelledby="document-modal-title">
+        <div class="document-modal__head">
+          <h2 class="document-modal__title" id="document-modal-title"></h2>
+          <button class="document-modal__close" type="button" aria-label="Đóng" data-doc-modal-close>&times;</button>
+        </div>
+        <iframe title="Xem nhanh tài liệu"></iframe>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (event) => {
+      if (!event.target.closest('[data-doc-modal-close]')) return;
+      modal.dataset.open = 'false';
+      modal.setAttribute('aria-hidden', 'true');
+      modal.querySelector('iframe').src = 'about:blank';
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || modal.dataset.open !== 'true') return;
+      modal.dataset.open = 'false';
+      modal.setAttribute('aria-hidden', 'true');
+      modal.querySelector('iframe').src = 'about:blank';
+    });
+    return modal;
+  };
+
+  const initDocumentBrowser = () => {
+    const config = getDocumentPageConfig();
+    if (!config) return;
+
+    const section = document.querySelector('.section--soft');
+    const container = section?.querySelector('.container');
+    const accordion = container?.querySelector('.accordion');
+    if (!section || !container || !accordion || container.querySelector('.document-browser')) return;
+
+    const docs = Array.from(accordion.querySelectorAll('.accordion__item')).flatMap((item) => {
+      const category = item.querySelector('.accordion__trigger span')?.textContent?.trim() || 'Tài liệu';
+      const source = sourceFromCategory(category, config.type);
+      return Array.from(item.querySelectorAll('.doc-link')).map((link, index) => {
+        const title = link.querySelector('.doc-link__text')?.textContent?.trim() || link.textContent.trim();
+        const date = extractDate(title);
+        const href = link.getAttribute('href') || '#';
+        return {
+          id: `${normalizeText(category).replace(/\W+/g, '-')}-${index}`,
+          title,
+          href,
+          category,
+          tag: shortCategory(category),
+          source,
+          decision: extractDecision(title),
+          dateLabel: date.label,
+          dateValue: date.value,
+          searchText: normalizeText(`${title} ${category} ${source} ${extractDecision(title)} ${date.label}`),
+          isPdf: /\.pdf(?:$|[?#])/i.test(href)
+        };
+      });
+    });
+
+    if (!docs.length) return;
+
+    const categories = [...new Set(docs.map(doc => doc.category))].sort((a, b) => a.localeCompare(b, 'vi'));
+    const sources = [...new Set(docs.map(doc => doc.source))].sort((a, b) => a.localeCompare(b, 'vi'));
+
+    const browser = document.createElement('section');
+    browser.className = 'document-browser';
+    browser.setAttribute('aria-label', config.title);
+    browser.innerHTML = `
+      <div class="document-browser__bar">
+        <h2 class="document-browser__title">${config.title}</h2>
+        <div class="document-browser__search">
+          <input type="search" data-doc-search placeholder="${config.searchPlaceholder}" autocomplete="off">
+          <button class="document-browser__clear" type="button" data-doc-clear>Xóa</button>
+        </div>
+      </div>
+      <div class="document-browser__filters">
+        <div class="document-browser__fields">
+          <label class="document-field">
+            <span>${config.categoryLabel}</span>
+            <select data-doc-category></select>
+          </label>
+          <label class="document-field">
+            <span>Số quyết định</span>
+            <input type="text" data-doc-decision placeholder="${config.decisionPlaceholder}" autocomplete="off">
+          </label>
+          <label class="document-field">
+            <span>Sắp xếp</span>
+            <select data-doc-sort>
+              <option value="newest">Ngày mới nhất</option>
+              <option value="oldest">Ngày cũ nhất</option>
+              <option value="az">Tên A-Z</option>
+            </select>
+          </label>
+          <label class="document-field">
+            <span>Nguồn</span>
+            <select data-doc-source></select>
+          </label>
+        </div>
+        <div class="document-browser__meta">
+          <span data-doc-count></span>
+          <button class="document-browser__reset" type="button" data-doc-reset>Xóa bộ lọc</button>
+        </div>
+      </div>
+      <div class="document-browser__grid" data-doc-grid></div>
+    `;
+
+    const first = container.querySelector('.content-brief') || container.querySelector('.section__head') || accordion;
+    container.insertBefore(browser, first);
+    section.classList.add('section--document-browser-ready');
+
+    const searchInput = browser.querySelector('[data-doc-search]');
+    const categorySelect = browser.querySelector('[data-doc-category]');
+    const decisionInput = browser.querySelector('[data-doc-decision]');
+    const sourceSelect = browser.querySelector('[data-doc-source]');
+    const sortSelect = browser.querySelector('[data-doc-sort]');
+    const count = browser.querySelector('[data-doc-count]');
+    const grid = browser.querySelector('[data-doc-grid]');
+
+    categorySelect.append(createOption('', 'Tất cả'));
+    categories.forEach(category => categorySelect.append(createOption(category, shortCategory(category))));
+    sourceSelect.append(createOption('', 'Tất cả nguồn'));
+    sources.forEach(source => sourceSelect.append(createOption(source, source)));
+
+    const render = () => {
+      const search = normalizeText(searchInput.value);
+      const decision = normalizeText(decisionInput.value);
+      const category = categorySelect.value;
+      const source = sourceSelect.value;
+      const sort = sortSelect.value;
+
+      let results = docs.filter((doc) => {
+        if (search && !doc.searchText.includes(search)) return false;
+        if (decision && !normalizeText(doc.decision).includes(decision)) return false;
+        if (category && doc.category !== category) return false;
+        if (source && doc.source !== source) return false;
+        return true;
+      });
+
+      results = results.sort((a, b) => {
+        if (sort === 'oldest') return (a.dateValue || 0) - (b.dateValue || 0);
+        if (sort === 'az') return a.title.localeCompare(b.title, 'vi');
+        return (b.dateValue || 0) - (a.dateValue || 0);
+      });
+
+      count.textContent = `Tìm thấy ${results.length} tài liệu`;
+      grid.innerHTML = results.length ? results.map((doc) => `
+        <article class="document-card">
+          <div class="document-card__top">
+            <span class="document-card__tag">${doc.tag}</span>
+            <time class="document-card__date">${doc.dateLabel}</time>
+          </div>
+          <h3 class="document-card__title">${doc.title}</h3>
+          <dl class="document-card__details">
+            <div><dt>Số quyết định:</dt><dd>${doc.decision}</dd></div>
+            <div><dt>Ngày ban hành:</dt><dd>${doc.dateLabel}</dd></div>
+            <div><dt>Nguồn:</dt><dd>${doc.source}</dd></div>
+          </dl>
+          <div class="document-card__actions">
+            <button class="document-card__action" type="button" data-doc-preview="${doc.id}">Xem nhanh</button>
+            <a class="document-card__action" href="${doc.href}" target="_blank" rel="noopener noreferrer">${doc.isPdf ? 'Mở PDF' : 'Mở tài liệu'}</a>
+            <button class="document-card__action document-card__action--soft" type="button" data-doc-copy="${doc.id}">Copy link</button>
+          </div>
+        </article>
+      `).join('') : '<div class="document-browser__empty">Không tìm thấy tài liệu phù hợp với bộ lọc hiện tại.</div>';
+    };
+
+    browser.addEventListener('click', async (event) => {
+      const preview = event.target.closest('[data-doc-preview]');
+      const copy = event.target.closest('[data-doc-copy]');
+      if (preview) {
+        const doc = docs.find(item => item.id === preview.dataset.docPreview);
+        if (!doc) return;
+        const modal = ensureDocumentModal();
+        modal.querySelector('.document-modal__title').textContent = doc.title;
+        modal.querySelector('iframe').src = doc.href;
+        modal.dataset.open = 'true';
+        modal.setAttribute('aria-hidden', 'false');
+        return;
+      }
+      if (copy) {
+        const doc = docs.find(item => item.id === copy.dataset.docCopy);
+        if (!doc) return;
+        try {
+          await navigator.clipboard.writeText(new URL(doc.href, window.location.href).href);
+          copy.textContent = 'Đã copy';
+          setTimeout(() => { copy.textContent = 'Copy link'; }, 1400);
+        } catch (error) {
+          window.prompt('Copy link tài liệu:', new URL(doc.href, window.location.href).href);
+        }
+      }
+    });
+
+    browser.querySelector('[data-doc-clear]').addEventListener('click', () => {
+      searchInput.value = '';
+      render();
+      searchInput.focus();
+    });
+
+    browser.querySelector('[data-doc-reset]').addEventListener('click', () => {
+      searchInput.value = '';
+      decisionInput.value = '';
+      categorySelect.value = '';
+      sourceSelect.value = '';
+      sortSelect.value = 'newest';
+      render();
+    });
+
+    [searchInput, decisionInput].forEach(input => input.addEventListener('input', render));
+    [categorySelect, sourceSelect, sortSelect].forEach(select => select.addEventListener('change', render));
+    render();
+  };
+
+  initDocumentBrowser();
+
   // ---- 4. Back to top ----
   const toTop = document.querySelector('.to-top');
   if (toTop) {
