@@ -170,38 +170,6 @@
     return null;
   };
 
-  const ensureDocumentModal = () => {
-    let modal = document.querySelector('.document-modal');
-    if (modal) return modal;
-    modal = document.createElement('div');
-    modal.className = 'document-modal';
-    modal.setAttribute('aria-hidden', 'true');
-    modal.innerHTML = `
-      <div class="document-modal__backdrop" data-doc-modal-close></div>
-      <div class="document-modal__panel" role="dialog" aria-modal="true" aria-labelledby="document-modal-title">
-        <div class="document-modal__head">
-          <h2 class="document-modal__title" id="document-modal-title"></h2>
-          <button class="document-modal__close" type="button" aria-label="Đóng" data-doc-modal-close>&times;</button>
-        </div>
-        <iframe title="Xem nhanh tài liệu"></iframe>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    modal.addEventListener('click', (event) => {
-      if (!event.target.closest('[data-doc-modal-close]')) return;
-      modal.dataset.open = 'false';
-      modal.setAttribute('aria-hidden', 'true');
-      modal.querySelector('iframe').src = 'about:blank';
-    });
-    document.addEventListener('keydown', (event) => {
-      if (event.key !== 'Escape' || modal.dataset.open !== 'true') return;
-      modal.dataset.open = 'false';
-      modal.setAttribute('aria-hidden', 'true');
-      modal.querySelector('iframe').src = 'about:blank';
-    });
-    return modal;
-  };
-
   const initDocumentBrowser = () => {
     const config = getDocumentPageConfig();
     if (!config) return;
@@ -333,7 +301,6 @@
             <div><dt>Nguồn:</dt><dd>${doc.source}</dd></div>
           </dl>
           <div class="document-card__actions">
-            <button class="document-card__action" type="button" data-doc-preview="${doc.id}">Xem nhanh</button>
             <a class="document-card__action" href="${doc.href}" target="_blank" rel="noopener noreferrer">${doc.isPdf ? 'Mở PDF' : 'Mở tài liệu'}</a>
             <button class="document-card__action document-card__action--soft" type="button" data-doc-copy="${doc.id}">Copy link</button>
           </div>
@@ -342,18 +309,7 @@
     };
 
     browser.addEventListener('click', async (event) => {
-      const preview = event.target.closest('[data-doc-preview]');
       const copy = event.target.closest('[data-doc-copy]');
-      if (preview) {
-        const doc = docs.find(item => item.id === preview.dataset.docPreview);
-        if (!doc) return;
-        const modal = ensureDocumentModal();
-        modal.querySelector('.document-modal__title').textContent = doc.title;
-        modal.querySelector('iframe').src = doc.href;
-        modal.dataset.open = 'true';
-        modal.setAttribute('aria-hidden', 'false');
-        return;
-      }
       if (copy) {
         const doc = docs.find(item => item.id === copy.dataset.docCopy);
         if (!doc) return;

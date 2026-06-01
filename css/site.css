@@ -900,10 +900,6 @@ body:not([data-page="home"]) .hero__lede {
   color: var(--c-brand-800);
   margin-bottom: var(--sp-3);
 }
-.feature-card__title--compact {
-  font-size: clamp(1.06rem, 1.48vw, 1.22rem);
-  line-height: 1.25;
-}
 .feature-card__desc {
   color: var(--c-text-soft);
   font-size: var(--fs-sm);
@@ -1332,7 +1328,7 @@ body:not([data-page="home"]) .hero__lede {
 .document-card__actions {
   margin-top: auto;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 .document-card__action {
@@ -1369,70 +1365,6 @@ body:not([data-page="home"]) .hero__lede {
   border-radius: 18px;
   color: #496780;
   text-align: center;
-}
-.document-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.document-modal[data-open="true"] {
-  display: flex;
-}
-.document-modal__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(5, 22, 39, .58);
-}
-.document-modal__panel {
-  position: relative;
-  z-index: 1;
-  width: min(1040px, 100%);
-  height: min(82vh, 820px);
-  background: #fff;
-  border-radius: 18px;
-  overflow: hidden;
-  display: grid;
-  grid-template-rows: auto 1fr;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, .28);
-}
-.document-modal__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 16px;
-  background: var(--c-brand-700);
-  color: #fff;
-}
-.document-modal__title {
-  margin: 0;
-  min-width: 0;
-  color: #fff;
-  font-size: 1rem;
-  font-family: var(--ff-heading);
-  font-weight: var(--fw-b);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.document-modal__close {
-  flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  color: #fff;
-  background: rgba(255, 255, 255, .14);
-  font-size: 1.4rem;
-}
-.document-modal iframe {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  background: #f5f8fb;
 }
 @media (max-width: 900px) {
   .document-browser__fields,
@@ -1472,13 +1404,6 @@ body:not([data-page="home"]) .hero__lede {
   }
   .document-card__action {
     min-height: 44px;
-  }
-  .document-modal {
-    padding: 8px;
-  }
-  .document-modal__panel {
-    height: 86vh;
-    border-radius: 14px;
   }
 }
 
