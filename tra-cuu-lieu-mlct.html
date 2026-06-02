@@ -783,6 +783,7 @@
         selectedDrugName: ""
       };
       const DEFAULT_MLCT_API_URL = "https://script.google.com/macros/s/AKfycby1NsEE3QoqacmE4ep-It1loImsf_Zbgru3yZ7ITZVbdNNJFYTDKY-zJRhzaWYPtMR8/exec";
+      const NETLIFY_MLCT_API_URL = "/.netlify/functions/mlct-api";
       const apiUrl = (() => {
         const params = new URLSearchParams(window.location.search);
         return window.DRUGVIEW_MLCT_API_URL || params.get("api") || DEFAULT_MLCT_API_URL;
@@ -856,7 +857,7 @@
         return out;
       };
 
-      const callServer = (name, ...args) => {
+      const callServer = async (name, ...args) => {
         if (hasAppsScript()) {
           return new Promise((resolve, reject) => {
             google.script.run
@@ -865,9 +866,60 @@
           });
         }
 
-        if (apiUrl) return callJsonpApi(name, ...args);
+        const errors = [];
 
-        return Promise.reject(new Error("Trang Netlify cần URL Apps Script JSON để tra cứu dữ liệu thuốc."));
+        if (window.location.protocol !== "file:") {
+          try {
+            return await callFetchApi(name, ...args);
+          } catch (error) {
+            errors.push(error && error.message ? error.message : String(error));
+          }
+        }
+
+        if (apiUrl) {
+          try {
+            return await callJsonpApi(name, ...args);
+          } catch (error) {
+            errors.push(error && error.message ? error.message : String(error));
+          }
+        }
+
+        return Promise.reject(new Error(errors.length ? errors.join(" / ") : "Không kết nối được dữ liệu thuốc."));
+      };
+
+      const callFetchApi = async (name, ...args) => {
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 15000);
+        const url = new URL(NETLIFY_MLCT_API_URL, window.location.href);
+
+        url.searchParams.set("action", name);
+        if (name === "getDrugDataByHoatChat") url.searchParams.set("drugName", args[0] || "");
+
+        try {
+          const response = await fetch(url.toString(), {
+            method: "GET",
+            cache: "no-store",
+            signal: controller.signal,
+            headers: {
+              Accept: "application/json"
+            }
+          });
+
+          let payload;
+          try {
+            payload = await response.json();
+          } catch (error) {
+            throw new Error("Máy chủ trung gian trả dữ liệu không hợp lệ.");
+          }
+
+          if (!response.ok || (payload && payload.ok === false)) {
+            throw new Error(payload?.error || "Máy chủ trung gian không tải được dữ liệu.");
+          }
+
+          return payload && Object.prototype.hasOwnProperty.call(payload, "data") ? payload.data : payload;
+        } finally {
+          window.clearTimeout(timeout);
+        }
       };
 
       const callJsonpApi = (name, ...args) => new Promise((resolve, reject) => {
@@ -876,7 +928,7 @@
         const url = new URL(apiUrl, window.location.href);
         const timeout = window.setTimeout(() => {
           cleanup();
-          reject(new Error("Apps Script chưa phản hồi JSONP. Hãy cập nhật doGet(e) theo file docs/mlct-apps-script-json-api.gs rồi deploy lại."));
+          reject(new Error("Apps Script chưa phản hồi qua JSONP."));
         }, 20000);
 
         const cleanup = () => {
@@ -902,7 +954,7 @@
         script.async = true;
         script.onerror = () => {
           cleanup();
-          reject(new Error("Apps Script URL chưa hỗ trợ JSONP endpoint. Hãy cập nhật doGet(e) theo file docs/mlct-apps-script-json-api.gs rồi deploy lại."));
+          reject(new Error("Không tải được Apps Script trực tiếp qua JSONP."));
         };
         document.head.appendChild(script);
       });
