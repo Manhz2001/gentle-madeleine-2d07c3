@@ -684,7 +684,7 @@
         </div>
 
         <div class="panel__body">
-          <div id="connectionMessage" class="alert alert-info">Đang kiểm tra kết nối dữ liệu Apps Script...</div>
+          <div id="connectionMessage" class="alert alert-info">Đang tải dữ liệu hiệu chỉnh liều...</div>
 
           <div class="dose-form">
             <div class="form-grid">
@@ -778,12 +778,14 @@
       const $ = (selector) => document.querySelector(selector);
       const state = {
         drugNames: [],
+        drugFiles: {},
         currentDrugRows: [],
         calculatedCrCl: null,
         selectedDrugName: ""
       };
       const DEFAULT_MLCT_API_URL = "https://script.google.com/macros/s/AKfycby1NsEE3QoqacmE4ep-It1loImsf_Zbgru3yZ7ITZVbdNNJFYTDKY-zJRhzaWYPtMR8/exec";
       const NETLIFY_MLCT_API_URL = "/.netlify/functions/mlct-api";
+      const STATIC_MLCT_INDEX_URL = "data/mlct-index.json";
       const apiUrl = (() => {
         const params = new URLSearchParams(window.location.search);
         return window.DRUGVIEW_MLCT_API_URL || params.get("api") || DEFAULT_MLCT_API_URL;
@@ -889,7 +891,7 @@
 
       const callFetchApi = async (name, ...args) => {
         const controller = new AbortController();
-        const timeout = window.setTimeout(() => controller.abort(), 15000);
+        const timeout = window.setTimeout(() => controller.abort(), 60000);
         const url = new URL(NETLIFY_MLCT_API_URL, window.location.href);
 
         url.searchParams.set("action", name);
@@ -958,6 +960,34 @@
         };
         document.head.appendChild(script);
       });
+
+      const fetchJson = async (url) => {
+        const response = await fetch(url, {
+          method: "GET",
+          cache: "no-store",
+          headers: {
+            Accept: "application/json"
+          }
+        });
+
+        if (!response.ok) throw new Error("Không đọc được file dữ liệu tĩnh.");
+        return response.json();
+      };
+
+      const loadStaticDrugIndex = async () => {
+        const payload = await fetchJson(STATIC_MLCT_INDEX_URL);
+        if (!Array.isArray(payload.drugNames)) throw new Error("File danh sách hoạt chất không hợp lệ.");
+        state.drugFiles = payload.drugFiles || {};
+        return payload.drugNames;
+      };
+
+      const loadStaticDrugRows = async (name) => {
+        const file = state.drugFiles[name];
+        if (!file) throw new Error("Chưa có file dữ liệu tĩnh cho hoạt chất này.");
+        const payload = await fetchJson(file);
+        if (!Array.isArray(payload.rows)) throw new Error("File dữ liệu thuốc không hợp lệ.");
+        return payload.rows;
+      };
 
       const showConnection = (type, text) => {
         el.connectionMessage.className = "alert alert-" + type;
@@ -1109,20 +1139,21 @@
       };
 
       const loadDrugNames = async () => {
-        if (!hasAppsScript() && !apiUrl) {
-          showConnection("warning", "Chưa cấu hình URL dữ liệu Apps Script. Phần tính MLCT vẫn dùng được; phần tra liều sẽ hoạt động sau khi gắn endpoint JSON.");
-          el.drugLoadingHint.textContent = "Chưa có kết nối danh sách hoạt chất.";
-          return;
-        }
-
         try {
-          const names = await callServer("getUniqueDrugNames");
+          const names = await loadStaticDrugIndex();
           state.drugNames = Array.isArray(names) ? names : [];
-          showConnection("success", "Đã kết nối dữ liệu. Có thể tìm hoạt chất và áp liều.");
+          showConnection("success", "Đã tải dữ liệu. Có thể tìm hoạt chất và áp liều.");
           el.drugLoadingHint.textContent = "Đã tải " + state.drugNames.length + " hoạt chất.";
         } catch (error) {
-          showConnection("danger", "Không tải được danh sách hoạt chất: " + (error.message || error));
-          el.drugLoadingHint.textContent = "Lỗi tải danh sách hoạt chất.";
+          try {
+            const names = await callServer("getUniqueDrugNames");
+            state.drugNames = Array.isArray(names) ? names : [];
+            showConnection("success", "Đã kết nối dữ liệu dự phòng. Có thể tìm hoạt chất và áp liều.");
+            el.drugLoadingHint.textContent = "Đã tải " + state.drugNames.length + " hoạt chất.";
+          } catch (fallbackError) {
+            showConnection("danger", "Không tải được danh sách hoạt chất: " + (fallbackError.message || fallbackError));
+            el.drugLoadingHint.textContent = "Lỗi tải danh sách hoạt chất.";
+          }
         }
       };
 
@@ -1139,7 +1170,12 @@
         setOptions(el.indicationSelect, [], "Chọn chỉ định");
 
         try {
-          const rows = await callServer("getDrugDataByHoatChat", name);
+          let rows;
+          try {
+            rows = await loadStaticDrugRows(name);
+          } catch (error) {
+            rows = await callServer("getDrugDataByHoatChat", name);
+          }
           state.currentDrugRows = Array.isArray(rows) ? rows : [];
           const sources = unique(state.currentDrugRows.map(row => row.Source || row.Nguon || row.GhiChuNguon || "Không ghi nguồn"));
           setOptions(el.sourceSelect, sources, "Chọn nguồn");
