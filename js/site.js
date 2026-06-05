@@ -170,6 +170,103 @@
     return null;
   };
 
+  const appendixLinksByDocumentHref = new Map([
+    ['https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/8/80-btc.pdf', [
+      {
+        title: 'Phụ lục kèm theo Thông tư số 80/2025/TT-BTC',
+        href: 'https://drive.google.com/drive/folders/1YUTLFBEYTd0l4WshRKwmSnCSmC_ZIsu6?usp=drive_link'
+      }
+    ]],
+    ['https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/8/79-btc.pdf', [
+      {
+        title: 'Phụ lục kèm theo Thông tư số 79/2025/TT-BTC',
+        href: 'https://drive.google.com/drive/folders/18J4HfBEAXpFOH5M-tQTGZn1rcEzQ9p2l?usp=drive_link'
+      }
+    ]],
+    ['https://datafiles.chinhphu.vn/cpp/files/vbpq/2024/4/03-byt.pdf', [
+      {
+        title: 'Phụ lục kèm theo Thông tư số 03/2024/TT-BYT',
+        href: 'https://datafiles.chinhphu.vn/cpp/files/vbpq/2024/4/03-byt-kem.pdf'
+      }
+    ]],
+    ['https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/29-byt.pdf', [
+      {
+        title: 'Phụ lục kèm theo Thông tư số 29/2025/TT-BYT',
+        href: 'https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/29-byt-kem.pdf'
+      }
+    ]],
+    ['https://datafiles.chinhphu.vn/cpp/files/vbpq/2024/11/37-byt.pdf', [
+      {
+        title: 'Phụ lục kèm theo Thông tư số 37/2024/TT-BYT',
+        href: 'https://datafiles.chinhphu.vn/cpp/files/vbpq/2024/11/37-byt-kem.pdf'
+      }
+    ]],
+    ['https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/28-byt.pdf', [
+      {
+        title: 'Phụ lục I - Nguyên tắc, tiêu chuẩn GMP-WHO',
+        href: 'https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/1-phuluci-whogmp-final.signed.pdf'
+      },
+      {
+        title: 'Phụ lục II - Mẫu hồ sơ, biểu mẫu GMP-WHO',
+        href: 'https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/2-phulucii-whogmpmau.signed.pdf'
+      },
+      {
+        title: 'Phụ lục III - Nguyên tắc, tiêu chuẩn PIC/S-GMP',
+        href: 'https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/3-phuluciii-picsgmp.signed.pdf'
+      },
+      {
+        title: 'Phụ lục IV - Nguyên tắc, tiêu chuẩn EU-GMP',
+        href: 'https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/4-phuluciv-eugmp.signed.pdf'
+      },
+      {
+        title: 'Phụ lục V - Thuốc dược liệu',
+        href: 'https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/5-phulucv-thuocduoclieu-final.signed.pdf'
+      },
+      {
+        title: 'Phụ lục VI - Thuốc cổ truyền',
+        href: 'https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/6-phulucvi-thuoccotruyen-final.signed.pdf'
+      },
+      {
+        title: 'Phụ lục VII - Vị thuốc cổ truyền',
+        href: 'https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/7-phulucvii-vithuoccotruyen-final.signed.pdf'
+      },
+      {
+        title: 'Phụ lục VIII - Hồ sơ tổng thể',
+        href: 'https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/8-phulucviii-hosotongthe.signed.pdf'
+      },
+      {
+        title: 'Phụ lục IX - Phân loại tồn tại',
+        href: 'https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/9-phulucix-phanloaitontai-final.signed.pdf'
+      },
+      {
+        title: 'Phụ lục X - Biểu mẫu',
+        href: 'https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/10-phulucx-bieumau-final.signed.pdf'
+      },
+      {
+        title: 'Phụ lục XI - Cách ghi dạng bào chế',
+        href: 'https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/11-phulucxi-cachghidangbaoche.signed.pdf'
+      }
+    ]],
+    ['https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/32-byt.pdf', [
+      {
+        title: 'Phụ lục kèm theo Thông tư số 32/2025/TT-BYT',
+        href: 'https://datafiles.chinhphu.vn/cpp/files/vbpq/2025/7/32-byt-kem.pdf'
+      }
+    ]]
+  ]);
+
+  const getConfiguredAppendices = (href) => appendixLinksByDocumentHref.get(String(href || '').trim()) || [];
+
+  const uniqueAppendices = (appendices) => {
+    const seen = new Set();
+    return appendices.filter((appendix) => {
+      const key = `${normalizeText(appendix.title)}|${appendix.href}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
   const initDocumentBrowser = () => {
     const config = getDocumentPageConfig();
     if (!config) return;
@@ -186,6 +283,16 @@
         const title = link.querySelector('.doc-link__text')?.textContent?.trim() || link.textContent.trim();
         const date = extractDate(title);
         const href = link.getAttribute('href') || '#';
+        const domAppendices = Array.from(link.closest('li')?.querySelectorAll('.doc-appendix__link') || []).map((appendixLink, appendixIndex) => ({
+          id: `${normalizeText(category).replace(/\W+/g, '-')}-${index}-appendix-${appendixIndex}`,
+          title: appendixLink.textContent.trim(),
+          href: appendixLink.getAttribute('href') || '#'
+        }));
+        const appendices = uniqueAppendices([...domAppendices, ...getConfiguredAppendices(href)])
+          .map((appendix, appendixIndex) => ({
+            id: appendix.id || `${normalizeText(category).replace(/\W+/g, '-')}-${index}-appendix-${appendixIndex}`,
+            ...appendix
+          }));
         return {
           id: `${normalizeText(category).replace(/\W+/g, '-')}-${index}`,
           title,
@@ -197,7 +304,8 @@
           dateLabel: date.label,
           dateValue: date.value,
           searchText: normalizeText(`${title} ${category} ${source} ${extractDecision(title)} ${date.label}`),
-          isPdf: /\.pdf(?:$|[?#])/i.test(href)
+          isPdf: /\.pdf(?:$|[?#])/i.test(href),
+          appendices
         };
       });
     });
@@ -300,15 +408,33 @@
             <div><dt>Ngày ban hành:</dt><dd>${doc.dateLabel}</dd></div>
             <div><dt>Nguồn:</dt><dd>${doc.source}</dd></div>
           </dl>
-          <div class="document-card__actions">
+          <div class="document-card__actions${doc.appendices.length ? ' document-card__actions--has-appendix' : ''}">
             <a class="document-card__action" href="${doc.href}" target="_blank" rel="noopener noreferrer">${doc.isPdf ? 'Mở PDF' : 'Mở tài liệu'}</a>
+            ${doc.appendices.length ? `<button class="document-card__action document-card__action--appendix" type="button" data-doc-appendix-toggle="${doc.id}" aria-expanded="false" aria-controls="doc-appendix-${doc.id}">Phụ lục đính kèm</button>` : ''}
             <button class="document-card__action document-card__action--soft" type="button" data-doc-copy="${doc.id}">Copy link</button>
           </div>
+          ${doc.appendices.length ? `
+            <div class="document-card__appendix" id="doc-appendix-${doc.id}" hidden>
+              <div class="document-card__appendix-label">Phụ lục đính kèm</div>
+              ${doc.appendices.map(appendix => `
+                <a class="document-card__appendix-link" href="${appendix.href}" target="_blank" rel="noopener noreferrer">${appendix.title}</a>
+              `).join('')}
+            </div>
+          ` : ''}
         </article>
       `).join('') : '<div class="document-browser__empty">Không tìm thấy tài liệu phù hợp với bộ lọc hiện tại.</div>';
     };
 
     browser.addEventListener('click', async (event) => {
+      const appendixToggle = event.target.closest('[data-doc-appendix-toggle]');
+      if (appendixToggle) {
+        const panel = browser.querySelector(`#doc-appendix-${appendixToggle.dataset.docAppendixToggle}`);
+        const isExpanded = appendixToggle.getAttribute('aria-expanded') === 'true';
+        appendixToggle.setAttribute('aria-expanded', String(!isExpanded));
+        if (panel) panel.hidden = isExpanded;
+        return;
+      }
+
       const copy = event.target.closest('[data-doc-copy]');
       if (copy) {
         const doc = docs.find(item => item.id === copy.dataset.docCopy);
