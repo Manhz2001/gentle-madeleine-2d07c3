@@ -278,7 +278,7 @@
 
     const docs = Array.from(accordion.querySelectorAll('.accordion__item')).flatMap((item) => {
       const category = item.querySelector('.accordion__trigger span')?.textContent?.trim() || 'Tài liệu';
-      const source = sourceFromCategory(category, config.type);
+      const source = item.dataset.docSource || sourceFromCategory(category, config.type);
       return Array.from(item.querySelectorAll('.doc-link')).map((link, index) => {
         const title = link.querySelector('.doc-link__text')?.textContent?.trim() || link.textContent.trim();
         const date = extractDate(title);
