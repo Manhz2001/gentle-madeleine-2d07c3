@@ -539,8 +539,8 @@
       max-width: 100%;
       padding: 10px 14px;
       border-radius: var(--rad-pill);
-      background: rgba(204, 0, 0, .08);
-      color: var(--c-accent);
+      background: #fff3dc;
+      color: #85500f;
       font-size: 13px;
       font-weight: 800;
       letter-spacing: .05em;
@@ -1287,7 +1287,7 @@
 
       const groups = {
         "Đặc điểm chung": ["Hoạt chất", "Biệt dược", "Dạng bào chế", "Đường tiêm", "Cảnh báo thuốc"],
-        "Chỉ định và liều dùng": ["Nhóm tác dụng dược lý", "Chống chỉ định", "Liều tối đa", "CÁCH DÙNG"],
+        "Chỉ định và liều dùng": ["Nhóm tác dụng dược lý", "Chỉ định", "Chống chỉ định", "Liều tối đa", "CÁCH DÙNG"],
         "Pha chế và bảo quản": ["Dung môi hoàn nguyên", "Cách hoàn nguyên", "Dung môi pha loãng", "Nồng độ khuyến nghị", "Bảo quản sau hoàn nguyên", "Bảo quản sau pha loãng"],
         "Sử dụng và theo dõi": ["Thời gian/tốc độ khuyến cáo tiêm, truyền tĩnh mạch", "Lưu ý khi tiêm, truyền tĩnh mạch"],
         "Tương tác": ["Tương hợp", "Tương kỵ"],
@@ -1315,7 +1315,7 @@
 
           let displayValue = escapeHtml(value.toString()).replace(/\n/g, "<br>");
 
-          if (key.includes("Cảnh báo") || key.includes("Chống chỉ định")) {
+          if (key === "Chống chỉ định") {
             displayValue = `<span class="warning">${displayValue}</span>`;
           }
 
