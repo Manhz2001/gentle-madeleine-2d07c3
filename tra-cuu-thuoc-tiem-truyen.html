@@ -2,11 +2,14 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-    <base href="img/">
-    <meta name="x-drugview-module-mode" content="direct-no-inner-iframe">
+<!--DRUG_OCR_HOST_CONFIG-->
+<script>window.DRUG_OCR_CONFIG={standaloneUrl:"https://gentle-madeleine-2d07c3.netlify.app/tra-cuu-thuoc-tiem-truyen.html"};</script>
 <script src="/js/site.js" defer></script>
+
+    <meta name="x-drugview-module-mode" content="direct-no-inner-iframe">
+
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Tra cứu thuốc</title>
+  <title>Tra cứu thuốc — Quét ảnh thuốc</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -939,7 +942,54 @@
         }
       }
     }
-  </style>
+  .ocr-launch {display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px;color:var(--c-text-soft,#4b5766);font-size:14px}
+.ocr-panel {margin:0 24px 24px;padding:24px;background:#f7fafd;border:1px solid #cbddef;border-radius:20px;color:#1a2536;font:15px/1.6 "Inter",system-ui,sans-serif;scroll-margin-top:16px}
+.ocr-panel [hidden] {display:none!important}
+.ocr-launch [hidden] {display:none!important}
+.ocr-panel * {box-sizing:border-box;min-width:0}
+.ocr-heading {display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:14px}
+.ocr-heading h2 {font-size:26px;color:#083d6f;line-height:1.25;margin:4px 0 8px}
+.ocr-eyebrow {font-size:11px;font-weight:800;letter-spacing:.12em;color:#0b5394}
+.ocr-heading p,.ocr-help {color:#526072}
+.ocr-panel h3 {font-size:17px;margin:0 0 10px;color:#083d6f}
+.ocr-data {font-size:13px;color:#285d42;background:#eaf5ee;border-radius:10px;padding:9px 12px;margin-bottom:18px;overflow-wrap:anywhere}
+.ocr-columns {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+.ocr-source,.ocr-match {background:#fff;border:1px solid #dfe7f0;padding:20px;border-radius:14px}
+.ocr-actions {display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:12px 0}
+.ocr-btn {appearance:none;font:600 14px/1.4 "Inter",system-ui,sans-serif;cursor:pointer;min-height:44px;padding:11px 14px;border:1px solid #bbcde0;color:#083d6f;background:#fff;border-radius:10px;white-space:normal;text-align:center;touch-action:manipulation}
+.ocr-btn:hover:not(:disabled) {background:#eaf1fb;border-color:#0b5394}
+.ocr-btn.ocr-primary {background:#0b5394;color:#fff;border-color:#0b5394}
+.ocr-btn.ocr-primary:hover:not(:disabled) {background:#083d6f}
+.ocr-btn:disabled {opacity:.5;cursor:not-allowed}
+.ocr-btn:focus-visible,.ocr-panel a:focus-visible,.ocr-panel textarea:focus-visible,.ocr-panel input:focus-visible {outline:3px solid #f6a623;outline-offset:3px}
+.ocr-btn[aria-pressed=true] {background:#e0edfb;border-color:#0b5394}
+.ocr-help,.ocr-privacy {font-size:12px;line-height:1.65;margin:8px 0;overflow-wrap:anywhere}
+.ocr-privacy {border-top:1px solid #dfe7f0;padding-top:12px;color:#526072;margin-top:16px}
+.ocr-preview {margin-top:16px;border:1px solid #dfe7f0;background:#eef2f7;border-radius:12px;overflow:hidden;text-align:center}
+.ocr-preview canvas {display:block;width:auto;max-width:100%;max-height:430px;height:auto;margin:auto;object-fit:contain}
+.ocr-preview canvas.ocr-cropping {touch-action:none;cursor:crosshair}
+.ocr-camera video {display:block;width:100%;max-height:360px;background:#152535;border-radius:10px;object-fit:contain;margin-top:12px}
+.ocr-external {display:inline-block;color:#0b5394;text-decoration:underline;margin:6px 0}
+.ocr-label {display:block;font-weight:600;font-size:13px;margin:8px 0}
+.ocr-panel textarea {display:block;resize:vertical;width:100%;min-height:140px;max-height:420px;padding:12px;border:1px solid #bbcde0;border-radius:10px;font:14px/1.6 system-ui,sans-serif;color:#1a2536;background:#fff}
+.ocr-notice {font-size:13px;color:#4b5766;margin:12px 0;overflow-wrap:anywhere}
+.ocr-notice.ocr-error {background:#fff0ed;color:#8a2917;padding:10px 12px;border-radius:10px}
+.ocr-candidates {display:grid;gap:10px}
+.ocr-candidate {border:1px solid #cbddef;border-radius:12px;padding:13px;background:#fff}
+.ocr-candidate h4 {font-size:16px;color:#083d6f;overflow-wrap:anywhere;margin:4px 0}
+.ocr-candidate p,.ocr-selected p {font-size:13px;overflow-wrap:anywhere;margin:4px 0}
+#ocrSelected h4,#ocrSelected p {overflow-wrap:anywhere}
+.ocr-badge {display:inline-block;background:#edf4fc;color:#0b5394;font-size:11px;font-weight:700;border-radius:5px;padding:2px 7px}
+.ocr-warning {color:#8a3a04;background:#fff5e5;border-radius:6px;padding:6px 9px;margin-top:7px!important}
+.ocr-confirmation {border:2px solid #0b5394;background:#f2f7fd;padding:15px;border-radius:12px;margin-top:14px}
+.ocr-check {display:flex;align-items:flex-start;gap:9px;font-size:13px;margin:12px 0;cursor:pointer}
+.ocr-check input {flex:0 0 auto;width:18px;height:18px;min-width:18px;margin-top:2px;accent-color:#0b5394}
+.ocr-panel progress {display:block;width:100%;height:12px;accent-color:#0b5394;margin-top:16px}
+#ocrProgressLabel {font-size:12px;flex:1;color:#526072}
+@media(max-width:760px) {.ocr-panel{margin:0 12px 16px;padding:16px 12px;border-radius:14px}.ocr-columns{grid-template-columns:1fr;gap:14px}.ocr-source,.ocr-match{padding:15px}.ocr-heading h2{font-size:23px}.ocr-launch{align-items:flex-start}.ocr-panel textarea{font-size:16px}.ocr-actions .ocr-btn{flex-grow:1}}
+@media(prefers-reduced-motion:reduce) {.ocr-panel *{scroll-behavior:auto!important}}
+
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -947,7 +997,7 @@
       <div class="app-header__inner">
         <div>
           <div class="app-brand-lockup">
-            <img class="app-logo" src="27ed86eb0b3d.png" alt="Logo Bệnh viện Đa khoa Tỉnh Ninh Bình" width="58" height="58" decoding="async">
+            <img class="app-logo" src="/img/27ed86eb0b3d.png" alt="Logo Bệnh viện Đa khoa Tỉnh Ninh Bình" width="58" height="58" decoding="async">
             <h1 class="app-title">Tra cứu thuốc</h1>
           </div>
           <p class="app-desc">Tra cứu nhanh hoạt chất, biệt dược, cách hoàn nguyên, dung môi pha loãng, nồng độ khuyến nghị và các lưu ý khi tiêm truyền.</p>
@@ -975,6 +1025,11 @@
             <button id="searchButton" type="submit" aria-label="Tra cứu"><i class="fas fa-search"></i></button>
           </form>
 
+<div class="ocr-launch" data-analytics-ignore>
+  <button type="button" id="ocrToggle" class="ocr-btn ocr-primary" aria-expanded="false" aria-controls="drugOcrPanel">📷 Quét ảnh thuốc</button>
+  <span>Chụp bao bì hoặc tải ảnh để tìm thuốc trong danh mục.</span>
+</div>
+
           <div class="suggestions" id="suggestions"></div>
 
           <div class="search-hints">
@@ -984,6 +1039,42 @@
         </div>
       </div>
     </section>
+
+<section id="drugOcrPanel" class="ocr-panel" data-analytics-ignore aria-labelledby="ocrTitle" hidden>
+  <div class="ocr-heading"><div><p class="ocr-eyebrow">TRA CỨU TỪ HÌNH ẢNH</p><h2 id="ocrTitle" tabindex="-1">Tra cứu bằng hình ảnh</h2><p>Ảnh → đọc chữ → đối chiếu danh mục → xác nhận thuốc.</p></div><button type="button" id="ocrClose" class="ocr-btn" aria-label="Đóng phần quét thuốc">Đóng</button></div>
+  <p id="ocrDataStatus" class="ocr-data" role="status">Đang chờ dữ liệu thuốc…</p>
+  <div class="ocr-columns">
+    <div class="ocr-source">
+      <h3>1. Chụp hoặc chọn ảnh</h3>
+      <p class="ocr-help">Chụp rõ tên, hàm lượng và dạng bào chế của một thuốc. Tránh bóng sáng và chữ quá nhỏ.</p>
+      <div class="ocr-actions"><button type="button" id="ocrTakePhoto" class="ocr-btn ocr-primary">📷 Chụp ảnh</button><button type="button" id="ocrUpload" class="ocr-btn">Tải ảnh có sẵn</button><button type="button" id="ocrLive" class="ocr-btn">Camera trực tiếp</button></div>
+      <input id="ocrCameraFile" type="file" accept="image/*" capture="environment" hidden>
+      <input id="ocrImageFile" type="file" accept="image/*" hidden>
+      <p class="ocr-help">JPG, PNG, WebP và ảnh trình duyệt đọc được; tối đa 20 MB. Nếu HEIC không mở được, hãy xuất sang JPG.</p>
+      <div id="ocrCamera" class="ocr-camera" hidden><video id="ocrVideo" autoplay muted playsinline aria-label="Xem trước camera"></video><div class="ocr-actions"><button type="button" id="ocrCapture" class="ocr-btn ocr-primary" disabled>Chụp khung hình</button><button type="button" id="ocrStopCamera" class="ocr-btn">Đóng camera</button></div></div>
+      <p id="ocrCameraNotice" class="ocr-help" hidden></p>
+      <a id="ocrStandalone" class="ocr-external" target="_blank" rel="noopener noreferrer" hidden>Mở trang quét riêng ↗</a>
+      <div id="ocrPreviewArea" hidden>
+        <div class="ocr-preview"><canvas id="ocrPreview" aria-label="Ảnh thuốc đã chọn. Có thể chọn vùng tên thuốc bằng thao tác kéo."></canvas></div>
+        <div class="ocr-actions"><button type="button" id="ocrRotate" class="ocr-btn">Xoay 90°</button><button type="button" id="ocrCropMode" class="ocr-btn" aria-pressed="false">Chọn vùng tên thuốc</button><button type="button" id="ocrApplyCrop" class="ocr-btn" disabled>Cắt vùng chọn</button><button type="button" id="ocrResetCrop" class="ocr-btn">Toàn ảnh</button></div>
+        <p id="ocrCropHint" class="ocr-help">Có thể quét toàn ảnh. Nếu muốn cắt: bật “Chọn vùng tên thuốc”, kéo trên ảnh rồi bấm “Cắt vùng chọn”.</p>
+        <label class="ocr-check"><input type="checkbox" id="ocrEnhance"> Tăng tương phản khi chữ mờ</label>
+        <div class="ocr-actions"><button type="button" id="ocrRecognize" class="ocr-btn ocr-primary">Đọc chữ trong ảnh</button><button type="button" id="ocrClear" class="ocr-btn">Xóa ảnh & kết quả</button></div>
+      </div>
+      <div id="ocrProgressArea" hidden><progress id="ocrProgress" max="100" value="0" aria-label="Tiến độ đọc chữ"></progress><div class="ocr-actions"><span id="ocrProgressLabel" role="status">Đang chuẩn bị…</span><button type="button" id="ocrCancel" class="ocr-btn">Hủy đọc ảnh</button></div></div>
+      <p class="ocr-privacy">Ảnh được xử lý trong trình duyệt, không gửi lên Sheet hay máy chủ OCR. Lần đầu cần tải bộ đọc chữ; cần mạng để lấy dữ liệu thuốc.</p>
+    </div>
+    <div class="ocr-match">
+      <h3>2. Kiểm tra chữ & tìm thuốc</h3>
+      <label for="ocrText" class="ocr-label">Chữ đọc từ ảnh — có thể sửa trực tiếp</label>
+      <textarea id="ocrText" rows="6" maxlength="12000" placeholder="Chữ từ ảnh sẽ hiện ở đây. Bạn cũng có thể tự nhập tên thuốc và hàm lượng…" spellcheck="false"></textarea>
+      <div class="ocr-actions"><button type="button" id="ocrFind" class="ocr-btn ocr-primary">Tìm trong dữ liệu</button><button type="button" id="ocrReloadData" class="ocr-btn">Tải lại danh mục</button></div>
+      <p id="ocrNotice" class="ocr-notice" role="status" aria-live="polite">Thông tin mở ra là hồ sơ có sẵn trong cơ sở dữ liệu.</p>
+      <div id="ocrCandidates" class="ocr-candidates" aria-live="polite"></div>
+      <div id="ocrConfirmation" class="ocr-confirmation" hidden><h3>3. Xác nhận trước khi mở</h3><div id="ocrSelected"></div><label class="ocr-check"><input id="ocrConfirmed" type="checkbox"> Tôi đã đối chiếu tên, hàm lượng và dạng bào chế với bao bì thực tế.</label><div class="ocr-actions"><button type="button" id="ocrOpenDrug" class="ocr-btn ocr-primary" disabled>Xác nhận & mở thông tin</button><button type="button" id="ocrBack" class="ocr-btn">Chọn thuốc khác</button></div></div>
+    </div>
+  </div>
+</section>
 
     <section class="stats-grid">
       <div class="stats-card" id="realTimeStats">
@@ -1043,6 +1134,7 @@
     let monthlyTopSearches = [];
     let realTimeStats = { today: 0, month: 0, topSearches: [] };
     let searchKeys = [];
+    let dataLoading = null;
 
     const searchInput = document.getElementById("searchInput");
     const searchForm = document.getElementById("searchForm");
@@ -1061,7 +1153,6 @@
       loadMonthlyTopSearches();
       setInterval(loadRealTimeStats, 30000);
       setInterval(loadMonthlyTopSearches, 30000);
-      applyQueryParamSearch();
       setupAutoResize();
     });
 
@@ -1084,9 +1175,17 @@
     }
 
     async function fetchData() {
+      if (dataLoading) return dataLoading;
+      dataLoading = loadDrugData();
+      try { return await dataLoading; } finally { dataLoading = null; }
+    }
+
+    async function loadDrugData() {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
       try {
         showLoader();
-        const response = await fetch(`${webAppUrl}?t=${Date.now()}`);
+        const response = await fetch(`${webAppUrl}?t=${Date.now()}`, {signal:controller.signal});
         if (!response.ok) throw new Error(`HTTP error ${response.status}`);
         const text = await response.text();
         const data = JSON.parse(text);
@@ -1111,9 +1210,13 @@
 
         hideLoader();
         showInitialPrompt();
+        window.dispatchEvent(new CustomEvent("drug-data-ready", {detail:{count:data.length}}));
+        applyQueryParamSearch();
+        return true;
       } catch (error) {
         showError();
-      }
+        return false;
+      } finally { clearTimeout(timeout); }
     }
 
     async function loadRealTimeStats() {
@@ -1164,7 +1267,7 @@
       list.innerHTML = realTimeStats.topSearches.map((item, index) => {
         const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`;
         return `
-          <div class="top-search-item" onclick="searchFromTop(${JSON.stringify(item.term)})">
+          <div class="top-search-item" onclick="searchFromTop(${escapeHtml(JSON.stringify(String(item.term || "")))})">
             <span class="search-term">${medal} ${escapeHtml(item.term)}</span>
             <span class="search-count">${item.count}</span>
           </div>
@@ -1181,7 +1284,7 @@
       list.innerHTML = monthlyTopSearches.slice(0, 3).map((item, index) => {
         const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`;
         return `
-          <div class="monthly-top-item" onclick="searchFromTop(${JSON.stringify(item.term)})">
+          <div class="monthly-top-item" onclick="searchFromTop(${escapeHtml(JSON.stringify(String(item.term || "")))})">
             <span class="monthly-term">${medal} ${escapeHtml(item.term)}</span>
             <span class="monthly-count">${item.count}</span>
           </div>
@@ -1280,17 +1383,21 @@
       if (!data) return showNoResults();
       hideStates();
 
-      const getValue = (key) => getCellValue(data[key]);
+      const getValue = (key) => {
+        const actualKey = Object.prototype.hasOwnProperty.call(data, key)
+          ? key : Object.keys(data).find(name => normalizeText(name) === normalizeText(key));
+        return getCellValue(actualKey === undefined ? undefined : data[actualKey]);
+      };
       const bietDuocValue = getValue("Biệt dược") || "Không rõ";
       const hoatChatValue = getValue("Hoạt chất") || "Không rõ";
       const canhBaoValue = getValue("Cảnh báo thuốc");
 
       const groups = {
-        "Đặc điểm chung": ["Hoạt chất", "Biệt dược", "Dạng bào chế", "Đường tiêm", "Cảnh báo thuốc"],
-        "Chỉ định và liều dùng": ["Nhóm tác dụng dược lý", "Chỉ định", "Chống chỉ định", "Liều tối đa", "CÁCH DÙNG"],
-        "Pha chế và bảo quản": ["Dung môi hoàn nguyên", "Cách hoàn nguyên", "Dung môi pha loãng", "Nồng độ khuyến nghị", "Bảo quản sau hoàn nguyên", "Bảo quản sau pha loãng"],
-        "Sử dụng và theo dõi": ["Thời gian/tốc độ khuyến cáo tiêm, truyền tĩnh mạch", "Lưu ý khi tiêm, truyền tĩnh mạch"],
-        "Tương tác": ["Tương hợp", "Tương kỵ"],
+        "Đặc điểm chung": ["Hoạt chất", "Biệt dược", "Dạng bào chế", "Nước sản xuất", "Nhóm tác dụng dược lý", "Đường tiêm", "Cảnh báo thuốc"],
+        "Chỉ định và liều dùng": ["Chỉ định", "Chống chỉ định", "Liều dùng", "Liều tối đa", "Cách dùng"],
+        "Pha chế và bảo quản": ["Dung môi hoàn nguyên", "Cách hoàn nguyên", "Dung môi pha loãng", "Nồng độ khuyến nghị", "Bảo quản sau hoàn nguyên", "Bảo quản sau pha loãng", "Bảo quản"],
+        "Sử dụng và theo dõi": ["Thời gian/tốc độ khuyến cáo tiêm, truyền tĩnh mạch", "Lưu ý khi tiêm, truyền tĩnh mạch", "Tác dụng phụ", "PNCT&PNCCB"],
+        "Tương tác": ["Tương hợp", "Tương kỵ", "Tương tác thuốc"],
         "Tài liệu tham khảo": ["Biệt dược tham khảo", "Tài liệu tham khảo", "Hình ảnh biệt dược tại bệnh viện"]
       };
 
@@ -1328,11 +1435,12 @@
               text = data[key].text || "Xem chi tiết";
             }
 
+            url = safeExternalUrl(url);
             if (url) {
               validRows += `
                 <div class="info-item">
                   <div class="info-label">${escapeHtml(key)}</div>
-                  <div class="info-value"><a href="${url}" target="_blank" rel="noopener">${escapeHtml(text)}</a></div>
+                  <div class="info-value"><a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(text)}</a></div>
                 </div>
               `;
             }
@@ -1344,11 +1452,13 @@
                 imageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1200`;
               }
             }
+            imageUrl = safeExternalUrl(imageUrl);
+            if (!imageUrl) return;
             validRows += `
               <div class="info-item">
                 <div class="info-label">${escapeHtml(key)}</div>
                 <div class="info-value">
-                  <img src="${imageUrl}" alt="Hình ảnh ${escapeHtml(bietDuocValue)}" onerror="this.src='https://via.placeholder.com/700x360?text=Khong+co+hinh+anh';this.onerror=null;">
+                  <img src="${escapeHtml(imageUrl)}" alt="Hình ảnh ${escapeHtml(bietDuocValue)}" onerror="this.src='https://via.placeholder.com/700x360?text=Khong+co+hinh+anh';this.onerror=null;">
                 </div>
               </div>
             `;
@@ -1416,7 +1526,8 @@
 
     function getCellValue(cell) {
       if (!cell) return "";
-      return typeof cell === "object" && cell.value !== undefined ? cell.value : cell;
+      if (typeof cell !== "object") return cell;
+      return cell.value ?? cell.url ?? cell.text ?? "";
     }
 
     function getSearchKeys(sampleRow) {
@@ -1432,6 +1543,11 @@
         .replace(/Đ/g, "D")
         .toLowerCase()
         .trim();
+    }
+
+    function safeExternalUrl(value) {
+      try { const url = new URL(String(value)); return ["http:","https:"].includes(url.protocol) ? url.href : ""; }
+      catch (_) { return ""; }
     }
 
     function escapeHtml(value) {
@@ -1486,7 +1602,7 @@
       const keyword = url.searchParams.get("q") || "";
       if (!keyword) return;
       searchInput.value = keyword;
-      setTimeout(() => searchData(), 500);
+      searchData();
     }
 
     let lastSyncedFrameHeight = 0;
@@ -1522,5 +1638,678 @@
       window.addEventListener("load", syncIframeHeight);
     }
   </script>
+<script>
+(function (root, factory) {
+  'use strict';
+  var api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.DrugOcrMatcher = api;
+}(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  // This module only proposes catalogue rows. Identity and strength remain
+  // separate evidence, and consumers must ask a person to confirm a candidate.
+  var STOP = new Set(('thuoc vien nen nang cung mem bao phim duong bot pha tiem truyen dung dich hon nhan tuong '
+    + 'dong kho for solution infusion injection inj tablets tablet capsule capsules eye drops '
+    + 'chai ong lo tui goi binh hop lieu moi nhat xit microgam microgram mg mcg ml iu ui '
+    + 'hydroclorid hydrochlorid hydrochloride dihydroclorid sulfat sulfate natri kali '
+    + 'dihydrat trihydrat monohydrat acetat fumarat').split(' '));
+  var FORM_WORDS = new Set(('thuoc vien nen nang cung mem bao phim duong bot pha tiem truyen dung dich hon '
+    + 'nhan tuong dong kho for solution infusion injection inj tablets tablet capsule capsules '
+    + 'eye drops chai ong lo tui goi binh hop lieu moi nhat xit').split(' '));
+  var SALT_WORDS = new Set(('hydroclorid hydrochlorid hydrochloride dihydroclorid sulfat sulfate '
+    + 'natri kali dihydrat trihydrat monohydrat acetat fumarat').split(' '));
+  var UNIT = '(?:micrograms?|microgam|mcg|[µμu]g|mg|miu|m\\.?i\\.?u\\.?|i\\.?u\\.?|u\\.?i\\.?|ml|g|l|%|u)';
+  var NUM = '\\d+(?:[.,]\\d+)*';
+
+  function cell(value) {
+    if (value && typeof value === 'object') return String(value.value == null ? '' : value.value);
+    return value == null ? '' : String(value);
+  }
+
+  function fold(value) {
+    return String(value == null ? '' : value).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[đĐ]/g, 'd').toLowerCase().replace(/[µμ]/g, 'u');
+  }
+
+  function normalize(value) {
+    return fold(value).replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  function numberValue(raw) {
+    // Vietnamese labels commonly use 25.000 IU and 0,25 mg. A nonzero
+    // leading group followed by three-digit groups is a thousands separator.
+    if (/^[1-9]\d{0,2}(?:[.,]\d{3})+$/.test(raw)) return Number(raw.replace(/[.,]/g, ''));
+    if (raw.includes(',') && raw.includes('.')) {
+      var decimal = raw.lastIndexOf(',') > raw.lastIndexOf('.') ? ',' : '.';
+      return Number(raw.replace(decimal === ',' ? /\./g : /,/g, '').replace(',', '.'));
+    }
+    return Number(raw.replace(',', '.'));
+  }
+
+  function unitInfo(raw) {
+    var unit = fold(raw).replace(/\./g, '');
+    if (/^(micrograms?|microgam|mcg|ug)$/.test(unit)) return {unit: 'mcg', dimension: 'mass', factor: 0.001};
+    if (unit === 'mg') return {unit: 'mg', dimension: 'mass', factor: 1};
+    if (unit === 'g') return {unit: 'g', dimension: 'mass', factor: 1000};
+    if (unit === 'ml') return {unit: 'ml', dimension: 'volume', factor: 1};
+    if (unit === 'l') return {unit: 'l', dimension: 'volume', factor: 1000};
+    if (unit === '%') return {unit: '%', dimension: 'percent', factor: 1};
+    return {unit: 'IU', dimension: 'activity', factor: unit === 'miu' ? 1000000 : 1};
+  }
+
+  function makeStrength(rawNumber, rawUnit, start, end, text) {
+    var info = unitInfo(rawUnit), value = numberValue(rawNumber);
+    return {value: value, unit: info.unit, dimension: info.dimension, baseValue: value * info.factor,
+      start: start, end: end, text: text};
+  }
+
+  function strengthKey(item) {
+    var dimension = item.dimension, amount = item.baseValue;
+    if (item.per) { dimension += '/' + item.per.dimension; amount /= item.per.baseValue; }
+    return dimension + ':' + Number(amount.toPrecision(10));
+  }
+
+  function extractStrengths(value) {
+    var text = fold(value), re = new RegExp('(' + NUM + ')\\s*(' + UNIT + ')(?![a-z0-9])', 'g');
+    var out = [], m;
+    while ((m = re.exec(text))) {
+      // A digit embedded in a lot code or a drug name is not a labelled dose.
+      if (m.index && /[a-z0-9]/.test(text[m.index - 1])) continue;
+      if (/\b(?:lot|batch|so lo|sdk|hsd|exp|nsx)\s*[:#-]?\s*$/.test(text.slice(Math.max(0, m.index - 25), m.index))) continue;
+      var entry = makeStrength(m[1], m[2], m.index, re.lastIndex, text.slice(m.index, re.lastIndex));
+      var tail = text.slice(re.lastIndex);
+      var den = tail.match(new RegExp('^\\s*[/]\\s*(' + NUM + ')?\\s*(' + UNIT + ')(?![a-z0-9])'));
+      if (den && entry.dimension !== 'percent') {
+        var denInfo = unitInfo(den[2]);
+        // /125 mg is another ingredient; /ml and /g describe concentration.
+        if (denInfo.dimension === 'volume' || denInfo.unit === 'g') {
+          entry.per = makeStrength(den[1] || '1', den[2], re.lastIndex, re.lastIndex + den[0].length, den[0]);
+          entry.end += den[0].length;
+          entry.text = text.slice(entry.start, entry.end);
+          re.lastIndex = entry.end;
+        }
+      }
+      // A shared unit in "160/4,5 microgam" or "500 + 125 mg".
+      var before = text.slice(0, m.index);
+      var shared = before.match(new RegExp('(?:^|[^a-z0-9.,])(' + NUM + '(?:\\s*[/+]\\s*' + NUM + ')*)\\s*[/+]\\s*$'));
+      if (shared) {
+        var sharedStart = before.length - shared[0].length;
+        var digitOffset = shared[0].search(/\d/);
+        var valueRe = new RegExp(NUM, 'g'), part;
+        while ((part = valueRe.exec(shared[1]))) {
+          var extra = makeStrength(part[0], m[2], sharedStart + digitOffset + part.index,
+            sharedStart + digitOffset + part.index + part[0].length, part[0] + ' ' + m[2]);
+          if (entry.per) extra.per = Object.assign({}, entry.per);
+          extra.key = strengthKey(extra); out.push(extra);
+        }
+      }
+      entry.key = strengthKey(entry); out.push(entry);
+    }
+    return out;
+  }
+
+  function stripStrengths(value) {
+    var text = fold(value);
+    var items = extractStrengths(text).sort(function (a, b) {return b.start - a.start;});
+    items.forEach(function (item) { text = text.slice(0, item.start) + ' ' + text.slice(item.end); });
+    return text;
+  }
+
+  function cleanName(value, isActive) {
+    var name = String(value || '').split(';')[0];
+    if (isActive) name = name.replace(/\([^)]*\)/g, ' ');
+    name = stripStrengths(name);
+    name = fold(name).replace(/\b(?:duoi dang|tuong duong|tuong ung|moi nhat|moi lieu|moi ong|moi vien|chua trong)\b[\s\S]*$/, ' ');
+    return normalize(name).split(' ').filter(function (word) {
+      return word && !/^\d+$/.test(word) && !FORM_WORDS.has(word);
+    }).join(' ');
+  }
+
+  function usefulName(name) {
+    var significant = name.split(' ').filter(function (word) {return word.length >= 3 && !STOP.has(word);});
+    return significant.some(function (word) {return word.length >= 4 || /[a-z]\d|\d[a-z]/.test(word);});
+  }
+
+  function uniqueStrengths(items) {
+    var keys = new Set();
+    return items.filter(function (item) {
+      var key = item.key + ':' + item.baseValue;
+      if (keys.has(key)) return false;
+      keys.add(key); return true;
+    });
+  }
+
+  function createIndex(rows) {
+    if (!Array.isArray(rows)) throw new TypeError('Drug catalogue must be an array.');
+    var entries = rows.map(function (drug, i) {
+      var brand = cell(drug && drug['Biệt dược']), active = cell(drug && drug['Hoạt chất']);
+      var form = cell(drug && drug['Dạng bào chế']);
+      var activeName = cleanName(active, true), brandName = cleanName(brand, false);
+      var activeCore = activeName.split(' ').filter(function (word) {return !SALT_WORDS.has(word);}).join(' ');
+      var aliases = [];
+      if (usefulName(brandName)) aliases.push({name: brandName, kind: brandName === activeName || brandName === activeCore ? 'active' : 'brand'});
+      if (usefulName(activeName) && !aliases.some(function (a) {return a.name === activeName;})) aliases.push({name: activeName, kind: 'active'});
+      if (usefulName(activeCore) && !aliases.some(function (a) {return a.name === activeCore;})) aliases.push({name: activeCore, kind: 'active'});
+      // Parenthesized brand labels in the identity column are useful when the
+      // separate brand cell is blank, without indexing clinical prose fields.
+      if (!brandName) {
+        var groups = active.match(/\([^)]*\)/g) || [];
+        groups.forEach(function (group) {
+          var alias = cleanName(group.slice(1, -1), false);
+          if (usefulName(alias) && !/^(duoi dang|tuong duong|tuong ung)\b/.test(alias)) aliases.push({name: alias, kind: 'brand'});
+        });
+      }
+      var strengths = uniqueStrengths(extractStrengths(active).concat(extractStrengths(brand)));
+      return {drug: drug, index: i, brand: brand, active: active, form: form, aliases: aliases,
+        activeName: activeCore || activeName, strengths: strengths};
+    });
+    return {entries: entries};
+  }
+
+  function tokensWithPositions(text) {
+    var re = /[a-z0-9]+/g, result = [], m;
+    while ((m = re.exec(text))) result.push({word: m[0], start: m.index, end: re.lastIndex});
+    return result;
+  }
+
+  function editDistance(a, b) {
+    if (Math.abs(a.length - b.length) > 2) return 3;
+    var prev = Array.from({length: b.length + 1}, function (_, i) {return i;});
+    for (var i = 1; i <= a.length; i++) {
+      var next = [i];
+      for (var j = 1; j <= b.length; j++) next[j] = Math.min(next[j - 1] + 1, prev[j] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = next;
+    }
+    return prev[b.length];
+  }
+
+  function ocrSkeleton(word) { return word.replace(/rn/g, 'm').replace(/[1i]/g, 'l').replace(/0/g, 'o').replace(/5/g, 's'); }
+
+  function tokenQuality(a, b) {
+    if (a === b) return 1;
+    if (Math.min(a.length, b.length) < 5 || /\d/.test(b)) return 0;
+    if (ocrSkeleton(a) === ocrSkeleton(b)) return 0.94;
+    var distance = editDistance(a, b), minLength = Math.min(a.length, b.length);
+    if (minLength >= 7 && distance === 1) return 0.89;
+    if (minLength >= 12 && distance === 2) return 0.86;
+    return 0;
+  }
+
+  function identityMatches(alias, tokens) {
+    var words = alias.name.split(' '), found = [];
+    for (var i = 0; i <= tokens.length - words.length; i++) {
+      var quality = 0, approximate = false, okay = true;
+      for (var j = 0; j < words.length; j++) {
+        var q = tokenQuality(tokens[i + j].word, words[j]);
+        if (!q) {okay = false; break;}
+        quality += q; if (q < 1) approximate = true;
+      }
+      if (okay && (!approximate || quality / words.length >= 0.86)) found.push({
+        start: tokens[i].start, end: tokens[i + words.length - 1].end,
+        alias: alias.name, kind: alias.kind, approximate: approximate,
+        base: alias.kind === 'brand' ? (approximate ? 72 : 88) : (approximate ? 62 : 76)
+      });
+    }
+    return found;
+  }
+
+  function close(a, b) { return Math.abs(a - b) <= Math.max(0.000001, Math.abs(b) * 0.005); }
+
+  function sameStrength(a, b) {
+    if (a.dimension !== b.dimension) return false;
+    if (a.per) return !!b.per && a.per.dimension === b.per.dimension && close(a.baseValue / a.per.baseValue, b.baseValue / b.per.baseValue);
+    return close(a.baseValue, b.baseValue);
+  }
+
+  function compareStrengths(observed, expected) {
+    var q = uniqueStrengths(observed.filter(function (s) {return s.dimension !== 'volume';}));
+    var e = expected.filter(function (s) {return s.dimension !== 'volume';});
+    if (!q.length) return {state: 'unknown', adjustment: 0};
+    if (!e.length) return {state: 'unverifiable', adjustment: -4};
+    var conflicts = q.filter(function (item) {
+      return e.some(function (other) {return other.dimension === item.dimension && (!item.per || (other.per && other.per.dimension === item.per.dimension));})
+        && !e.some(function (other) {return sameStrength(item, other);});
+    });
+    if (conflicts.length) return {state: 'conflict', adjustment: -30};
+    var matches = q.filter(function (item) {return e.some(function (other) {return sameStrength(item, other);});});
+    if (!matches.length) return {state: 'unverifiable', adjustment: -4};
+    // Every explicitly read component must agree; missing components never get
+    // filled in from the catalogue. Repeated equivalent label units are allowed.
+    var missing = e.some(function (item) {return !q.some(function (other) {return sameStrength(other, item) || sameStrength(item, other);});});
+    return {state: missing ? 'partial' : 'agree', adjustment: missing ? 4 : 9};
+  }
+
+  function compatibleMarker(marker, entry) {
+    return marker.entry === entry || (entry.activeName && marker.entry.activeName === entry.activeName)
+      || entry.aliases.some(function (alias) {return alias.name === marker.evidence.alias;});
+  }
+
+  function localContext(text, evidence, entry, markers) {
+    var end = Math.min(text.length, evidence.end + 500);
+    markers.forEach(function (marker) {
+      if (marker.evidence.start >= evidence.end && (!compatibleMarker(marker, entry) || marker.evidence.alias === evidence.alias)) end = Math.min(end, marker.evidence.start);
+    });
+    // OCR commonly inserts blank lines between the brand and its dose. Keep
+    // those lines; the next distinct medicine marker and the length cap above
+    // provide the context boundary without discarding an adjacent strength.
+    return text.slice(evidence.start, end);
+  }
+
+  function match(text, index, options) {
+    if (!index || !Array.isArray(index.entries)) throw new TypeError('Use createIndex(rows) before match().');
+    var raw = fold(String(text || '').slice(0, 30000));
+    // Keep positions and line breaks while folding punctuation into spaces.
+    var searchable = raw.replace(/[^a-z0-9\n]/g, ' '), tokens = tokensWithPositions(searchable);
+    if (!tokens.length) return [];
+    var matches = [], markers = [];
+    index.entries.forEach(function (entry) {
+      var evidence = [];
+      entry.aliases.forEach(function (alias) {evidence = evidence.concat(identityMatches(alias, tokens));});
+      if (!evidence.length) return;
+      matches.push({entry: entry, evidence: evidence});
+      evidence.forEach(function (item) {if (!item.approximate) markers.push({entry: entry, evidence: item});});
+    });
+    var groups = new Set(markers.map(function (m) {return m.entry.activeName || m.evidence.alias;}));
+    var multiple = groups.size > 1 && markers.some(function (a) {
+      return markers.some(function (b) {return a.evidence.end <= b.evidence.start && !compatibleMarker(b, a.entry);});
+    });
+    var results = matches.map(function (item) {
+      var entry = item.entry, best;
+      item.evidence.forEach(function (evidence) {
+        var observed = extractStrengths(localContext(raw, evidence, entry, markers));
+        var comparison = compareStrengths(observed, entry.strengths);
+        var score = evidence.base + comparison.adjustment;
+        // Weaker active-name evidence must not hide a conflicting strength
+        // explicitly attached to an exact brand label in the same OCR block.
+        if (!best || evidence.base > best.evidence.base || (evidence.base === best.evidence.base && score > best.score)) {
+          best = {evidence: evidence, comparison: comparison, score: score};
+        }
+      });
+      var reasons = [best.evidence.kind === 'brand' ? 'Tên biệt dược khớp với danh mục.' : 'Tên hoạt chất khớp với danh mục.'];
+      var warnings = [];
+      if (best.evidence.approximate) {
+        reasons[0] = best.evidence.kind === 'brand' ? 'Tên gần giống biệt dược trong danh mục.' : 'Tên gần giống hoạt chất trong danh mục.';
+        warnings.push('Tên có ký tự OCR gần giống; cần đối chiếu lại nhãn.');
+      }
+      if (best.comparison.state === 'agree') reasons.push('Hàm lượng/nồng độ đọc được phù hợp.');
+      if (best.comparison.state === 'conflict') warnings.push('Hàm lượng/nồng độ đọc được khác mục danh mục; cần kiểm tra nhãn.');
+      if (best.comparison.state === 'unknown') warnings.push('Chưa đọc được hàm lượng có đơn vị; cần kiểm tra nhãn.');
+      if (best.comparison.state === 'unverifiable') warnings.push('Chưa đối chiếu được hàm lượng/nồng độ với mục danh mục.');
+      if (best.comparison.state === 'partial') warnings.push('Mới đối chiếu được một phần hàm lượng của mục danh mục.');
+      if (multiple) warnings.push('Phát hiện nhiều tên thuốc trong văn bản; xác nhận riêng từng thuốc.');
+      var strength = uniqueStrengths(extractStrengths(entry.active).filter(function (s) {return s.dimension !== 'volume';}))
+        .map(function (s) {return s.text;}).join(' + ');
+      if (!strength) strength = entry.strengths.filter(function (s) {return s.dimension !== 'volume';}).map(function (s) {return s.text;}).join(' + ');
+      return {drug: entry.drug, index: entry.index, score: Math.max(0, Math.min(100, Math.round(best.score))),
+        matchType: best.evidence.kind + (best.evidence.approximate ? '-approximate' : '-exact'),
+        reasons: reasons, warnings: warnings, brand: entry.brand, active: entry.active,
+        strength: strength, form: entry.form};
+    });
+    results.sort(function (a, b) {return b.score - a.score || a.index - b.index;});
+    var requested = options && options.limit != null ? Number(options.limit) : 8;
+    var limit = Number.isFinite(requested) ? Math.max(0, Math.min(100, Math.floor(requested))) : 8;
+    return results.slice(0, limit);
+  }
+
+  return {createIndex: createIndex, match: match, normalize: normalize, extractStrengths: extractStrengths};
+}));
+
+(function (global) {
+  'use strict';
+  const DEFAULTS = Object.freeze({
+    scriptUrl: 'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.min.js',
+    workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/worker.min.js',
+    corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@7.0.0',
+    langPath: 'https://tessdata.projectnaptha.com/4.0.0',
+    languages: 'eng+vie', maxFileBytes: 20 * 1024 * 1024,
+    maxEdge: 2048, timeoutMs: 120000, standaloneUrl: ''
+  });
+  let libraryPromise;
+  function loadLibrary(url) {
+    if (global.Tesseract) return Promise.resolve(global.Tesseract);
+    if (libraryPromise) return libraryPromise;
+    libraryPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = url; script.async = true; script.crossOrigin = 'anonymous';
+      const timer = setTimeout(() => fail(), 30000);
+      function fail() { clearTimeout(timer); script.remove(); libraryPromise = null; reject(new Error('Không tải được bộ OCR. Kiểm tra mạng hoặc trình chặn nội dung, rồi thử lại.')); }
+      script.onerror = fail;
+      script.onload = () => { clearTimeout(timer); if (global.Tesseract) resolve(global.Tesseract); else fail(); };
+      document.head.appendChild(script);
+    });
+    return libraryPromise;
+  }
+  function mount(options) {
+    const config = Object.assign({}, DEFAULTS, options);
+    if (typeof config.getRows !== 'function' || typeof config.openDrug !== 'function') throw new Error('OCR cần getRows và openDrug.');
+    const $ = id => document.getElementById(id);
+    const ui = {};
+    ['Toggle','Close','TakePhoto','Upload','Live','CameraFile','ImageFile','Camera','Video','Capture','StopCamera','CameraNotice','Standalone','PreviewArea','Preview','Rotate','CropMode','ApplyCrop','ResetCrop','Enhance','Recognize','Clear','ProgressArea','Progress','ProgressLabel','Cancel','Text','Find','ReloadData','Notice','Candidates','Confirmation','Selected','Confirmed','OpenDrug','Back','DataStatus'].forEach(key => { ui[key] = $('ocr' + key); });
+    const panel = $('drugOcrPanel');
+    if (!panel || !ui.Toggle) throw new Error('Thiếu HTML module OCR.');
+    let rowsRef = null, index = [], selected = null;
+    let source = null, image = null, selection = null, dragStart = null, cropMode = false;
+    let stream = null, cameraGeneration = 0, cameraTimer;
+    let worker = null, busy = false, generation = 0, imageGeneration = 0, taskTimer;
+    let destroyed = false, loadedAt = '', reloadBusy = false, loadingImage = false;
+    const listeners = [];
+    const listen = (node, event, fn) => { node.addEventListener(event, fn); listeners.push(() => node.removeEventListener(event, fn)); };
+    const resize = () => { if (config.onResize) config.onResize(); };
+    const say = (text, error = false) => { ui.Notice.textContent = text; ui.Notice.classList.toggle('ocr-error', error); resize(); };
+    function resetResults() {
+      selected = null; ui.Candidates.replaceChildren(); ui.Selected.replaceChildren();
+      ui.Confirmation.hidden = true; ui.Confirmed.checked = false; ui.OpenDrug.disabled = true;
+    }
+    function refreshData() {
+      if (destroyed) return false;
+      let rows;
+      try { rows = config.getRows(); } catch (_) { rows = []; }
+      if (!Array.isArray(rows)) rows = [];
+      if (rowsRef !== rows) {
+        rowsRef = rows;
+        index = global.DrugOcrMatcher.createIndex(rows);
+        if (selected || ui.Candidates.childElementCount) {
+          resetResults(); say('Danh mục vừa được cập nhật. Bấm “Tìm trong dữ liệu” để đối chiếu lại.');
+        }
+        if (rows.length) loadedAt = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'});
+      }
+      const status = rows.length ? `Đã nạp ${rows.length.toLocaleString('vi-VN')} hồ sơ thuốc · lúc ${loadedAt} · nguồn Ninh Bình` : 'Chưa nạp được dữ liệu thuốc. Có thể chuẩn bị ảnh; hãy tải lại danh mục trước khi tìm.';
+      if(ui.DataStatus.textContent!==status)ui.DataStatus.textContent=status;
+      return rows.length > 0;
+    }
+    function updateControls() {
+      const disabled = busy || loadingImage;
+      ['TakePhoto','Upload','Live','Rotate','CropMode','ResetCrop','Enhance','Recognize'].forEach(key => { ui[key].disabled = disabled; });
+      ui.ApplyCrop.disabled = disabled || !selection;
+      ui.Text.disabled = disabled; ui.Find.disabled = disabled;
+      ui.Clear.disabled = busy;
+    }
+    function setBusy(value) {
+      busy = value; ui.ProgressArea.hidden = !value;
+      updateControls();
+      resize();
+    }
+    async function terminateWorker() {
+      const old = worker; worker = null;
+      if (old) { try { await old.terminate(); } catch (_) {} }
+    }
+    function cancel(message = 'Đã hủy đọc ảnh. Bạn có thể đọc lại hoặc nhập tên thuốc.') {
+      generation++; clearTimeout(taskTimer); terminateWorker();
+      if (busy) { setBusy(false); say(message); }
+    }
+    function stopCamera() {
+      cameraGeneration++; clearTimeout(cameraTimer);
+      if (stream) stream.getTracks().forEach(track => track.stop());
+      stream = null; ui.Video.srcObject = null; ui.Camera.hidden = true;
+      ui.Live.disabled = busy || loadingImage; ui.Capture.disabled = true; resize();
+    }
+    function cameraNotice(text) { ui.CameraNotice.hidden = false; ui.CameraNotice.textContent = text; resize(); }
+    async function startCamera() {
+      stopCamera();
+      const token = cameraGeneration;
+      if (!global.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        cameraNotice('Camera trực tiếp cần HTTPS và trình duyệt hỗ trợ. Hãy dùng “Chụp ảnh” hoặc “Tải ảnh có sẵn”.'); return;
+      }
+      const policy = document.permissionsPolicy || document.featurePolicy;
+      if (policy && typeof policy.allowsFeature === 'function' && !policy.allowsFeature('camera')) {
+        cameraNotice('Trang nhúng này không cho phép camera trực tiếp. Dùng “Chụp ảnh”/“Tải ảnh có sẵn”, hoặc mở trang HTTPS riêng nếu đã cấu hình.'); return;
+      }
+      ui.Live.disabled = true; ui.Camera.hidden = false;
+      cameraNotice('Hãy cho phép camera trong thông báo của trình duyệt. Bạn có thể bấm “Đóng camera” để hủy.');
+      cameraTimer = setTimeout(() => {
+        if (token === cameraGeneration) { stopCamera(); cameraNotice('Đã dừng chờ quyền camera. Có thể thử lại, chụp ảnh bằng trình chọn ảnh hoặc tải ảnh có sẵn.'); }
+      }, 30000);
+      try {
+        const media = await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}});
+        if (token !== cameraGeneration || destroyed) { media.getTracks().forEach(track => track.stop()); return; }
+        stream = media; ui.Video.srcObject = media;
+        await ui.Video.play();
+        if (token !== cameraGeneration) return;
+        clearTimeout(cameraTimer); ui.Capture.disabled = false; ui.CameraNotice.hidden = true; resize();
+      } catch (error) {
+        if (token !== cameraGeneration) return;
+        stopCamera();
+        const details = error.name === 'NotFoundError' ? 'Không tìm thấy camera.' : error.name === 'NotReadableError' ? 'Camera đang bận hoặc chưa mở được.' : 'Camera bị từ chối hoặc trang nhúng không cho phép.';
+        cameraNotice(`${details} Dùng “Chụp ảnh” hoặc “Tải ảnh có sẵn”.`);
+      }
+    }
+    function copyCanvas(input) {
+      const out = document.createElement('canvas'); out.width = input.width; out.height = input.height;
+      out.getContext('2d').drawImage(input, 0, 0); return out;
+    }
+    function scaledCanvas(input, width, height) {
+      const scale = Math.min(1, config.maxEdge / Math.max(width, height));
+      const canvas = document.createElement('canvas'); canvas.width = Math.max(1,Math.round(width*scale)); canvas.height = Math.max(1,Math.round(height*scale));
+      const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(input, 0, 0, canvas.width, canvas.height); return canvas;
+    }
+    function setImage(next) {
+      source = copyCanvas(next); image = copyCanvas(next); selection = null;
+      cropMode = false; ui.CropMode.setAttribute('aria-pressed','false');
+      ui.Preview.classList.remove('ocr-cropping'); ui.PreviewArea.hidden = false;
+      ui.Text.value = ''; resetResults(); drawPreview(); resize();
+    }
+    async function decodeImage(blob) {
+      if (global.createImageBitmap) {
+        try { return await createImageBitmap(blob); } catch (_) {}
+      }
+      const url = URL.createObjectURL(blob);
+      try {
+        return await new Promise((resolve,reject) => {
+          const img = new Image(); img.onload = () => resolve(img); img.onerror = () => reject(new Error('Trình duyệt không đọc được ảnh này. Hãy xuất ảnh sang JPG/PNG hoặc chụp ảnh mới.')); img.src = url;
+        });
+      } finally { URL.revokeObjectURL(url); }
+    }
+    async function readImage(blob) {
+      if (busy) cancel();
+      stopCamera();
+      const token = ++imageGeneration;
+      loadingImage=false; updateControls();
+      if (!blob || !blob.size) return;
+      resetResults();
+      source=image=selection=dragStart=null;
+      ui.Preview.width=ui.Preview.height=1;ui.PreviewArea.hidden=true;ui.Text.value='';
+      // SVG and animated formats are unnecessary for medicine photos.
+      if ((blob.type && !blob.type.startsWith('image/')) || /svg|gif/i.test(blob.type || '')) { say('Hãy chọn ảnh JPG, PNG, WebP hoặc ảnh chụp được trình duyệt hỗ trợ.', true); return; }
+      if (blob.size > config.maxFileBytes) { say('Ảnh vượt quá 20 MB. Hãy giảm kích thước hoặc xuất sang JPG rồi chọn lại.', true); return; }
+      loadingImage=true; updateControls(); ui.Text.value='';
+      say('Đang mở ảnh…');
+      let decoded;
+      try {
+        decoded = await decodeImage(blob);
+        if (token !== imageGeneration || destroyed) return;
+        const width = decoded.width || decoded.naturalWidth, height = decoded.height || decoded.naturalHeight;
+        if (!width || !height || width*height > 65000000) throw new Error('Ảnh quá lớn hoặc kích thước không hợp lệ. Hãy giảm ảnh xuống dưới 65 megapixel.');
+        setImage(scaledCanvas(decoded,width,height));
+        say('Đã chọn ảnh. Kiểm tra chiều ảnh, cắt vùng tên thuốc nếu cần, rồi bấm “Đọc chữ trong ảnh”.');
+      } catch (error) { if (token === imageGeneration) say(error.message || 'Không mở được ảnh. Hãy chọn ảnh JPG/PNG khác.', true); }
+      finally { if (decoded && decoded.close) decoded.close(); if(token===imageGeneration){loadingImage=false;updateControls();} }
+    }
+    function drawPreview() {
+      if (!image) return;
+      ui.Preview.width = image.width; ui.Preview.height = image.height;
+      const ctx = ui.Preview.getContext('2d'); ctx.drawImage(image,0,0);
+      if (selection) {
+        ctx.fillStyle = 'rgba(11,83,148,.15)'; ctx.fillRect(selection.x,selection.y,selection.w,selection.h);
+        ctx.strokeStyle = '#f6a623'; ctx.lineWidth = Math.max(3,image.width/200); ctx.strokeRect(selection.x,selection.y,selection.w,selection.h);
+      }
+      ui.ApplyCrop.disabled = busy || loadingImage || !selection || selection.w < 12 || selection.h < 12;
+    }
+    function point(event) {
+      const rect = ui.Preview.getBoundingClientRect();
+      return {x:Math.max(0,Math.min(image.width,(event.clientX-rect.left)*image.width/rect.width)),y:Math.max(0,Math.min(image.height,(event.clientY-rect.top)*image.height/rect.height))};
+    }
+    function clear() {
+      cancel(); stopCamera(); imageGeneration++; loadingImage=false; updateControls(); source = image = selection = dragStart = null;
+      ui.Preview.width = ui.Preview.height = 1; ui.PreviewArea.hidden = true; ui.Text.value = '';
+      ui.CameraFile.value = ui.ImageFile.value = ''; resetResults(); say('Đã xóa ảnh và chữ đọc được. Chọn ảnh khác để tiếp tục.');
+    }
+    function progress(message) {
+      const labels = {'loading tesseract core':'Đang tải lõi OCR','initializing tesseract':'Đang khởi tạo OCR','loading language traineddata':'Đang tải bộ chữ Việt/Anh','initializing api':'Đang chuẩn bị bộ đọc','recognizing text':'Đang đọc chữ trong ảnh'};
+      const value = Math.round((message.progress || 0)*100);
+      ui.Progress.value = value;
+      ui.ProgressLabel.textContent = `${labels[message.status] || 'Đang chuẩn bị OCR'}${Number.isFinite(message.progress) ? ` · ${value}%` : ''}`;
+    }
+    async function recognize() {
+      if (!image || busy || loadingImage) return;
+      const scanImage = copyCanvas(image);
+      stopCamera(); resetResults(); ui.Text.value = ''; setBusy(true);
+      ui.Progress.value = 0; ui.ProgressLabel.textContent = 'Đang tải bộ đọc chữ…';
+      say('Đang xử lý ảnh trên thiết bị. Lần đầu có thể cần chờ tải bộ chữ.');
+      const token = ++generation;
+      let fatalReject;
+      const fatal = new Promise((_,reject) => { fatalReject = reject; });
+      const isCurrent = () => token === generation && !destroyed;
+      taskTimer = setTimeout(() => { if (isCurrent()) cancel('Đã dừng vì quá thời gian chờ. Kiểm tra mạng, cắt vùng tên thuốc rồi thử lại.'); },config.timeoutMs);
+      try {
+        const Tesseract = await loadLibrary(config.scriptUrl);
+        if (!isCurrent()) return;
+        const pending = Tesseract.createWorker(config.languages,1,{
+          workerPath:config.workerPath,corePath:config.corePath,langPath:config.langPath,cacheMethod:'none',
+          logger:message => { if(isCurrent()) progress(message); },
+          errorHandler:error => { if(isCurrent()) fatalReject(new Error(String(error && error.message || error || 'OCR gặp lỗi'))); }
+        });
+        // A worker can finish initializing after cancellation; always terminate it.
+        pending.then(async created => { if (!isCurrent()) { try { await created.terminate(); } catch (_) {} } }, () => {});
+        const created = await Promise.race([pending,fatal]);
+        if (!isCurrent()) { try { await created.terminate(); } catch (_) {} return; }
+        worker = created;
+        const input = scanImage;
+        if (ui.Enhance.checked) {
+          const ctx = input.getContext('2d'); const pixels = ctx.getImageData(0,0,input.width,input.height);
+          for (let i=0;i<pixels.data.length;i+=4) { const v = Math.max(0,Math.min(255,((pixels.data[i]*.299+pixels.data[i+1]*.587+pixels.data[i+2]*.114)-128)*1.25+128)); pixels.data[i]=pixels.data[i+1]=pixels.data[i+2]=v; }
+          ctx.putImageData(pixels,0,0);
+        }
+        const result = await Promise.race([worker.recognize(input),fatal]);
+        if (!isCurrent()) return;
+        ui.Text.value = String(result.data.text || '').trim().slice(0,12000);
+        if (!ui.Text.value) say('Chưa đọc được chữ. Hãy chụp gần hơn, xoay/cắt ảnh hoặc nhập tên thuốc trực tiếp.',true);
+        else find();
+      } catch (error) {
+        if (isCurrent()) say('Không đọc được ảnh. Kiểm tra mạng/bộ đọc OCR rồi thử lại; có thể nhập tên thuốc trực tiếp. ' + String(error.message || '').slice(0,180),true);
+      } finally {
+        if (isCurrent()) { clearTimeout(taskTimer); await terminateWorker(); if(isCurrent())setBusy(false); }
+      }
+    }
+    function element(tag,text,className) {
+      const el = document.createElement(tag); if(text != null) el.textContent = text; if(className) el.className = className; return el;
+    }
+    function describe(candidate,root) {
+      root.append(element('h4',candidate.brand || 'Chưa ghi biệt dược'));
+      root.append(element('p',`Hoạt chất: ${candidate.active || 'Chưa ghi trong dữ liệu'}`));
+      root.append(element('p',`Hàm lượng ghi trong danh mục: ${candidate.strength || 'Chưa tách được — đối chiếu tên thuốc trên hồ sơ và bao bì'}`));
+      root.append(element('p',`Dạng bào chế: ${candidate.form || 'Chưa ghi trong dữ liệu'}`));
+      (candidate.warnings || []).forEach(warning => root.append(element('p',warning,'ocr-warning')));
+    }
+    function find() {
+      if(loadingImage){say('Đang mở ảnh mới. Vui lòng chờ hoặc xóa ảnh để nhập tên trực tiếp.');return;}
+      resetResults();
+      const text = ui.Text.value.trim();
+      if (!text) { say('Hãy đọc ảnh hoặc nhập tên thuốc kèm hàm lượng.',true); return; }
+      if (!refreshData()) { say('Chưa có dữ liệu thuốc để đối chiếu. Bấm “Tải lại danh mục”; không sử dụng kết quả từ trí nhớ.',true); return; }
+      const candidates = global.DrugOcrMatcher.match(text,index,{limit:8});
+      if (!candidates.length) { say('Chưa tìm thấy thuốc phù hợp trong danh mục. Kiểm tra chữ OCR, thử chỉ giữ tên thuốc và hàm lượng hoặc chụp rõ hơn. Kết quả này chưa chứng minh thuốc không có trong danh mục.',true); return; }
+      say(`Có ${candidates.length} hồ sơ gợi ý. Hãy đối chiếu với bao bì rồi chọn thuốc; thứ tự gợi ý không bảo đảm nhận diện đúng.`);
+      candidates.forEach(candidate => {
+        const card = element('article',null,'ocr-candidate');
+        const label = candidate.matchType === 'brand' || (candidate.reasons || []).some(reason => /biệt dược/i.test(reason)) ? 'Đối chiếu tên biệt dược' : 'Gợi ý từ chữ đã đọc';
+        card.append(element('span',label,'ocr-badge')); describe(candidate,card);
+        if (candidate.reasons && candidate.reasons.length) card.append(element('p',candidate.reasons.join(' · ')));
+        const choose = element('button','Kiểm tra thuốc này','ocr-btn'); choose.type='button';
+        choose.addEventListener('click',() => {
+          selected = candidate; ui.Selected.replaceChildren(); describe(candidate,ui.Selected);
+          ui.Confirmation.hidden = false; ui.Confirmed.checked = false; ui.OpenDrug.disabled = true;
+          ui.Confirmation.scrollIntoView({block:'nearest',behavior:'auto'}); ui.Confirmed.focus({preventScroll:true}); resize();
+        });
+        card.append(choose); ui.Candidates.append(card);
+      });
+      resize();
+    }
+    function open() {
+      if (!selected || !ui.Confirmed.checked) return;
+      const chosen = selected;
+      if (!refreshData() || !selected || rowsRef[chosen.index] !== chosen.drug) { resetResults(); say('Danh mục đã đổi. Hãy tìm và xác nhận lại thuốc.',true); return; }
+      config.openDrug(chosen.drug);
+      panel.hidden = true; ui.Toggle.setAttribute('aria-expanded','false'); stopCamera();
+      const details = document.getElementById('drugInfo');
+      if (details) { details.setAttribute('tabindex','-1'); details.scrollIntoView({block:'start',behavior:'auto'}); details.focus({preventScroll:true}); }
+      resize();
+    }
+    listen(ui.Toggle,'click',() => { panel.hidden = !panel.hidden; ui.Toggle.setAttribute('aria-expanded',String(!panel.hidden)); if(!panel.hidden){refreshData();$('ocrTitle').focus({preventScroll:true});}else{cancel();stopCamera();}resize(); });
+    listen(ui.Close,'click',() => {panel.hidden=true;ui.Toggle.setAttribute('aria-expanded','false');cancel();stopCamera();ui.Toggle.focus();resize();});
+    listen(ui.TakePhoto,'click',() => {stopCamera();ui.CameraFile.click();});
+    listen(ui.Upload,'click',() => {stopCamera();ui.ImageFile.click();});
+    [ui.CameraFile,ui.ImageFile].forEach(input => listen(input,'change',() => {const file=input.files && input.files[0];input.value='';if(file)readImage(file);}));
+    listen(ui.Live,'click',startCamera); listen(ui.StopCamera,'click',stopCamera);
+    listen(ui.Capture,'click',() => {
+      if (!ui.Video.videoWidth) { cameraNotice('Camera chưa sẵn sàng. Chờ một chút hoặc chọn ảnh có sẵn.'); return; }
+      imageGeneration++; loadingImage=false; updateControls();
+      const captured=scaledCanvas(ui.Video,ui.Video.videoWidth,ui.Video.videoHeight); stopCamera(); setImage(captured); say('Đã chụp ảnh. Bấm “Đọc chữ trong ảnh” để tiếp tục.');
+    });
+    listen(ui.Rotate,'click',() => {
+      if(!image)return; const next=document.createElement('canvas');next.width=image.height;next.height=image.width;
+      const ctx=next.getContext('2d');ctx.translate(next.width/2,next.height/2);ctx.rotate(Math.PI/2);ctx.drawImage(image,-image.width/2,-image.height/2);
+      image=next;selection=null;drawPreview();ui.Text.value='';resetResults();say('Đã xoay ảnh. Hãy đọc chữ lại.');
+    });
+    listen(ui.CropMode,'click',() => {cropMode=!cropMode;ui.CropMode.setAttribute('aria-pressed',String(cropMode));ui.Preview.classList.toggle('ocr-cropping',cropMode);});
+    listen(ui.Preview,'pointerdown',event => {if(!cropMode||busy||!image)return;event.preventDefault();dragStart=point(event);selection=null;ui.Preview.setPointerCapture(event.pointerId);});
+    listen(ui.Preview,'pointermove',event => {if(!dragStart)return;const end=point(event);selection={x:Math.min(dragStart.x,end.x),y:Math.min(dragStart.y,end.y),w:Math.abs(end.x-dragStart.x),h:Math.abs(end.y-dragStart.y)};drawPreview();});
+    listen(ui.Preview,'pointerup',() => {dragStart=null;}); listen(ui.Preview,'pointercancel',() => {dragStart=null;});
+    listen(ui.ApplyCrop,'click',() => {
+      if(!selection||!image||selection.w<12||selection.h<12)return;
+      const next=document.createElement('canvas');next.width=Math.round(selection.w);next.height=Math.round(selection.h);
+      next.getContext('2d').drawImage(image,selection.x,selection.y,selection.w,selection.h,0,0,next.width,next.height);
+      image=next;selection=null;cropMode=false;ui.CropMode.setAttribute('aria-pressed','false');ui.Preview.classList.remove('ocr-cropping');drawPreview();ui.Text.value='';resetResults();say('Đã cắt ảnh. Hãy đọc chữ lại.');
+    });
+    listen(ui.ResetCrop,'click',() => {if(source){image=copyCanvas(source);selection=null;drawPreview();ui.Text.value='';resetResults();say('Đã trở lại ảnh gốc. Hãy đọc chữ lại.');}});
+    listen(ui.Clear,'click',clear); listen(ui.Recognize,'click',recognize); listen(ui.Cancel,'click',() => cancel());
+    listen(ui.Find,'click',find); listen(ui.Text,'input',() => {resetResults();say('Chữ đã thay đổi. Bấm “Tìm trong dữ liệu” để đối chiếu lại.');});
+    listen(ui.Confirmed,'change',() => {ui.OpenDrug.disabled=!ui.Confirmed.checked || !selected;});
+    listen(ui.OpenDrug,'click',open); listen(ui.Back,'click',() => {ui.Confirmation.hidden=true;selected=null;ui.Confirmed.checked=false;ui.OpenDrug.disabled=true;resize();});
+    listen(ui.ReloadData,'click',async () => {
+      if(reloadBusy)return;reloadBusy=true;ui.ReloadData.disabled=true;resetResults();
+      try{const ok=config.reloadData ? await config.reloadData() : true;if(ok===false){refreshData();say('Không lấy được danh mục mới. Danh mục đang hiển thị vẫn là lần tải trước; hãy kiểm tra mạng và thử lại.',true);}else if(refreshData())say('Đã kiểm tra lại danh mục. Bấm “Tìm trong dữ liệu” để tiếp tục.');else say('Chưa tải được danh mục. Kiểm tra mạng và quyền truy cập nguồn dữ liệu.',true);}catch(_){say('Không tải lại được dữ liệu. Kiểm tra mạng rồi thử lại.',true);}finally{reloadBusy=false;ui.ReloadData.disabled=false;}
+    });
+    listen(global,'drug-data-ready',refreshData);
+    listen(document,'visibilitychange',() => {if(document.hidden)stopCamera();});
+    listen(global,'pagehide',() => {cancel();stopCamera();imageGeneration++;});
+    if(config.standaloneUrl) {
+      try{const url=new URL(config.standaloneUrl);if(url.protocol==='https:' || (url.hostname==='127.0.0.1' || url.hostname==='localhost')){ui.Standalone.href=url.href;ui.Standalone.hidden=false;}}catch(_){}
+    }
+    refreshData();
+    const poll = setInterval(() => {if(!panel.hidden || !rowsRef || !rowsRef.length)refreshData();},2000);
+    return {readImage,refreshData,cancel,clear,destroy:() => {destroyed=true;cancel();stopCamera();imageGeneration++;clearInterval(poll);listeners.forEach(remove=>remove());},get busy(){return busy;}};
+  }
+  global.DrugPhotoOCR = Object.freeze({mount,defaults:DEFAULTS});
+})(window);
+
+(function () {
+  function start() {
+    if (window.drugPhotoOCR) return;
+    window.drugPhotoOCR = DrugPhotoOCR.mount(Object.assign({}, window.DRUG_OCR_CONFIG || {}, {
+      getRows: () => typeof allData !== 'undefined' ? allData : [],
+      openDrug: drug => {
+        if (typeof displayDrugInfo !== 'function') throw new Error('Không tìm thấy hàm hiển thị hồ sơ thuốc.');
+        displayDrugInfo(drug);
+        const input = document.getElementById('searchInput');
+        if (input) { const value=drug['Biệt dược']; input.value = value && typeof value==='object' ? (value.value || '') : (value || ''); }
+      },
+      reloadData: async () => {
+        if(typeof fetchData !== 'function') throw new Error('Thiếu hàm tải dữ liệu');
+        const before=typeof allData !== 'undefined' ? allData : undefined;
+        const ok=await fetchData();
+        if(typeof ok==='boolean') return ok;
+        // Older host pages swallow fetch errors; a changed row array proves a new load.
+        return typeof allData !== 'undefined' && allData!==before && Array.isArray(allData) && allData.length>0;
+      },
+      onResize: () => { if(typeof syncIframeHeight === 'function') syncIframeHeight(); }
+    }));
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',start,{once:true});
+  else start();
+})();
+
+</script>
 </body>
 </html>
