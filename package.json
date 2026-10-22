@@ -1,0 +1,7 @@
+{
+  "name": "drugview-ninh-binh",
+  "private": true,
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.1.0"
+  }
+}

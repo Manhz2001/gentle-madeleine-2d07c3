@@ -11,8 +11,13 @@
   panel.hidden = true;
   panel.setAttribute('aria-label', 'NB Care');
   panel.innerHTML = '<div class="nbcare-popover__head"><div><strong>NB Care</strong><span>Trợ lý tư vấn y tế</span></div><a href="nb-care/index.html" aria-label="Mở NB Care toàn màn hình">Mở rộng</a><button type="button" aria-label="Đóng NB Care">×</button></div><iframe title="NB Care" loading="lazy" data-src="nb-care/index.html?embed=1"></iframe>';
+  // Lớp nền mờ không chặn cuộn: lăn chuột ngoài khung sẽ cuộn trang, lăn chuột trên khung sẽ cuộn cuộc trò chuyện.
+  const backdrop = document.createElement('div');
+  backdrop.className = 'nbcare-backdrop';
+  backdrop.hidden = true;
   const setOpen = (open) => {
     panel.hidden = !open;
+    backdrop.hidden = !open;
     launcher.setAttribute('aria-expanded', String(open));
     if (open) {
       const frame = panel.querySelector('iframe');
@@ -21,6 +26,7 @@
   };
   launcher.addEventListener('click', () => setOpen(panel.hidden));
   panel.querySelector('button').addEventListener('click', () => setOpen(false));
+  backdrop.addEventListener('click', () => setOpen(false));
   document.addEventListener('keydown', event => { if (event.key === 'Escape') setOpen(false); });
-  document.body.append(panel, launcher);
+  document.body.append(backdrop, panel, launcher);
 })();
