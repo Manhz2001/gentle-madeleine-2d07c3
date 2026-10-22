@@ -97,6 +97,7 @@ function parseAnswer(payload, risk) {
     sections: parsed.sections.slice(0, 4).map(section => ({title: cleanText(section.title, 120), text: cleanText(section.text, 700), bullets: Array.isArray(section.bullets) ? section.bullets.slice(0, 6).map(item => cleanText(item, 300)).filter(Boolean) : []})),
     sourceIds: [],
     followUps: parsed.followUps.slice(0, 3).map(item => cleanText(item, 180)).filter(Boolean),
+    provider: "gemini",
     needsSource: Boolean(parsed.needsSource),
     tone: risk.urgent ? "urgent-demo" : parsed.needsSource ? "needs-source" : "normal",
     ...(risk.warning ? {medicalWarning: WARNING} : {})
