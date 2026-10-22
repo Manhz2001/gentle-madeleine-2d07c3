@@ -2309,7 +2309,7 @@
           finally {clearTimeout(aiTimer);if(aiController===controller)aiController=null;}
           if(!isCurrent())return;
           deviceFallback=true;
-          ui.AiStatus.textContent='Đang dùng nhận diện trên thiết bị.';ui.AiStatus.hidden=false;
+          ui.AiStatus.textContent='Gemini chưa khả dụng. Đang nhận diện trên thiết bị.';ui.AiStatus.hidden=false;
         }
         const Tesseract = await loadLibrary(config.scriptUrl);
         if (!isCurrent()) return;
@@ -2330,7 +2330,7 @@
         }
         const result = await Promise.race([worker.recognize(input),fatal]);
         if (!isCurrent()) return;
-        if(deviceFallback)ui.AiStatus.textContent='Đã nhận diện trên thiết bị vì Gemini chưa phản hồi.';
+        if(deviceFallback)ui.AiStatus.textContent='Đã nhận diện trên thiết bị vì Gemini chưa khả dụng.';
         ui.Text.value = String(result.data.text || '').trim().slice(0,12000);
         if (!ui.Text.value) say('Chưa đọc được chữ. Hãy chụp gần hơn, xoay/cắt ảnh hoặc nhập tên thuốc trực tiếp.',true);
         else { ui.ProgressLabel.textContent='Đang tìm thuốc…'; find(true); }
