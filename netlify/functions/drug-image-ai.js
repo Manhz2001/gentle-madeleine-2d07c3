@@ -150,12 +150,12 @@ exports.handler = async event => {
   if (!image) return reply(400, {ok: false, error: "INVALID_IMAGE"}, origin);
   if (!apiKey) return reply(503, {ok: false, error: "AI_NOT_CONFIGURED"}, origin);
   if (!withinBurstLimit(headers["x-nf-client-connection-ip"])) return reply(429, {ok: false, error: "AI_BUSY"}, origin, {"Retry-After": "60"});
-  const model = String(process.env.GEMINI_MODEL || "gemini-2.5-flash-lite").trim();
+  const model = String(process.env.GEMINI_MODEL || "gemini-2.5-flash").trim();
   if (!/^gemini-[a-z0-9.-]{1,80}$/.test(model)) return reply(503, {ok: false, error: "AI_UNAVAILABLE"}, origin);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 12000);
   try {
-    const upstream = await fetch(`https://aiplatform.googleapis.com/v1/publishers/google/models/${model}:generateContent`, {
+    const upstream = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST", signal: controller.signal,
       headers: {"Content-Type": "application/json", "x-goog-api-key": apiKey},
       body: JSON.stringify({
