@@ -1,7 +1,7 @@
 (function () {
   'use strict';
   const content = window.NBCareContent;
-  const AI_ENDPOINT = 'https://gentle-madeleine-2d07c3.netlify.app/.netlify/functions/nb-care-ai';
+  const AI_ENDPOINT = '/.netlify/functions/nb-care-ai';
   const $ = id => document.getElementById(id);
   const chat = $('nbChat'), transcript = $('nbTranscript'), input = $('nbInput');
   const welcome = $('nbWelcome'), sourcesPanel = $('nbSources');
@@ -11,6 +11,7 @@
   const mobile = window.matchMedia('(max-width: 600px)');
   let mode = 'basic', opened = false, expanded = false, greeted = true;
   let lastTrigger = null, sourceTrigger = null, timer = null, toastTimer = null, count = 0, requestSerial = 0;
+  let history = [];
 
   function el(tag, cls, text) {
     const node = document.createElement(tag);
@@ -91,14 +92,15 @@
     const article = el('article', 'message message-assistant');
     const avatar = el('span', 'message-avatar'); avatar.append(icon('cross')); avatar.setAttribute('aria-hidden', 'true');
     const body = el('div', 'message-body');
-    const meta = el('div', 'answer-meta'); meta.append(el('strong', '', 'NB Care'), el('span', 'answer-mode', answerMode === 'deep' ? 'Chuyên sâu' : 'Cơ bản'), el('span', '', answer.provider === 'gemini' ? 'Gemini · nguồn chính thống' : 'Câu trả lời dự phòng'));
+    const meta = el('div', 'answer-meta'); meta.append(el('strong', '', 'NB Care'), el('span', 'answer-mode', answerMode === 'deep' ? 'Chuyên sâu' : 'Cơ bản'), el('span', '', answer.provider === 'ai' ? 'Trợ lý AI' : 'Câu trả lời dự phòng'));
     body.append(meta);
     if (answer.needsSource || answer.tone === 'urgent-demo') {
       const status = el('div', 'source-status'); status.append(icon('info'), el('span', '', answer.needsSource ? 'Chưa kết nối nguồn chuyên môn' : 'Cần hỗ trợ trực tiếp')); body.append(status);
     }
     if (answer.title) body.append(el('h3', '', answer.title));
-    body.append(el('p', '', answer.summary));
-    answer.sections.forEach(section => {
+    if (answer.text) answer.text.split(/\n{2,}/).forEach(part => { const p = el('p', '', part.trim()); p.style.whiteSpace = 'pre-wrap'; body.append(p); });
+    if (answer.summary) body.append(el('p', '', answer.summary));
+    (answer.sections || []).forEach(section => {
       const block = el('section', 'answer-section');
       if (section.title) block.append(el('h4', '', section.title));
       if (section.text) block.append(el('p', '', section.text));
@@ -111,7 +113,7 @@
       warning.append(icon('info'), el('p', '', answer.medicalWarning));
       body.append(warning);
     }
-    if (answer.sourceIds.length) {
+    if (answer.sourceIds && answer.sourceIds.length) {
       const refs = el('div', 'answer-sources'); refs.append(el('span', '', 'NGUỒN MẪU · MINH HỌA GIAO DIỆN'));
       const list = el('div', 'citation-list');
       answer.sourceIds.forEach((id, i) => { const source = content.sources.find(s => s.id === id); if (source) list.append(sourceButton(source, i)); });
@@ -130,14 +132,14 @@
     const actions = el('div', 'answer-actions');
     const copy = el('button'); copy.type = 'button'; copy.append(icon('copy'), el('span', '', 'Sao chép')); copy.setAttribute('aria-label', 'Sao chép câu trả lời mẫu');
     copy.addEventListener('click', async () => {
-      const text = ['NB Care · ' + (answer.provider === 'gemini' ? 'Gemini · nguồn đã duyệt' : 'Câu trả lời dự phòng') + ' · ' + (answerMode === 'deep' ? 'Chuyên sâu' : 'Cơ bản'), answer.title, answer.summary, ...answer.sections.map(s => [s.title, s.text, ...(s.bullets || [])].filter(Boolean).join('\n')), answer.medicalWarning, 'Thông tin không dùng để quyết định điều trị.'].filter(Boolean).join('\n\n');
+      const text = ['NB Care · ' + (answer.provider === 'ai' ? 'Trợ lý AI' : 'Câu trả lời dự phòng') + ' · ' + (answerMode === 'deep' ? 'Chuyên sâu' : 'Cơ bản'), answer.title, answer.text, answer.summary, ...(answer.sections || []).map(s => [s.title, s.text, ...(s.bullets || [])].filter(Boolean).join('\n')), answer.medicalWarning, 'Thông tin không dùng để quyết định điều trị.'].filter(Boolean).join('\n\n');
       try { await navigator.clipboard.writeText(text); notify('Đã sao chép câu trả lời mẫu.'); }
       catch (_) { notify('Trình duyệt chưa cho phép sao chép. Bạn có thể chọn nội dung trực tiếp.'); }
     });
     const helpful = el('button'); helpful.type = 'button'; helpful.append(icon('thumb')); helpful.setAttribute('aria-label', 'Đánh dấu mẫu trả lời hữu ích'); helpful.setAttribute('aria-pressed', 'false');
     helpful.addEventListener('click', () => { const active = helpful.getAttribute('aria-pressed') !== 'true'; helpful.setAttribute('aria-pressed', String(active)); notify(active ? 'Đã đánh dấu trong bản xem trước.' : 'Đã bỏ đánh dấu.'); });
     actions.append(copy, helpful); body.append(actions);
-    if (answer.followUps.length) {
+    if (answer.followUps && answer.followUps.length) {
       const follow = el('div', 'follow-ups'); follow.setAttribute('aria-label', 'Câu hỏi tiếp theo');
       answer.followUps.forEach(text => { const button = el('button', '', text); button.type = 'button'; button.addEventListener('click', () => send(text)); follow.append(button); });
       body.append(follow);
@@ -145,7 +147,7 @@
     article.append(avatar, body); transcript.append(article); scrollBottom();
   }
   async function askAI(question, answerMode) {
-    const response = await fetch(AI_ENDPOINT, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({question, mode: answerMode})});
+    const response = await fetch(AI_ENDPOINT, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({question, mode: answerMode, history})});
     if (!response.ok) throw new Error('AI unavailable');
     const payload = await response.json();
     if (!payload || payload.ok !== true || !payload.answer) throw new Error('Invalid AI response');
@@ -161,18 +163,18 @@
     input.value = '';
     const typing = el('div', 'message message-assistant');
     const avatar = el('span', 'message-avatar'); avatar.append(icon('cross'));
-    const label = el('span', 'typing'); const dots = el('span', 'typing-dots'); dots.setAttribute('aria-hidden', 'true'); dots.append(el('i'), el('i'), el('i')); label.append(dots, el('span', '', 'Đang soạn câu trả lời mẫu…')); typing.append(avatar, label); transcript.append(typing);
+    const label = el('span', 'typing'); const dots = el('span', 'typing-dots'); dots.setAttribute('aria-hidden', 'true'); dots.append(el('i'), el('i'), el('i')); label.append(dots, el('span', '', 'NB Care đang trả lời…')); typing.append(avatar, label); transcript.append(typing);
     transcript.setAttribute('aria-busy', 'true');
     const serial = ++requestSerial;
     timer = 1;
     Promise.all([askAI(question, answerMode), new Promise(resolve => setTimeout(resolve, 450))])
-      .then(([answer]) => { if (serial === requestSerial) renderAnswer(answer, answerMode); })
+      .then(([answer]) => { if (serial === requestSerial) { history.push({role: 'user', content: question}, {role: 'assistant', content: answer.text || answer.summary || ''}); history = history.slice(-12); renderAnswer(answer, answerMode); } })
       .catch(() => { if (serial === requestSerial) { renderAnswer(content.respond(question, answerMode), answerMode); notify('NB Care đang dùng câu trả lời dự phòng vì dịch vụ AI chưa sẵn sàng.'); } })
       .finally(() => { if (serial === requestSerial) { typing.remove(); timer = null; transcript.setAttribute('aria-busy', 'false'); updateInput(); } });
     updateInput(); scrollBottom();
   }
   function newConversation() {
-    requestSerial += 1; if (timer !== null) clearTimeout(timer); timer = null; count = 0;
+    requestSerial += 1; if (timer !== null) clearTimeout(timer); timer = null; count = 0; history = [];
     transcript.querySelectorAll('.message').forEach(n => n.remove());
     transcript.setAttribute('aria-busy', 'false'); welcome.hidden = false;
     $('conversationTitle').textContent = 'Trò chuyện cùng NB Care'; input.value = ''; updateInput(); transcript.scrollTop = 0;

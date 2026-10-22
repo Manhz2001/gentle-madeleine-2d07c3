@@ -1,5 +1,3 @@
-"use strict";
-
 const SITE_ORIGIN = "https://gentle-madeleine-2d07c3.netlify.app";
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 const MAX_JSON_BYTES = Math.ceil(MAX_IMAGE_BYTES / 3) * 4 + 1024;
@@ -33,19 +31,15 @@ const instruction = [
   "Do not return indications, clinical dosing, preparation, interactions, patient information, recommendations, or any other medical content."
 ].join(" ");
 
-function normalizeHeaders(event) {
-  return Object.fromEntries(Object.entries(event.headers || {}).map(([name, value]) => [name.toLowerCase(), String(value)]));
-}
-
 function allowedOrigins() {
   const origins = new Set([SITE_ORIGIN]);
   try { if (process.env.URL) origins.add(new URL(process.env.URL).origin); } catch (_) {}
   return origins;
 }
 
-function reply(statusCode, data, origin, extraHeaders) {
-  return {
-    statusCode,
+function reply(status, data, origin, extraHeaders) {
+  return new Response(data == null ? null : JSON.stringify(data), {
+    status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store",
@@ -53,9 +47,8 @@ function reply(statusCode, data, origin, extraHeaders) {
       Vary: "Origin",
       ...(origin ? {"Access-Control-Allow-Origin": origin} : {}),
       ...extraHeaders
-    },
-    body: data == null ? "" : JSON.stringify(data)
-  };
+    }
+  });
 }
 
 function imageMatchesMime(bytes, mime) {
@@ -121,35 +114,34 @@ function extractIdentity(payload) {
   };
 }
 
-exports.handler = async event => {
-  const headers = normalizeHeaders(event);
-  const origin = headers.origin;
-  if ((origin && !allowedOrigins().has(origin)) || headers["sec-fetch-site"] === "cross-site") {
+export default async (req, context) => {
+  const origin = req.headers.get("origin");
+  if ((origin && !allowedOrigins().has(origin)) || req.headers.get("sec-fetch-site") === "cross-site") {
     return reply(403, {ok: false, error: "ORIGIN_NOT_ALLOWED"});
   }
-  if (event.httpMethod === "OPTIONS") {
+  if (req.method === "OPTIONS") {
     return reply(204, null, origin, {"Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type"});
   }
   const enabled = process.env.GEMINI_ENABLED === "true";
   const apiKey = String(process.env.GEMINI_API_KEY || "").trim();
-  if (event.httpMethod === "GET") return reply(200, {available: enabled && !!apiKey}, origin);
-  if (event.httpMethod !== "POST") return reply(405, {ok: false, error: "METHOD_NOT_ALLOWED"}, origin, {Allow: "GET, POST, OPTIONS"});
+  if (req.method === "GET") return reply(200, {available: enabled && !!apiKey}, origin);
+  if (req.method !== "POST") return reply(405, {ok: false, error: "METHOD_NOT_ALLOWED"}, origin, {Allow: "GET, POST, OPTIONS"});
   if (!enabled) return reply(503, {ok: false, error: "AI_DISABLED"}, origin);
-  if (!/^application\/json(?:\s*;|$)/i.test(headers["content-type"] || "")) {
+  if (!/^application\/json(?:\s*;|$)/i.test(req.headers.get("content-type") || "")) {
     return reply(415, {ok: false, error: "JSON_REQUIRED"}, origin);
   }
-  const raw = typeof event.body === "string" ? event.body : "";
-  if (raw.length > MAX_JSON_BYTES * (event.isBase64Encoded ? 4 / 3 : 1)) return reply(413, {ok: false, error: "IMAGE_TOO_LARGE"}, origin);
+  const declaredLength = Number(req.headers.get("content-length") || 0);
+  if (declaredLength > MAX_JSON_BYTES) return reply(413, {ok: false, error: "IMAGE_TOO_LARGE"}, origin);
   let body;
   try {
-    const json = event.isBase64Encoded ? Buffer.from(raw, "base64").toString("utf8") : raw;
+    const json = await req.text();
     if (Buffer.byteLength(json) > MAX_JSON_BYTES) return reply(413, {ok: false, error: "IMAGE_TOO_LARGE"}, origin);
     body = JSON.parse(json);
   } catch (_) { return reply(400, {ok: false, error: "INVALID_REQUEST"}, origin); }
   const image = validImage(body);
   if (!image) return reply(400, {ok: false, error: "INVALID_IMAGE"}, origin);
   if (!apiKey) return reply(503, {ok: false, error: "AI_NOT_CONFIGURED"}, origin);
-  if (!withinBurstLimit(headers["x-nf-client-connection-ip"])) return reply(429, {ok: false, error: "AI_BUSY"}, origin, {"Retry-After": "60"});
+  if (!withinBurstLimit(context.ip)) return reply(429, {ok: false, error: "AI_BUSY"}, origin, {"Retry-After": "60"});
   const model = String(process.env.GEMINI_MODEL || "gemini-3.8-flash").trim();
   if (!/^gemini-[a-z0-9.-]{1,80}$/.test(model)) return reply(503, {ok: false, error: "AI_UNAVAILABLE"}, origin);
   const controller = new AbortController();
