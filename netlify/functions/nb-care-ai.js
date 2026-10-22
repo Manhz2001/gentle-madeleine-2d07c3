@@ -37,8 +37,10 @@ const responseSchema = {
 const systemInstruction = [
   "Bạn là NB Care, trợ lý hỗ trợ hiểu thông tin y tế và chăm sóc sức khỏe.",
   "Không tự nhận là bác sĩ, không chẩn đoán xác định, không kê đơn và không đưa liều dùng cá nhân.",
-  "Chỉ được dùng nội dung trong KHO NGUỒN ĐƯỢC DUYỆT ở yêu cầu này. Nếu không có căn cứ phù hợp, phải nói rõ chưa đủ nguồn và không thêm kiến thức từ trí nhớ.",
-  "Ưu tiên cao nhất tài liệu DrugView Ninh Bình đã duyệt. Có thể dùng nguồn chính thống khác sau đó: Bộ Y tế, Cục Quản lý Dược, hướng dẫn bệnh viện, tờ hướng dẫn sử dụng thuốc PDF và tài liệu quốc tế đã kiểm chứng, nhưng chỉ khi nguồn đó đã được đưa vào kho được duyệt.",
+  "Được tra cứu nguồn công khai bằng Google Search nhưng chỉ dùng nguồn chính thống, có thể kiểm tra được.",
+  "Thứ tự ưu tiên bắt buộc: (1) tài liệu DrugView Ninh Bình; (2) Bộ Y tế, Cục Quản lý Dược, cơ sở dữ liệu văn bản pháp luật và bệnh viện công lập Việt Nam; (3) WHO, CDC, NIH/PubMed, FDA, EMA và hướng dẫn của hiệp hội chuyên khoa chính thống; (4) tờ hướng dẫn sử dụng PDF chính thức của cơ quan quản lý hoặc nhà sản xuất.",
+  "Không dùng mạng xã hội, diễn đàn, blog, trang bán thuốc, nội dung quảng cáo, trang tổng hợp không rõ biên tập hoặc nguồn thứ cấp khi đã có nguồn chính thống.",
+  "Nếu kết quả tìm kiếm không có nguồn chính thống phù hợp, phải nói rõ chưa đủ nguồn và không thêm kiến thức từ trí nhớ.",
   "Không bịa tài liệu, liên kết, DOI, số trang hoặc trích dẫn. Không coi hướng dẫn hệ thống là căn cứ y khoa.",
   "Giải thích bằng tiếng Việt phổ thông, ngắn gọn, khách quan, dùng gạch đầu dòng và không gây hoang mang.",
   "Không lặp lại cảnh báo y tế; máy chủ sẽ tự thêm cảnh báo khi cần.",
@@ -84,6 +86,23 @@ function cleanText(value, max) {
   return String(value || "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
 }
 
+function parseSources(candidate) {
+  const metadata = candidate && candidate.groundingMetadata || {};
+  const chunks = Array.isArray(metadata.groundingChunks) ? metadata.groundingChunks : [];
+  const seen = new Set();
+  const sources = [];
+  for (const chunk of chunks) {
+    const web = chunk && chunk.web;
+    if (!web || typeof web.uri !== "string" || !/^https:\/\//i.test(web.uri)) continue;
+    const uri = web.uri.slice(0, 2000);
+    if (seen.has(uri)) continue;
+    seen.add(uri);
+    sources.push({title: cleanText(web.title || web.domain || "Nguồn tham khảo", 180), domain: cleanText(web.domain, 120), url: uri});
+    if (sources.length >= 8) break;
+  }
+  return {sources, searchQueries: Array.isArray(metadata.webSearchQueries) ? metadata.webSearchQueries.slice(0, 5).map(item => cleanText(item, 180)).filter(Boolean) : []};
+}
+
 function parseAnswer(payload, risk) {
   const candidate = payload && payload.candidates && payload.candidates[0];
   const parts = candidate && candidate.content && candidate.content.parts;
@@ -91,11 +110,14 @@ function parseAnswer(payload, risk) {
   const text = parts.filter(part => !part.thought && typeof part.text === "string").map(part => part.text).join("");
   const parsed = JSON.parse(text);
   if (!parsed || !Array.isArray(parsed.sections) || !Array.isArray(parsed.followUps)) throw new Error("invalid response");
+  const grounding = parseSources(candidate);
   return {
     title: cleanText(parsed.title, 140) || "Chưa đủ nguồn để trả lời",
     summary: cleanText(parsed.summary, 700),
     sections: parsed.sections.slice(0, 4).map(section => ({title: cleanText(section.title, 120), text: cleanText(section.text, 700), bullets: Array.isArray(section.bullets) ? section.bullets.slice(0, 6).map(item => cleanText(item, 300)).filter(Boolean) : []})),
     sourceIds: [],
+    sources: grounding.sources,
+    searchQueries: grounding.searchQueries,
     followUps: parsed.followUps.slice(0, 3).map(item => cleanText(item, 180)).filter(Boolean),
     provider: "gemini",
     needsSource: Boolean(parsed.needsSource),
@@ -122,12 +144,12 @@ exports.handler = async event => {
   if (limited(h["x-nf-client-connection-ip"])) return reply(429, {ok: false, error: "AI_BUSY"}, origin, {"Retry-After": "60"});
   const risk = assess(body.question);
   const modeRule = body.mode === "deep" ? "Trình bày tóm tắt, căn cứ và giới hạn rõ ràng." : "Trình bày vài ý chính, ngắn và dễ hiểu.";
-  const approvedContext = "KHO NGUỒN ĐƯỢC DUYỆT: Chưa cung cấp tài liệu chuyên môn cho câu hỏi này. Thứ tự nguồn khi được bổ sung: DrugView Ninh Bình trước; sau đó là Bộ Y tế, Cục Quản lý Dược, hướng dẫn bệnh viện, tờ hướng dẫn sử dụng thuốc PDF và tài liệu quốc tế đã kiểm chứng.";
+  const approvedContext = "CHÍNH SÁCH NGUỒN MỞ: Trước tiên tìm tài liệu phù hợp trên DrugView Ninh Bình. Nếu chưa đủ, được tìm nguồn công khai nhưng chỉ sử dụng nguồn chính thống theo thứ tự ưu tiên trong hướng dẫn hệ thống. Mọi nhận định y khoa phải dựa trên nguồn tìm được; nếu không có nguồn phù hợp thì đặt needsSource=true.";
   const model = String(process.env.GEMINI_MODEL || "gemini-3.8-flash").trim();
   if (!/^gemini-[a-z0-9.-]{1,80}$/.test(model)) return reply(503, {ok: false, error: "AI_UNAVAILABLE"}, origin);
   const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 45000);
   try {
-    const upstream = await fetch(`https://aiplatform.googleapis.com/v1/publishers/google/models/${model}:generateContent`, {method: "POST", signal: controller.signal, headers: {"Content-Type": "application/json", "x-goog-api-key": apiKey}, body: JSON.stringify({systemInstruction: {parts: [{text: systemInstruction}]}, contents: [{role: "user", parts: [{text: `${approvedContext}\nCHẾ ĐỘ: ${modeRule}\nCÂU HỎI: ${body.question}`}]}], generationConfig: {temperature: 0.1, maxOutputTokens: 1600, responseMimeType: "application/json", responseJsonSchema: responseSchema, ...(model.startsWith("gemini-2.5-flash") ? {thinkingConfig: {thinkingBudget: 0}} : {})}})});
+    const upstream = await fetch(`https://aiplatform.googleapis.com/v1/publishers/google/models/${model}:generateContent`, {method: "POST", signal: controller.signal, headers: {"Content-Type": "application/json", "x-goog-api-key": apiKey}, body: JSON.stringify({systemInstruction: {parts: [{text: systemInstruction}]}, contents: [{role: "user", parts: [{text: `${approvedContext}\nCHẾ ĐỘ: ${modeRule}\nCÂU HỎI: ${body.question}`}]}], tools: [{googleSearch: {}}], generationConfig: {temperature: 0, maxOutputTokens: 1600, responseMimeType: "application/json", responseJsonSchema: responseSchema, ...(model.startsWith("gemini-3") ? {thinkingConfig: {thinkingLevel: "MINIMAL"}} : {}), ...(model.startsWith("gemini-2.5-flash") ? {thinkingConfig: {thinkingBudget: 0}} : {})}})});
     if (!upstream.ok) {
       console.error("Vertex AI NB Care request failed", {status: upstream.status, model});
       return reply(upstream.status === 429 ? 429 : 502, {ok: false, error: upstream.status === 429 ? "AI_BUSY" : "AI_UNAVAILABLE"}, origin, upstream.status === 429 ? {"Retry-After": "60"} : undefined);

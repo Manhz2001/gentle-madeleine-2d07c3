@@ -91,7 +91,7 @@
     const article = el('article', 'message message-assistant');
     const avatar = el('span', 'message-avatar'); avatar.append(icon('cross')); avatar.setAttribute('aria-hidden', 'true');
     const body = el('div', 'message-body');
-    const meta = el('div', 'answer-meta'); meta.append(el('strong', '', 'NB Care'), el('span', 'answer-mode', answerMode === 'deep' ? 'Chuyên sâu' : 'Cơ bản'), el('span', '', answer.provider === 'gemini' ? 'Gemini · nguồn đã duyệt' : 'Câu trả lời dự phòng'));
+    const meta = el('div', 'answer-meta'); meta.append(el('strong', '', 'NB Care'), el('span', 'answer-mode', answerMode === 'deep' ? 'Chuyên sâu' : 'Cơ bản'), el('span', '', answer.provider === 'gemini' ? 'Gemini · nguồn chính thống' : 'Câu trả lời dự phòng'));
     body.append(meta);
     if (answer.needsSource || answer.tone === 'urgent-demo') {
       const status = el('div', 'source-status'); status.append(icon('info'), el('span', '', answer.needsSource ? 'Chưa kết nối nguồn chuyên môn' : 'Cần hỗ trợ trực tiếp')); body.append(status);
@@ -115,6 +115,16 @@
       const refs = el('div', 'answer-sources'); refs.append(el('span', '', 'NGUỒN MẪU · MINH HỌA GIAO DIỆN'));
       const list = el('div', 'citation-list');
       answer.sourceIds.forEach((id, i) => { const source = content.sources.find(s => s.id === id); if (source) list.append(sourceButton(source, i)); });
+      refs.append(list); body.append(refs);
+    }
+    if (Array.isArray(answer.sources) && answer.sources.length) {
+      const refs = el('div', 'answer-sources'); refs.append(el('span', '', 'NGUỒN THAM KHẢO ĐÃ TÌM THẤY'));
+      const list = el('div', 'citation-list');
+      answer.sources.forEach((source, i) => {
+        const link = el('a', 'citation'); link.href = source.url; link.target = '_blank'; link.rel = 'noopener noreferrer';
+        link.append(el('b', '', String(i + 1)), icon('doc'), el('span', '', source.title || source.domain || 'Nguồn tham khảo'));
+        list.append(link);
+      });
       refs.append(list); body.append(refs);
     }
     const actions = el('div', 'answer-actions');

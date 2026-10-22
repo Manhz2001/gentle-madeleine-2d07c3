@@ -48,13 +48,13 @@
   function sourcePolicy(deep) {
     return reply(
       'Nguồn của NB Care',
-      'NB Care được thiết kế để trả lời trong phạm vi kho tài liệu nội bộ được duyệt. Bản demo này chưa kết nối kho nguồn hoặc mô hình AI.',
+      'NB Care ưu tiên DrugView Ninh Bình và có thể tra cứu nguồn công khai chính thống.',
       deep ? [
-        {title: 'Thứ tự ưu tiên nguồn', bullets: ['Ưu tiên cao nhất tài liệu đang có trên DrugView Ninh Bình và đã được bệnh viện duyệt.', 'Tiếp theo là tài liệu chính thống Việt Nam, hướng dẫn bệnh viện và tờ hướng dẫn sử dụng thuốc PDF.', 'Chỉ dùng nghiên cứu PubMed đã kiểm chứng, được đưa vào kho cho phép.', 'Cơ bản và Chuyên sâu dùng cùng kho nguồn đóng.']},
+        {title: 'Thứ tự ưu tiên nguồn', bullets: ['Ưu tiên cao nhất tài liệu đang có trên DrugView Ninh Bình và đã được bệnh viện duyệt.', 'Tiếp theo là tài liệu chính thống Việt Nam, hướng dẫn bệnh viện và tờ hướng dẫn sử dụng thuốc PDF.', 'Chỉ dùng nghiên cứu PubMed đã kiểm chứng, được đưa vào kho cho phép.', 'Cơ bản và Chuyên sâu dùng cùng thứ tự ưu tiên nguồn chính thống.']},
         {title: 'Cách kiểm chứng', bullets: ['Gắn đúng tài liệu và đoạn trích thực tế.', 'Không bịa tài liệu, đường dẫn, DOI hoặc số trang.', 'Không đủ căn cứ thì nói rõ giới hạn; không tự tìm trên Internet.']},
         {title: 'Trong bản xem trước', text: 'Các thẻ nguồn bên dưới là tài liệu mẫu mô tả thiết kế. Chúng không phải hướng dẫn chuyên môn của bệnh viện và không xác nhận một khuyến cáo điều trị.'}
       ] : [
-        {title: 'Nguyên tắc', bullets: ['Ưu tiên tài liệu đã duyệt trên DrugView Ninh Bình, rồi đến nguồn chính thống Việt Nam.', 'Chỉ dùng nguồn có trong kho; trích đúng tài liệu và không tạo nguồn giả.', 'Chưa đủ căn cứ thì nói rõ; không tự tìm trên Internet.']}
+        {title: 'Nguyên tắc', bullets: ['Ưu tiên tài liệu đã duyệt trên DrugView Ninh Bình, rồi đến nguồn chính thống Việt Nam.', 'Chỉ dùng nguồn chính thống có thể kiểm tra; trích đúng tài liệu và không tạo nguồn giả.', 'Chưa đủ căn cứ chính thống thì nói rõ giới hạn.']}
       ],
       ['doc2', 'doc3'],
       ['Cơ bản và Chuyên sâu khác nhau thế nào?', 'Tôi cần cung cấp gì khi hỏi về thuốc?']
@@ -192,3 +192,4 @@
     respond
   });
 })(window);
+
