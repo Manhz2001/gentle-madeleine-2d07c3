@@ -7,3 +7,6 @@
 /cap-nhat-chuyen-mon-duoc /cap-nhat-chuyen-mon-duoc.html 200
 /phac-do-dieu-tri /phac-do-dieu-tri.html 200
 /lien-he /lien-he.html 200
+/nb-care /nbcare/ 301
+/nb-care/* /nbcare/ 301
+/nbcare.html /nbcare/ 301

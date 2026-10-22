@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b5394">
+  <meta name="description" content="NBCare — Không gian hỏi đáp thông tin thuốc và sức khỏe trên DrugView Ninh Bình.">
+  <title>NBCare — BVĐK tỉnh Ninh Bình</title>
+  <link rel="icon" href="assets/hospital-logo.png">
+  <link rel="preconnect" href="https://script.google.com">
+  <link rel="preconnect" href="https://script.googleusercontent.com">
+  <link rel="stylesheet" href="nbcare.css?v=1">
+  <script src="analytics.js?v=1" defer></script>
+  <script src="nbcare.js?v=1" defer></script>
+</head>
+<body>
+  <header class="module-header" id="moduleHeader">
+    <a class="hospital-brand" href="../index.html">
+      <img src="assets/hospital-logo.png" width="46" height="46" alt="Logo Bệnh viện Đa khoa tỉnh Ninh Bình">
+      <span><small>BỆNH VIỆN ĐA KHOA TỈNH</small><strong>NINH BÌNH</strong></span>
+    </a>
+    <nav aria-label="Điều hướng module">
+      <a href="../tra-cuu-thuoc.html">Tra cứu thuốc</a>
+      <a class="active" href="./" aria-current="page">NBCare</a>
+    </nav>
+    <a class="back-link" href="../index.html"><span aria-hidden="true">←</span> DrugView Ninh Bình</a>
+  </header>
+
+  <main id="moduleLanding" class="module-landing">
+    <div class="welcome-copy">
+      <div class="module-label"><span></span> KHÔNG GIAN HỎI ĐÁP Y TẾ</div>
+      <h1>Xin chào,<br>tôi là <span>NBCare<span class="care-plus">+</span></span></h1>
+      <p class="welcome-intro">Cùng bạn tìm hiểu về thuốc<br class="desktop-break"> và chăm sóc sức khỏe.</p>
+      <p class="welcome-detail">Bắt đầu từ một câu hỏi. Trao đổi trong một không gian riêng, đơn giản và dễ sử dụng.</p>
+      <button id="NBCareOpen" class="primary-button" type="button" data-analytics-ignore>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-8 8H5l-3 2v-7a8 8 0 1 1 18-3Z"/><path d="M7 11h8m-8 4h5"/></svg>
+        Trò chuyện với NBCare <span aria-hidden="true">↗</span>
+      </button>
+      <div class="welcome-caption">Thông tin tham khảo · Không thay thế thăm khám trực tiếp</div>
+      <div class="topic-row" aria-label="Chủ đề trao đổi">
+        <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 16 8-8M6 6a5 5 0 0 1 7 0l5 5a5 5 0 0 1-7 7l-5-5a5 5 0 0 1 0-7Z"/></svg>Thông tin thuốc</span>
+        <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20S3 15 3 8.5a4.5 4.5 0 0 1 9-1 4.5 4.5 0 0 1 9 1C21 15 12 20 12 20Z"/></svg>Chăm sóc sức khỏe</span>
+        <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6a3 3 0 0 1 3 3v14a4 4 0 0 0-4-3H4Zm16 0h-4a3 3 0 0 0-3 3v14a4 4 0 0 1 4-3h3Z"/></svg>Hiểu kiến thức y tế</span>
+      </div>
+    </div>
+    <figure class="assistant-visual">
+      <img src="assets/nbcare-assistant.png" width="1254" height="1254" alt="Trợ lý NBCare màu xanh trắng, bên hoa sen và cảnh núi đá Ninh Bình" fetchpriority="high">
+      <figcaption><span class="visual-mark">✦</span><div><strong>Gần gũi hơn. Dễ hiểu hơn.</strong><span>NBCare · DrugView Ninh Bình</span></div></figcaption>
+    </figure>
+  </main>
+  <footer id="moduleFooter" class="module-footer"><span>DRUGVIEW NINH BÌNH <i>·</i> NBCare</span><a href="../index.html">Về trang chủ <span aria-hidden="true">↗</span></a></footer>
+
+  <section class="chat-workspace" id="NBCareChat" aria-label="Trò chuyện với NBCare" hidden>
+    <header class="chat-toolbar">
+      <div class="chat-brand"><img src="assets/hospital-logo.png" width="35" height="35" alt=""><span><strong>NBCare<span>+</span></strong><small>DrugView · BVĐK tỉnh Ninh Bình</small></span></div>
+      <div class="chat-actions"><a id="NBCareNewTab" href="?view=chat" target="_blank" rel="noopener" data-analytics-ignore aria-label="Mở NBCare trong tab riêng">Tab riêng <span aria-hidden="true">↗</span></a><button id="NBCareClose" type="button" data-analytics-ignore aria-label="Đóng NBCare">×</button></div>
+    </header>
+    <div class="frame-area">
+      <div class="frame-status" id="frameStatus" role="status"><span class="loader"></span>Đang mở không gian trò chuyện…<a id="NBCareFallback" target="_blank" rel="noopener" data-analytics-ignore>Mở trực tiếp nếu trình duyệt chặn khung nhúng ↗</a></div>
+      <iframe id="NBCareFrame" title="Chatbot NBCare — Google Apps Script" allow="clipboard-write; fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>
+  </section>
+</body>
+</html>
