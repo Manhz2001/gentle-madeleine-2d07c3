@@ -991,11 +991,13 @@
 .ocr-confirmation {border:2px solid #0b5394;background:#f2f7fd;padding:15px;border-radius:12px;margin-top:14px}
 .ocr-check {display:flex;align-items:flex-start;gap:9px;font-size:13px;margin:12px 0;cursor:pointer}
 .ocr-check input {flex:0 0 auto;width:18px;height:18px;min-width:18px;margin-top:2px;accent-color:#0b5394}
-.ocr-panel progress {display:block;width:100%;height:12px;accent-color:#0b5394;margin-top:16px}
+.ocr-processing {flex-wrap:nowrap;margin:16px 0 0;padding-top:14px;border-top:1px solid #e2eaf3}
+.ocr-spinner {flex:0 0 18px;width:18px;height:18px;border:2px solid #d5e3f8;border-top-color:#0b5394;border-radius:50%;animation:ocr-spin .9s linear infinite}
+@keyframes ocr-spin {to{transform:rotate(360deg)}}
 #ocrProgressLabel {font-size:12px;flex:1;color:#526072}
 @media(max-width:850px) {.ocr-panel{margin:0 12px 16px;padding:18px 12px;border-radius:14px}.ocr-columns{grid-template-columns:1fr;gap:14px}.ocr-source,.ocr-match{padding:16px}.ocr-heading{gap:12px;margin-bottom:16px}.ocr-heading h2{font-size:22px}.ocr-launch{align-items:flex-start}.ocr-panel textarea{font-size:16px}.ocr-actions .ocr-btn{flex-grow:1}.ocr-empty{min-height:152px}}
 @media(max-width:420px) {.ocr-panel{margin:0 8px 14px;padding:16px 10px}.ocr-source,.ocr-match{padding:14px}.ocr-heading h2{font-size:20px}.ocr-source-actions{gap:8px}.ocr-source-actions .ocr-btn{padding:10px 8px;font-size:13px}}
-@media(prefers-reduced-motion:reduce) {.ocr-panel *{scroll-behavior:auto!important}}
+@media(prefers-reduced-motion:reduce) {.ocr-panel *{scroll-behavior:auto!important}.ocr-spinner{animation:none}}
 
 </style>
 </head>
@@ -1064,7 +1066,7 @@
         <details class="ocr-adjust"><summary>Điều chỉnh ảnh</summary><div class="ocr-actions"><button type="button" id="ocrRotate" class="ocr-btn">Xoay 90°</button><button type="button" id="ocrCropMode" class="ocr-btn" aria-pressed="false">Chọn vùng tên thuốc</button><button type="button" id="ocrApplyCrop" class="ocr-btn" disabled>Cắt vùng chọn</button><button type="button" id="ocrResetCrop" class="ocr-btn">Toàn ảnh</button></div><p id="ocrCropHint" class="ocr-help">Bật “Chọn vùng tên thuốc”, kéo trên ảnh rồi bấm “Cắt vùng chọn”.</p><label class="ocr-check"><input type="checkbox" id="ocrEnhance"> Tăng tương phản khi chữ mờ</label></details>
         <div class="ocr-actions"><button type="button" id="ocrRecognize" class="ocr-btn">Đọc lại ảnh</button><button type="button" id="ocrClear" class="ocr-btn">Xóa ảnh</button></div>
       </div>
-      <div id="ocrProgressArea" hidden><progress id="ocrProgress" max="100" value="0" aria-label="Tiến độ đọc chữ"></progress><div class="ocr-actions"><span id="ocrProgressLabel" role="status">Đang chuẩn bị…</span><button type="button" id="ocrCancel" class="ocr-btn">Hủy đọc ảnh</button></div></div>
+      <div id="ocrProgressArea" hidden><div class="ocr-actions ocr-processing"><span class="ocr-spinner" aria-hidden="true"></span><span id="ocrProgressLabel" role="status">Đang nhận diện ảnh…</span><button type="button" id="ocrCancel" class="ocr-btn">Hủy</button></div></div>
     </div>
     <div class="ocr-match">
       <h3>Kết quả tra cứu</h3>
@@ -2036,7 +2038,7 @@
     if (typeof config.getRows !== 'function' || typeof config.openDrug !== 'function') throw new Error('OCR cần getRows và openDrug.');
     const $ = id => document.getElementById(id);
     const ui = {};
-    ['Toggle','Close','TakePhoto','Upload','ImageFile','CameraFile','ImageEmpty','Camera','Video','Capture','StopCamera','CameraNotice','PreviewArea','Preview','Rotate','CropMode','ApplyCrop','ResetCrop','Enhance','Recognize','Clear','ProgressArea','Progress','ProgressLabel','Cancel','Text','Find','ReloadData','Notice','Candidates','Confirmation','Selected','Confirmed','OpenDrug','Back','DataStatus'].forEach(key => { ui[key] = $('ocr' + key); });
+    ['Toggle','Close','TakePhoto','Upload','ImageFile','CameraFile','ImageEmpty','Camera','Video','Capture','StopCamera','CameraNotice','PreviewArea','Preview','Rotate','CropMode','ApplyCrop','ResetCrop','Enhance','Recognize','Clear','ProgressArea','ProgressLabel','Cancel','Text','Find','ReloadData','Notice','Candidates','Confirmation','Selected','Confirmed','OpenDrug','Back','DataStatus'].forEach(key => { ui[key] = $('ocr' + key); });
     const panel = $('drugOcrPanel');
     if (!panel || !ui.Toggle) throw new Error('Thiếu HTML module OCR.');
     let rowsRef = null, index = [], selected = null;
@@ -2193,7 +2195,7 @@
         const width = decoded.width || decoded.naturalWidth, height = decoded.height || decoded.naturalHeight;
         if (!width || !height || width*height > 65000000) throw new Error('Ảnh quá lớn hoặc kích thước không hợp lệ. Hãy giảm ảnh xuống dưới 65 megapixel.');
         setImage(scaledCanvas(decoded,width,height));
-        say(config.autoRecognize ? 'Đã nhận ảnh. Đang chuẩn bị tự đọc tên thuốc…' : 'Đã chọn ảnh. Có thể điều chỉnh ảnh rồi bấm “Đọc lại ảnh”.');
+        say(config.autoRecognize ? 'Đang nhận diện ảnh…' : 'Đã chọn ảnh. Có thể điều chỉnh ảnh rồi bấm “Đọc lại ảnh”.');
       } catch (error) { if (token === imageGeneration) say(error.message || 'Không mở được ảnh. Hãy chọn ảnh JPG/PNG khác.', true); }
       finally { if (decoded && decoded.close) decoded.close(); if(token===imageGeneration){loadingImage=false;updateControls();resize();} }
       if(token===imageGeneration && !destroyed && image && config.autoRecognize)recognize();
@@ -2217,18 +2219,12 @@
       ui.Preview.width = ui.Preview.height = 1; ui.PreviewArea.hidden = true; ui.Text.value = '';
       ui.CameraFile.value = ui.ImageFile.value = ''; resetResults(); say('Đã xóa ảnh và chữ đọc được. Chọn ảnh khác để tiếp tục.');
     }
-    function progress(message) {
-      const labels = {'loading tesseract core':'Đang tải lõi OCR','initializing tesseract':'Đang khởi tạo OCR','loading language traineddata':'Đang tải bộ chữ Việt/Anh','initializing api':'Đang chuẩn bị bộ đọc','recognizing text':'Đang đọc chữ trong ảnh'};
-      const value = Math.round((message.progress || 0)*100);
-      ui.Progress.value = value;
-      ui.ProgressLabel.textContent = `${labels[message.status] || 'Đang chuẩn bị OCR'}${Number.isFinite(message.progress) ? ` · ${value}%` : ''}`;
-    }
     async function recognize() {
       if (!image || busy || loadingImage) return;
       const scanImage = copyCanvas(image);
       stopCamera(); resetResults(); ui.Text.value = ''; setBusy(true);
-      ui.Progress.value = 0; ui.ProgressLabel.textContent = 'Đang tải bộ đọc chữ…';
-      say('Đang xử lý ảnh trên thiết bị. Lần đầu có thể cần chờ tải bộ chữ.');
+      ui.ProgressLabel.textContent = 'Đang nhận diện ảnh…';
+      say('');
       const token = ++generation;
       let fatalReject;
       const fatal = new Promise((_,reject) => { fatalReject = reject; });
@@ -2239,7 +2235,6 @@
         if (!isCurrent()) return;
         const pending = Tesseract.createWorker(config.languages,1,{
           workerPath:config.workerPath,corePath:config.corePath,langPath:config.langPath,cacheMethod:'none',
-          logger:message => { if(isCurrent()) progress(message); },
           errorHandler:error => { if(isCurrent()) fatalReject(new Error(String(error && error.message || error || 'OCR gặp lỗi'))); }
         });
         // A worker can finish initializing after cancellation; always terminate it.
@@ -2257,7 +2252,7 @@
         if (!isCurrent()) return;
         ui.Text.value = String(result.data.text || '').trim().slice(0,12000);
         if (!ui.Text.value) say('Chưa đọc được chữ. Hãy chụp gần hơn, xoay/cắt ảnh hoặc nhập tên thuốc trực tiếp.',true);
-        else find(true);
+        else { ui.ProgressLabel.textContent='Đang tìm thuốc…'; find(true); }
       } catch (error) {
         if (isCurrent()) say('Không đọc được ảnh. Kiểm tra mạng/bộ đọc OCR rồi thử lại; có thể nhập tên thuốc trực tiếp. ' + String(error.message || '').slice(0,180),true);
       } finally {
@@ -2289,7 +2284,7 @@
       if (!refreshData()) {
         if(automatic) {
           pendingSearch={text,generation};
-          say('Đã đọc ảnh. Đang chờ danh mục thuốc để tự tìm hồ sơ…');
+          say('Đang tìm thuốc. Vui lòng chờ…');
           searchTimer=setTimeout(() => { if(pendingSearch && pendingSearch.text===text) { clearPendingSearch();say('Chưa tải được danh mục thuốc. Kiểm tra mạng rồi bấm “Làm mới danh mục” hoặc “Tìm thuốc”.',true); } },30000);
         } else say('Chưa có dữ liệu thuốc để đối chiếu. Bấm “Làm mới danh mục” rồi thử lại.',true);
         return;
