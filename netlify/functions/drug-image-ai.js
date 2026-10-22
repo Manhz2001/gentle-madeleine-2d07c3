@@ -153,7 +153,7 @@ exports.handler = async event => {
   const model = String(process.env.GEMINI_MODEL || "gemini-3.8-flash").trim();
   if (!/^gemini-[a-z0-9.-]{1,80}$/.test(model)) return reply(503, {ok: false, error: "AI_UNAVAILABLE"}, origin);
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 12000);
+  const timer = setTimeout(() => controller.abort(), 45000);
   try {
     const upstream = await fetch(`https://aiplatform.googleapis.com/v1/publishers/google/models/${model}:generateContent`, {
       method: "POST", signal: controller.signal,

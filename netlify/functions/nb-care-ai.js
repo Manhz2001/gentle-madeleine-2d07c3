@@ -125,7 +125,7 @@ exports.handler = async event => {
   const approvedContext = "KHO NGUỒN ĐƯỢC DUYỆT: Chưa cung cấp tài liệu chuyên môn cho câu hỏi này. Thứ tự nguồn khi được bổ sung: DrugView Ninh Bình trước; sau đó là Bộ Y tế, Cục Quản lý Dược, hướng dẫn bệnh viện, tờ hướng dẫn sử dụng thuốc PDF và tài liệu quốc tế đã kiểm chứng.";
   const model = String(process.env.GEMINI_MODEL || "gemini-3.8-flash").trim();
   if (!/^gemini-[a-z0-9.-]{1,80}$/.test(model)) return reply(503, {ok: false, error: "AI_UNAVAILABLE"}, origin);
-  const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15000);
+  const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 45000);
   try {
     const upstream = await fetch(`https://aiplatform.googleapis.com/v1/publishers/google/models/${model}:generateContent`, {method: "POST", signal: controller.signal, headers: {"Content-Type": "application/json", "x-goog-api-key": apiKey}, body: JSON.stringify({systemInstruction: {parts: [{text: systemInstruction}]}, contents: [{role: "user", parts: [{text: `${approvedContext}\nCHẾ ĐỘ: ${modeRule}\nCÂU HỎI: ${body.question}`}]}], generationConfig: {temperature: 0.1, maxOutputTokens: 1600, responseMimeType: "application/json", responseJsonSchema: responseSchema, ...(model.startsWith("gemini-2.5-flash") ? {thinkingConfig: {thinkingBudget: 0}} : {})}})});
     if (!upstream.ok) {
