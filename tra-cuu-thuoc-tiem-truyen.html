@@ -991,6 +991,8 @@
 .ocr-confirmation {border:2px solid #0b5394;background:#f2f7fd;padding:15px;border-radius:12px;margin-top:14px}
 .ocr-check {display:flex;align-items:flex-start;gap:9px;font-size:13px;margin:12px 0;cursor:pointer}
 .ocr-check input {flex:0 0 auto;width:18px;height:18px;min-width:18px;margin-top:2px;accent-color:#0b5394}
+.ocr-ai-option {padding:10px 12px;border:1px solid #d5e3f8;border-radius:10px;background:#f7fafd;color:#083d6f}
+.ocr-ai-option small {display:block;font-size:11px;color:#526072;font-weight:400}
 .ocr-processing {flex-wrap:nowrap;margin:16px 0 0;padding-top:14px;border-top:1px solid #e2eaf3}
 .ocr-spinner {flex:0 0 18px;width:18px;height:18px;border:2px solid #d5e3f8;border-top-color:#0b5394;border-radius:50%;animation:ocr-spin .9s linear infinite}
 @keyframes ocr-spin {to{transform:rotate(360deg)}}
@@ -1054,6 +1056,7 @@
   <div class="ocr-columns">
     <div class="ocr-source">
       <h3>Ảnh thuốc</h3>
+      <label id="ocrAiOption" class="ocr-check ocr-ai-option" hidden><input id="ocrUseAi" type="checkbox"><span>Hỗ trợ bằng Gemini<small>Ảnh được gửi tới Google để nhận diện.</small></span></label>
       <div class="ocr-actions ocr-source-actions"><button type="button" id="ocrTakePhoto" class="ocr-btn ocr-primary">📷 Chụp ảnh</button><button type="button" id="ocrUpload" class="ocr-btn">Tải ảnh có sẵn</button></div>
       <input id="ocrImageFile" type="file" accept="image/*" hidden>
       <input id="ocrCameraFile" type="file" accept="image/*" capture="environment" hidden>
@@ -1067,6 +1070,7 @@
         <div class="ocr-actions"><button type="button" id="ocrRecognize" class="ocr-btn">Đọc lại ảnh</button><button type="button" id="ocrClear" class="ocr-btn">Xóa ảnh</button></div>
       </div>
       <div id="ocrProgressArea" hidden><div class="ocr-actions ocr-processing"><span class="ocr-spinner" aria-hidden="true"></span><span id="ocrProgressLabel" role="status">Đang nhận diện ảnh…</span><button type="button" id="ocrCancel" class="ocr-btn">Hủy</button></div></div>
+      <p id="ocrAiStatus" class="ocr-help" role="status" hidden></p>
     </div>
     <div class="ocr-match">
       <h3>Kết quả tra cứu</h3>
@@ -2016,7 +2020,7 @@
     corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@7.0.0',
     langPath: 'https://tessdata.projectnaptha.com/4.0.0',
     languages: 'eng+vie', maxFileBytes: 20 * 1024 * 1024,
-    maxEdge: 2048, timeoutMs: 120000, autoRecognize: true
+    maxEdge: 2048, timeoutMs: 120000, autoRecognize: true, aiEndpoint: '', aiTimeoutMs: 15000
   });
   let libraryPromise;
   function loadLibrary(url) {
@@ -2038,7 +2042,7 @@
     if (typeof config.getRows !== 'function' || typeof config.openDrug !== 'function') throw new Error('OCR cần getRows và openDrug.');
     const $ = id => document.getElementById(id);
     const ui = {};
-    ['Toggle','Close','TakePhoto','Upload','ImageFile','CameraFile','ImageEmpty','Camera','Video','Capture','StopCamera','CameraNotice','PreviewArea','Preview','Rotate','CropMode','ApplyCrop','ResetCrop','Enhance','Recognize','Clear','ProgressArea','ProgressLabel','Cancel','Text','Find','ReloadData','Notice','Candidates','Confirmation','Selected','Confirmed','OpenDrug','Back','DataStatus'].forEach(key => { ui[key] = $('ocr' + key); });
+    ['Toggle','Close','TakePhoto','Upload','ImageFile','CameraFile','ImageEmpty','Camera','Video','Capture','StopCamera','CameraNotice','PreviewArea','Preview','Rotate','CropMode','ApplyCrop','ResetCrop','Enhance','Recognize','Clear','ProgressArea','ProgressLabel','Cancel','Text','Find','ReloadData','Notice','Candidates','Confirmation','Selected','Confirmed','OpenDrug','Back','DataStatus','AiOption','UseAi','AiStatus'].forEach(key => { ui[key] = $('ocr' + key); });
     const panel = $('drugOcrPanel');
     if (!panel || !ui.Toggle) throw new Error('Thiếu HTML module OCR.');
     let rowsRef = null, index = [], selected = null;
@@ -2047,6 +2051,8 @@
     let worker = null, busy = false, generation = 0, imageGeneration = 0, taskTimer;
     let destroyed = false, loadedAt = '', reloadBusy = false, loadingImage = false;
     let pendingSearch = null, searchTimer;
+    let aiController=null, availabilityController=null, aiEvidence=null;
+    let aiAvailable=typeof config.recognizeImage==='function';
     const listeners = [];
     const listen = (node, event, fn) => { node.addEventListener(event, fn); listeners.push(() => node.removeEventListener(event, fn)); };
     const resize = () => { ui.ImageEmpty.hidden = !!image || !ui.Camera.hidden || loadingImage; if (config.onResize) config.onResize(); };
@@ -2078,7 +2084,7 @@
     }
     function updateControls() {
       const disabled = busy || loadingImage;
-      ['TakePhoto','Upload','Rotate','CropMode','ResetCrop','Enhance','Recognize'].forEach(key => { ui[key].disabled = disabled; });
+      ['TakePhoto','Upload','Rotate','CropMode','ResetCrop','Enhance','Recognize','UseAi'].forEach(key => { ui[key].disabled = disabled; });
       ui.ApplyCrop.disabled = disabled || !selection;
       ui.Text.disabled = disabled; ui.Find.disabled = disabled;
       ui.Clear.disabled = busy;
@@ -2095,6 +2101,7 @@
     function clearPendingSearch() { pendingSearch = null; clearTimeout(searchTimer); }
     function cancel(message = 'Đã hủy đọc ảnh. Bạn có thể đọc lại hoặc nhập tên thuốc.') {
       generation++; clearTimeout(taskTimer); clearPendingSearch(); terminateWorker();
+      if(aiController) { aiController.abort(); aiController=null; }
       if (busy) { setBusy(false); say(message); }
     }
     function suspend() {
@@ -2158,6 +2165,7 @@
     }
     function setImage(next) {
       source = copyCanvas(next); image = copyCanvas(next); selection = null;
+      aiEvidence=null;ui.AiStatus.hidden=true;
       cropMode = false; ui.CropMode.setAttribute('aria-pressed','false');
       ui.Preview.classList.remove('ocr-cropping'); ui.PreviewArea.hidden = false;
       ui.Text.value = ''; resetResults(); drawPreview(); resize();
@@ -2218,19 +2226,91 @@
       cancel(); stopCamera(); imageGeneration++; loadingImage=false; updateControls(); source = image = selection = dragStart = null;
       ui.Preview.width = ui.Preview.height = 1; ui.PreviewArea.hidden = true; ui.Text.value = '';
       ui.CameraFile.value = ui.ImageFile.value = ''; resetResults(); say('Đã xóa ảnh và chữ đọc được. Chọn ảnh khác để tiếp tục.');
+      aiEvidence=null;ui.AiStatus.hidden=true;
+    }
+    function aiUrl() {
+      if(!config.aiEndpoint || !global.location)return null;
+      try {const url=new URL(config.aiEndpoint,global.location.href);return url.origin===global.location.origin ? url.href : null;} catch(_){return null;}
+    }
+    async function checkAiAvailability() {
+      ui.AiOption.hidden=!aiAvailable;
+      const url=aiUrl();
+      if(aiAvailable || !url || typeof global.fetch!=='function' || typeof global.AbortController!=='function')return;
+      const controller=new global.AbortController();availabilityController=controller;
+      const timer=setTimeout(()=>controller.abort(),5000);
+      try {
+        const response=await global.fetch(url,{signal:controller.signal,credentials:'omit',cache:'no-store'});
+        const data=response.ok ? await response.json() : null;
+        if(!destroyed && data && data.available===true){aiAvailable=true;ui.AiOption.hidden=false;resize();}
+      } catch(_){} finally {clearTimeout(timer);if(availabilityController===controller)availabilityController=null;}
+    }
+    async function requestAi(canvas,signal) {
+      if(typeof config.recognizeImage==='function')return config.recognizeImage(canvas,{signal});
+      const url=aiUrl();if(!url)throw new Error('AI_UNAVAILABLE');
+      let edge=1600,dataUrl='';
+      for(const quality of [.88,.72,.55]) {
+        const scale=Math.min(1,edge/Math.max(canvas.width,canvas.height));
+        const compact=document.createElement('canvas');compact.width=Math.max(1,Math.round(canvas.width*scale));compact.height=Math.max(1,Math.round(canvas.height*scale));
+        const ctx=compact.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,compact.width,compact.height);ctx.drawImage(canvas,0,0,compact.width,compact.height);
+        dataUrl=compact.toDataURL('image/jpeg',quality);
+        if(dataUrl.length<=2796000)break;
+        edge=1200;
+      }
+      if(!dataUrl.startsWith('data:image/jpeg;base64,') || dataUrl.length>2796000)throw new Error('AI_IMAGE_TOO_LARGE');
+      const response=await global.fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'omit',cache:'no-store',signal,
+        body:JSON.stringify({imageBase64:dataUrl.slice(dataUrl.indexOf(',')+1),mimeType:'image/jpeg'})});
+      if(!response.ok)throw new Error('AI_UNAVAILABLE');
+      return response.json();
+    }
+    function readAiIdentity(payload) {
+      if(!payload || payload.ok!==true || !Array.isArray(payload.items) || !payload.items.length || payload.items.length>6)return null;
+      const items=[];
+      for(const item of payload.items) {
+        if(!item || typeof item!=='object')return null;
+        const fields={};
+        for(const field of ['brand','active','strength','form']) {
+          if(item[field]!=null && typeof item[field]!=='string')return null;
+          fields[field]=String(item[field] || '').trim().slice(0,200);
+        }
+        if(!fields.brand && !fields.active)return null;
+        items.push(fields);
+      }
+      const text=items.map(item=>[item.brand,item.strength,item.active,item.form].filter(Boolean).join('\n')).join('\n\n');
+      return {text,multiple:payload.multipleMedicines===true || items.length>1};
     }
     async function recognize() {
       if (!image || busy || loadingImage) return;
       const scanImage = copyCanvas(image);
       stopCamera(); resetResults(); ui.Text.value = ''; setBusy(true);
       ui.ProgressLabel.textContent = 'Đang nhận diện ảnh…';
+      aiEvidence=null;ui.AiStatus.hidden=true;
       say('');
       const token = ++generation;
+      let deviceFallback=false;
       let fatalReject;
       const fatal = new Promise((_,reject) => { fatalReject = reject; });
       const isCurrent = () => token === generation && !destroyed;
       taskTimer = setTimeout(() => { if (isCurrent()) cancel('Đã dừng vì quá thời gian chờ. Kiểm tra mạng, cắt vùng tên thuốc rồi thử lại.'); },config.timeoutMs);
       try {
+        if(aiAvailable && ui.UseAi.checked && typeof global.AbortController==='function') {
+          const controller=new global.AbortController();aiController=controller;
+          const aiTimer=setTimeout(()=>controller.abort(),config.aiTimeoutMs);
+          const aborted=new Promise((_,reject)=>controller.signal.addEventListener('abort',()=>reject(new Error('AI_ABORTED')),{once:true}));
+          try {
+            const payload=await Promise.race([requestAi(scanImage,controller.signal),aborted]);
+            if(!isCurrent())return;
+            const identity=readAiIdentity(payload);
+            if(identity) {
+              ui.Text.value=identity.text;aiEvidence=identity;
+              ui.AiStatus.textContent='Đã nhận diện bằng Gemini. Hãy đối chiếu với bao bì.';ui.AiStatus.hidden=false;
+              ui.ProgressLabel.textContent='Đang tìm thuốc…';find(true);return;
+            }
+          } catch(_) {if(!isCurrent())return;}
+          finally {clearTimeout(aiTimer);if(aiController===controller)aiController=null;}
+          if(!isCurrent())return;
+          deviceFallback=true;
+          ui.AiStatus.textContent='Đang dùng nhận diện trên thiết bị.';ui.AiStatus.hidden=false;
+        }
         const Tesseract = await loadLibrary(config.scriptUrl);
         if (!isCurrent()) return;
         const pending = Tesseract.createWorker(config.languages,1,{
@@ -2250,6 +2330,7 @@
         }
         const result = await Promise.race([worker.recognize(input),fatal]);
         if (!isCurrent()) return;
+        if(deviceFallback)ui.AiStatus.textContent='Đã nhận diện trên thiết bị vì Gemini chưa phản hồi.';
         ui.Text.value = String(result.data.text || '').trim().slice(0,12000);
         if (!ui.Text.value) say('Chưa đọc được chữ. Hãy chụp gần hơn, xoay/cắt ảnh hoặc nhập tên thuốc trực tiếp.',true);
         else { ui.ProgressLabel.textContent='Đang tìm thuốc…'; find(true); }
@@ -2290,6 +2371,7 @@
         return;
       }
       const assessment = global.DrugOcrMatcher.assess(text,index,{limit:8});
+      if(aiEvidence && aiEvidence.text===text && aiEvidence.multiple) {assessment.recommended=null;assessment.reason='multiple-labels';}
       const candidates = assessment.candidates;
       if (!candidates.length) { say('Chưa tìm thấy thuốc phù hợp trong danh mục. Kiểm tra chữ OCR, thử chỉ giữ tên thuốc và hàm lượng hoặc chụp rõ hơn. Kết quả này chưa chứng minh thuốc không có trong danh mục.',true); return; }
       const explanations={'name-needs-review':'Tên thuốc cần được kiểm tra lại.','strength-conflict':'Hàm lượng đọc được chưa khớp.','strength-needs-review':'Chưa đọc đủ hàm lượng hoặc nồng độ.','ambiguous-profile':'Có nhiều hồ sơ chưa phân biệt được.','multiple-labels':'Ảnh có dấu hiệu chứa nhiều thuốc hoặc nhiều hàm lượng.'};
@@ -2359,9 +2441,9 @@
     listen(global,'drug-data-ready',refreshData);
     listen(document,'visibilitychange',() => {if(document.hidden)stopCamera();});
     listen(global,'pagehide',suspend);
-    refreshData();
+    refreshData();checkAiAvailability();
     const poll = setInterval(() => {if(!panel.hidden || !rowsRef || !rowsRef.length)refreshData();},2000);
-    return {readImage,refreshData,cancel,clear,destroy:() => {destroyed=true;suspend();clearInterval(poll);listeners.forEach(remove=>remove());},get busy(){return busy;}};
+    return {readImage,refreshData,cancel,clear,destroy:() => {destroyed=true;suspend();if(availabilityController)availabilityController.abort();clearInterval(poll);listeners.forEach(remove=>remove());},get busy(){return busy;}};
   }
   global.DrugPhotoOCR = Object.freeze({mount,defaults:DEFAULTS});
 })(window);
@@ -2370,6 +2452,7 @@
   function start() {
     if (window.drugPhotoOCR) return;
     window.drugPhotoOCR = DrugPhotoOCR.mount(Object.assign({}, window.DRUG_OCR_CONFIG || {}, {
+      aiEndpoint: /^(?:[a-z0-9-]+--)?gentle-madeleine-2d07c3\.netlify\.app$/.test(window.location && window.location.hostname || '') ? '/.netlify/functions/drug-image-ai' : '',
       getRows: () => typeof allData !== 'undefined' ? allData : [],
       openDrug: drug => {
         if (typeof displayDrugInfo !== 'function') throw new Error('Không tìm thấy hàm hiển thị hồ sơ thuốc.');
