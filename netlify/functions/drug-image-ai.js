@@ -155,7 +155,7 @@ exports.handler = async event => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 12000);
   try {
-    const upstream = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    const upstream = await fetch(`https://aiplatform.googleapis.com/v1/publishers/google/models/${model}:generateContent`, {
       method: "POST", signal: controller.signal,
       headers: {"Content-Type": "application/json", "x-goog-api-key": apiKey},
       body: JSON.stringify({
