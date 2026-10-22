@@ -130,9 +130,11 @@ exports.handler = async event => {
   if (event.httpMethod === "OPTIONS") {
     return reply(204, null, origin, {"Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type"});
   }
+  const enabled = process.env.GEMINI_ENABLED === "true";
   const apiKey = String(process.env.GEMINI_API_KEY || "").trim();
-  if (event.httpMethod === "GET") return reply(200, {available: !!apiKey}, origin);
+  if (event.httpMethod === "GET") return reply(200, {available: enabled && !!apiKey}, origin);
   if (event.httpMethod !== "POST") return reply(405, {ok: false, error: "METHOD_NOT_ALLOWED"}, origin, {Allow: "GET, POST, OPTIONS"});
+  if (!enabled) return reply(503, {ok: false, error: "AI_DISABLED"}, origin);
   if (!/^application\/json(?:\s*;|$)/i.test(headers["content-type"] || "")) {
     return reply(415, {ok: false, error: "JSON_REQUIRED"}, origin);
   }

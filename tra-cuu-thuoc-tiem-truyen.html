@@ -2452,7 +2452,7 @@
   function start() {
     if (window.drugPhotoOCR) return;
     window.drugPhotoOCR = DrugPhotoOCR.mount(Object.assign({}, window.DRUG_OCR_CONFIG || {}, {
-      aiEndpoint: /^(?:[a-z0-9-]+--)?gentle-madeleine-2d07c3\.netlify\.app$/.test(window.location && window.location.hostname || '') ? '/.netlify/functions/drug-image-ai' : '',
+      aiEndpoint: '',
       getRows: () => typeof allData !== 'undefined' ? allData : [],
       openDrug: drug => {
         if (typeof displayDrugInfo !== 'function') throw new Error('Không tìm thấy hàm hiển thị hồ sơ thuốc.');
