@@ -123,7 +123,7 @@ exports.handler = async event => {
   const risk = assess(body.question);
   const modeRule = body.mode === "deep" ? "Trình bày tóm tắt, căn cứ và giới hạn rõ ràng." : "Trình bày vài ý chính, ngắn và dễ hiểu.";
   const approvedContext = "KHO NGUỒN ĐƯỢC DUYỆT: Chưa cung cấp tài liệu chuyên môn cho câu hỏi này. Thứ tự nguồn khi được bổ sung: DrugView Ninh Bình trước; sau đó là Bộ Y tế, Cục Quản lý Dược, hướng dẫn bệnh viện, tờ hướng dẫn sử dụng thuốc PDF và tài liệu quốc tế đã kiểm chứng.";
-  const model = String(process.env.GEMINI_MODEL || "gemini-2.5-flash").trim();
+  const model = String(process.env.GEMINI_MODEL || "gemini-3.8-flash").trim();
   if (!/^gemini-[a-z0-9.-]{1,80}$/.test(model)) return reply(503, {ok: false, error: "AI_UNAVAILABLE"}, origin);
   const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15000);
   try {
