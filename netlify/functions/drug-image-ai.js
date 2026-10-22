@@ -162,7 +162,8 @@ exports.handler = async event => {
         systemInstruction: {parts: [{text: instruction}]},
         contents: [{role: "user", parts: [{text: "Extract only the visible medicine identity fields."}, {inlineData: image}]}],
         generationConfig: {
-          temperature: 0, maxOutputTokens: 2048, responseMimeType: "application/json", responseJsonSchema: outputSchema,
+          temperature: 0, maxOutputTokens: 512, responseMimeType: "application/json", responseJsonSchema: outputSchema,
+          ...(model.startsWith("gemini-3") ? {thinkingConfig: {thinkingLevel: "MINIMAL"}} : {}),
           ...(model.startsWith("gemini-2.5-flash") ? {thinkingConfig: {thinkingBudget: 0}} : {})
         }
       })
