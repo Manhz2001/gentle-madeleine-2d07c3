@@ -168,6 +168,7 @@ exports.handler = async event => {
       })
     });
     if (!upstream.ok) {
+      console.error("Vertex AI image request failed", {status: upstream.status, model});
       if (upstream.status === 429) return reply(429, {ok: false, error: "AI_BUSY"}, origin, {"Retry-After": "60"});
       return reply([401,403,404].includes(upstream.status) ? 503 : 502, {ok: false, error: "AI_UNAVAILABLE"}, origin);
     }

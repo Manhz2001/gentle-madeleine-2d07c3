@@ -128,7 +128,10 @@ exports.handler = async event => {
   const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15000);
   try {
     const upstream = await fetch(`https://aiplatform.googleapis.com/v1/publishers/google/models/${model}:generateContent`, {method: "POST", signal: controller.signal, headers: {"Content-Type": "application/json", "x-goog-api-key": apiKey}, body: JSON.stringify({systemInstruction: {parts: [{text: systemInstruction}]}, contents: [{role: "user", parts: [{text: `${approvedContext}\nCHẾ ĐỘ: ${modeRule}\nCÂU HỎI: ${body.question}`}]}], generationConfig: {temperature: 0.1, maxOutputTokens: 1600, responseMimeType: "application/json", responseJsonSchema: responseSchema, ...(model.startsWith("gemini-2.5-flash") ? {thinkingConfig: {thinkingBudget: 0}} : {})}})});
-    if (!upstream.ok) return reply(upstream.status === 429 ? 429 : 502, {ok: false, error: upstream.status === 429 ? "AI_BUSY" : "AI_UNAVAILABLE"}, origin, upstream.status === 429 ? {"Retry-After": "60"} : undefined);
+    if (!upstream.ok) {
+      console.error("Vertex AI NB Care request failed", {status: upstream.status, model});
+      return reply(upstream.status === 429 ? 429 : 502, {ok: false, error: upstream.status === 429 ? "AI_BUSY" : "AI_UNAVAILABLE"}, origin, upstream.status === 429 ? {"Retry-After": "60"} : undefined);
+    }
     try { return reply(200, {ok: true, answer: parseAnswer(await upstream.json(), risk)}, origin); }
     catch (_) { return reply(502, {ok: false, error: "AI_INVALID_RESPONSE"}, origin); }
   } catch (_) { return reply(controller.signal.aborted ? 504 : 502, {ok: false, error: controller.signal.aborted ? "AI_TIMEOUT" : "AI_UNAVAILABLE"}, origin); }
