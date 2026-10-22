@@ -150,7 +150,7 @@ exports.handler = async event => {
   if (!image) return reply(400, {ok: false, error: "INVALID_IMAGE"}, origin);
   if (!apiKey) return reply(503, {ok: false, error: "AI_NOT_CONFIGURED"}, origin);
   if (!withinBurstLimit(headers["x-nf-client-connection-ip"])) return reply(429, {ok: false, error: "AI_BUSY"}, origin, {"Retry-After": "60"});
-  const model = String(process.env.GEMINI_MODEL || "gemini-2.5-flash").trim();
+  const model = String(process.env.GEMINI_MODEL || "gemini-3.5-flash-lite").trim();
   if (!/^gemini-[a-z0-9.-]{1,80}$/.test(model)) return reply(503, {ok: false, error: "AI_UNAVAILABLE"}, origin);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 12000);
