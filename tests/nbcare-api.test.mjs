@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {BaseLlm} from '@google/adk';
-import {createHandler, validateChat} from '../netlify/functions/nbcare-api.mjs';
+import handleRequest, {createHandler, validateChat} from '../netlify/functions/nbcare-api.mjs';
 import {chat, ocr, runtimeStatus, loadApproved, domainPriority, closedUrlAllowed,
   projectGroundedParagraphs, resolveOfficialUrl, validateImage, WARNING, ABSTAIN} from '../nbcare-server/runtime.mjs';
 import {sourcesFromRows, allowedFetchUrl} from '../nbcare-server/drugview.mjs';
@@ -24,6 +24,13 @@ const event=(changes={})=>({httpMethod:'POST',path:'/api/chat',headers:{'content
 const json=response=>JSON.parse(response.body);
 const signature=Buffer.from([137,80,78,71,13,10,26,10]);
 const image={mimeType:'image/png',data:signature.toString('base64')};
+
+test('modern Netlify ESM entry returns standard Response and handles rewrites and empty preflights',async()=>{
+  const status=await handleRequest(new Request('https://example.test/.netlify/functions/nbcare-api?action=status'),{ip:'offline-modern'});
+  assert.ok(status instanceof Response);assert.equal(status.status,200);assert.equal((await status.json()).provider,'vertex-adk');
+  const preflight=await handleRequest(new Request('https://example.test/api/chat',{method:'OPTIONS'}),{ip:'offline-modern'});
+  assert.equal(preflight.status,204);assert.equal(await preflight.text(),'');
+});
 
 test('status works without credentials, does not expose secrets, and does not claim verified connectivity',async()=>{
   const handler=createHandler({env:{}}),response=await handler(event({httpMethod:'GET',path:'/api/status',body:''}));

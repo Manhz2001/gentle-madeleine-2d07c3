@@ -28,4 +28,19 @@ export function createHandler({api=runtime,env=process.env}={}){return async(eve
     const result=await (action==='chat'?api.chat(payload,{env,signal}):api.ocr(payload,{env,signal}));return reply(200,result,origin);
   }catch(failure){const status=Number.isInteger(failure.status)&&failure.status>=400&&failure.status<600?failure.status:(failure.name==='TimeoutError'||failure.name==='AbortError'?504:502);const message=status===429?'Vui lòng chờ một phút trước khi gửi thêm yêu cầu.':status===503?'Máy chủ Vertex AI chưa được cấu hình.':status===504?'Xử lý đang mất nhiều thời gian. Vui lòng thử lại.':status===502?'Chưa nhận được phản hồi hợp lệ từ Vertex AI. Hãy thử lại sau.':failure.code==='INVALID_REQUEST'||['ORIGIN_NOT_ALLOWED','NOT_FOUND'].includes(failure.code)?failure.message:status===413?'Ảnh hoặc nội dung vượt giới hạn cho phép.':'Dữ liệu không hợp lệ hoặc không thể xử lý.';return reply(status,{error:{code:failure.code||'REQUEST_FAILED',message}},allowed(origin,env)?origin:'');}
 };}
-export const handler=createHandler();
+const handleEvent=createHandler();
+// A modern default export preserves ESM package resolution in Netlify's bundle.
+// The legacy named `handler` export turns ADK into its incompatible CJS build.
+export default async function handleRequest(request,context={}){
+  const url=new URL(request.url),headers=Object.fromEntries(request.headers);
+  headers['x-nf-client-connection-ip']=String(context.ip||'unknown');
+  let body='';
+  if(!['GET','HEAD','OPTIONS'].includes(request.method)&&request.body){
+    const reader=request.body.getReader(),parts=[];let size=0;
+    try{for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>MAX_BODY){await reader.cancel();const origin=headers.origin||'';const r=reply(413,{error:{code:'INVALID_REQUEST',message:'Dữ liệu gửi lên vượt giới hạn.'}},allowed(origin,process.env)?origin:'');return new Response(r.body,{status:r.statusCode,headers:r.headers});}parts.push(Buffer.from(value));}}
+    finally{reader.releaseLock();}
+    body=Buffer.concat(parts).toString('utf8');
+  }
+  const result=await handleEvent({httpMethod:request.method,path:url.pathname,headers,body,queryStringParameters:Object.fromEntries(url.searchParams)});
+  return new Response(result.statusCode===204||request.method==='HEAD'?null:result.body,{status:result.statusCode,headers:result.headers});
+}
