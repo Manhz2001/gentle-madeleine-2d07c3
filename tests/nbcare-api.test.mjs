@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {BaseLlm} from '@google/adk';
 import handleRequest, {createHandler, validateChat} from '../netlify/functions/nbcare-api.mjs';
 import {chat, ocr, runtimeStatus, loadApproved, domainPriority, closedUrlAllowed,
-  projectGroundedParagraphs, resolveOfficialUrl, validateImage, WARNING, ABSTAIN} from '../nbcare-server/runtime.mjs';
+  projectGroundedParagraphs, resolveOfficialUrl, validateImage, WARNING, ABSTAIN,urgent} from '../nbcare-server/runtime.mjs';
 import {sourcesFromRows, allowedFetchUrl} from '../nbcare-server/drugview.mjs';
 
 // All model, catalogue and redirect dependencies are replaced below. No test
@@ -100,28 +100,31 @@ test('closed mode does not fall back to a model or open search when catalogue lo
 
 test('closed mode abstains without matching evidence and does not call a model',async()=>{
   const result=await chat(payload,{env:{},sourceLoader:async()=>[],agentRunner:noCall,modelFactory:noCall});
-  assert.equal(result.text,ABSTAIN);assert.equal(result.status,'insufficient_sources');
+  assert.ok(result.text.includes(ABSTAIN));assert.equal(result.status,'insufficient_sources');
 });
 
 test('closed mode rejects source IDs not obtained through the evidence tool',async()=>{
   const result=await chat(payload,{env,sourceLoader:async()=>[source],modelFactory,
     agentRunner:async()=>({text:JSON.stringify({source_ids:[source.id,'invented_source']})})});
-  assert.equal(result.text,ABSTAIN);assert.deepEqual(result.sources,[]);
+  assert.ok(result.text.includes(ABSTAIN));assert.deepEqual(result.sources,[]);
 });
 
-test('closed mode emits the entire consulted excerpt and ignores invented source IDs',async()=>{
-  const result=await chat(payload,{env,sourceLoader:async()=>[source],modelFactory,agentRunner:async agent=>{
-    assert.equal(agent.tools.length,1);assert.equal(agent.tools[0].name,'lookup_approved_sources');
+test('closed mode uses complete consulted quotes and excludes invented source IDs',async()=>{
+  const result=await chat(payload,{env,sourceLoader:async()=>[source],modelFactory,draftVerifier:async data=>data,agentRunner:async agent=>{
+    assert.equal(agent.tools.length,1);assert.equal(agent.tools[0].name,'lookup_clinical_sources');
     const evidence=await agent.tools[0].runAsync({args:{query:'Meropenem'},toolContext:{}});
     assert.equal(evidence.sources[0].excerpt,source.excerpt);
-    return {text:JSON.stringify({source_ids:[source.id,'invented_source',source.id]})};
+    return {text:JSON.stringify({information:[{text:source.excerpt,evidence:[{source_id:source.id,quote:source.excerpt}]},{text:'INVENTED_CLAIM',evidence:[{source_id:'invented_source',quote:source.excerpt}]}]})};
   }});
   assert.equal(result.grounded,true);assert.equal(result.status,'answered');
   assert.ok(result.text.includes(source.excerpt));assert.equal(result.sources.length,1);
+  assert.doesNotMatch(result.text,/INVENTED_CLAIM/);
   assert.equal(result.sources[0].provenance,'published_drugview');assert.equal(result.sources[0].url,source.url);
 });
 
 test('urgent symptoms bypass model calls and include the required warning',async()=>{
+  assert.equal(urgent('Tra cứu meropenem: nguy cơ co giật và tương tác theo tài liệu'),false);
+  assert.equal(urgent('Tôi đang khó thở, hãy tra cứu tác dụng phụ của thuốc'),true);
   const result=await chat({...payload,message:'Đang khó thở và đau ngực'},{env:{},sourceLoader:noCall,modelFactory:noCall,agentRunner:noCall});
   assert.ok(result.text.includes(WARNING));assert.match(result.text,/khẩn cấp/);
 });
@@ -161,15 +164,17 @@ test('duplicate grounding chunks for one URL share a single source ID and citati
   assert.equal(result.sources[0].url,url);
 });
 
-test('open chat only exposes official grounded evidence and does not read the closed catalogue',async()=>{
+test('open chat retrieves actual reference passages and no Google search suggestions',async()=>{
   const paragraph='Tài liệu y tế chính thống cần được đối chiếu trước khi áp dụng cho người bệnh.';
-  const result=await chat({...payload,sourceMode:'open'},{env,sourceLoader:noCall,modelFactory,agentRunner:async agent=>{
-    assert.equal(agent.tools[0].name,'google_search');
-    return {text:paragraph,grounding:{groundingChunks:[{web:{title:'Bộ Y tế',uri:'https://moh.gov.vn/example'}}],
-      groundingSupports:[{segment:{text:paragraph},groundingChunkIndices:[0]}]}};
+  const evidence={...source,id:'actual_ref',origin:'open',title:'Tài liệu thật trong phép thử',excerpt:paragraph,url:'https://moh.gov.vn/example'};
+  const result=await chat({...payload,sourceMode:'open'},{env,sourceLoader:async()=>[],openSourceLoader:async()=>[evidence],modelFactory,draftVerifier:async data=>data,agentRunner:async agent=>{
+    assert.equal(agent.tools[0].name,'lookup_clinical_sources');
+    await agent.tools[0].runAsync({args:{query:'Meropenem',drug_names:['meropenem']},toolContext:{}});
+    return {text:JSON.stringify({information:[{text:paragraph,evidence:[{source_id:evidence.id,quote:paragraph}]}]})};
   }});
   assert.equal(result.sourceMode,'open');assert.equal(result.grounded,true);
   assert.deepEqual(result.sources.map(s=>s.url),['https://moh.gov.vn/example']);
+  assert.equal(Object.hasOwn(result,'searchSuggestionsHtml'),false);
 });
 
 test('URL checks exclude malicious credentials, deceptive domains, ports and arbitrary cloud links',()=>{

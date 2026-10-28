@@ -9,6 +9,48 @@
   let requestController, ocrRequestController, cameraStream, cameraSerial=0, workerPromise, workerInstance, toastTimer, lastTrigger;
   const icon = name => { const s=document.createElementNS('http://www.w3.org/2000/svg','svg'); const u=document.createElementNS(s.namespaceURI,'use');u.setAttribute('href',`#i-${name}`);s.append(u);s.setAttribute('aria-hidden','true');return s; };
   const el = (tag,cls,text) => { const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n; };
+  const modelName = value => typeof value==='string'&&/^gemini-[a-z0-9.-]+$/.test(value)?value.replace(/^gemini-/,'Gemini '):'';
+  function updateModelLabels(){
+    const basic=modelName(state.api?.models?.basic||state.api?.model),deep=modelName(state.api?.models?.deep);
+    const summary=[basic&&`Cơ bản: ${basic}`,deep&&`Chuyên sâu: ${deep}`].filter(Boolean).join(' · ');
+    document.querySelector('.technology-label').textContent=summary||'Vertex AI · Gemini';
+    document.querySelector('.technology-label').title=summary;
+    $('modelSummaryMobile').textContent=summary||'Tên model sẽ hiển thị khi máy chủ sẵn sàng.';
+    document.querySelectorAll('[data-style]').forEach(button=>{const value=button.dataset.style==='deep'?deep:basic;button.title=value||'';});
+  }
+
+  // Supported Markdown is built as DOM nodes. Model text is never treated as HTML.
+  function renderMarkdown(text,sources=[]){
+    const known=new Map(sources.map(s=>[s.id,s])),urls=new Set(sources.map(s=>s.url));
+    function inline(parent,value,depth=0){
+      if(depth>3){parent.append(document.createTextNode(value));return;}
+      const pattern=/\*\*([^*\n]+)\*\*|`([^`\n]+)`|\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)|\[([A-Za-z0-9_-]+(?:\s*,\s*[A-Za-z0-9_-]+)*)\]/g;let position=0,match;
+      while((match=pattern.exec(value))){
+        parent.append(document.createTextNode(value.slice(position,match.index)));
+        if(match[1]){const strong=el('strong');inline(strong,match[1],depth+1);parent.append(strong);}
+        else if(match[2])parent.append(el('code','',match[2]));
+        else if(match[3]){if(urls.has(match[4])){const a=el('a','citation-link',match[3]);a.href=match[4];a.target='_blank';a.rel='noopener noreferrer';parent.append(a);}else parent.append(document.createTextNode(match[3]));}
+        else {const ids=match[5].split(/\s*,\s*/);if(ids.every(id=>known.has(id))){parent.append(document.createTextNode('['));ids.forEach((id,i)=>{if(i)parent.append(document.createTextNode(', '));const source=known.get(id),a=el('a','citation-link',id);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';a.title=source.citation||source.title;parent.append(a);});parent.append(document.createTextNode(']'));}else parent.append(document.createTextNode(match[0]));}
+        position=pattern.lastIndex;
+      }
+      parent.append(document.createTextNode(value.slice(position)));
+    }
+    function blocks(lines,depth=0){
+      const fragment=document.createDocumentFragment();let index=0;
+      const boundary=line=>/^\s*(?:#{1,6}\s|>\s?|[-*+]\s+|\d+[.)]\s+)/.test(line);
+      while(index<lines.length){
+        const line=lines[index];if(!line.trim()){index++;continue;}
+        const heading=line.match(/^\s*(#{1,6})\s+(.+)$/);
+        if(heading){const node=el('h'+Math.max(3,Math.min(4,heading[1].length)));inline(node,heading[2]);fragment.append(node);index++;continue;}
+        if(/^\s*>/.test(line)&&depth<3){const quoteLines=[];while(index<lines.length&&/^\s*>/.test(lines[index]))quoteLines.push(lines[index++].replace(/^\s*>\s?/,''));const value=quoteLines.join('\n'),kind=value.includes('🔴')?'is-critical':value.includes('🟡')?'is-caution':value.includes('🟢')?'is-suitable':'';const quote=el('blockquote',`clinical-callout ${kind}`.trim());quote.append(blocks(quoteLines,depth+1));fragment.append(quote);continue;}
+        const bullet=line.match(/^\s*([-*+]|\d+[.)])\s+(.+)$/);
+        if(bullet){const ordered=/^\d/.test(bullet[1]),list=el(ordered?'ol':'ul');while(index<lines.length){const item=lines[index].match(/^\s*([-*+]|\d+[.)])\s+(.+)$/);if(!item||/^\d/.test(item[1])!==ordered)break;const li=el('li');inline(li,item[2]);list.append(li);index++;}fragment.append(list);continue;}
+        const paragraph=el('p');do{if(paragraph.childNodes.length)paragraph.append(document.createElement('br'));inline(paragraph,lines[index++]);}while(index<lines.length&&lines[index].trim()&&!boundary(lines[index]));fragment.append(paragraph);
+      }
+      return fragment;
+    }
+    return blocks(String(text).replace(/\r\n?/g,'\n').split('\n'));
+  }
   const modeName = mode => mode==='open'?'Nguồn mở':'Nguồn đóng';
   const modeIcon = mode => mode==='open'?'globe':'lock';
   const isLive = () => Boolean(state.api?.configured && state.api?.provider!=='local-demo' && state.api?.demo!==true);
@@ -30,14 +72,12 @@
     document.querySelectorAll('[data-source]').forEach(n=>{const active=n.dataset.source===state.sourceMode;n.classList.toggle('is-active',active);n.setAttribute('aria-pressed',String(active));});
     $('modeCaption').textContent=modeName(state.sourceMode);
     $('composerMode').replaceChildren(icon(modeIcon(mode)),document.createTextNode(modeName(mode)));
-    $('sourceDescription').textContent=mode==='open'?'Ưu tiên DrugView, sau đó tài liệu y khoa chính thống tại Việt Nam và quốc tế.':'Tra cứu kho DrugView được cấu hình. Khi dữ liệu chưa đủ căn cứ, trợ lý sẽ nói rõ giới hạn.';
-    if(!state.reply)renderEvidence();
     if($('configDialog').open)$('configDialog').close();
   }
 
   function safeSources(sources) {
     if(!Array.isArray(sources))return [];
-    const seen=new Set();return sources.slice(0,10).flatMap((s,i)=>{try{const u=new URL(s.url);if(u.protocol!=='https:'||u.username||u.password||seen.has(u.href))return [];seen.add(u.href);return [{id:String(s.id||`S${i+1}`).slice(0,40),title:String(s.title||u.hostname).slice(0,300),url:u.href,origin:['internal','closed'].includes(s.origin)?'internal':'external',provenance:s.provenance==='published_drugview'?'published_drugview':s.provenance==='approved_local'?'approved_local':null}];}catch{return [];}});
+    const seen=new Set();return sources.slice(0,10).flatMap((s,i)=>{try{const u=new URL(s.url);if(u.protocol!=='https:'||u.username||u.password||u.port&&u.port!=='443'||seen.has(u.href))return [];seen.add(u.href);return [{id:String(s.id||`S${i+1}`).slice(0,64),title:String(s.title||u.hostname).slice(0,300),citation:typeof s.citation==='string'?s.citation.slice(0,800):'',limitations:typeof s.limitations==='string'?s.limitations.slice(0,1200):'',url:u.href,origin:['internal','closed'].includes(s.origin)?'internal':'external',provenance:['published_drugview','approved_local','official_dailymed','pubmed_abstract'].includes(s.provenance)?s.provenance:null}];}catch{return [];}});
   }
   function evidenceNodes(reply=state.reply) {
     const fragment=document.createDocumentFragment();
@@ -45,21 +85,19 @@
       fragment.append(el('p','evidence-result-mode',`${modeName(reply.sourceMode)} · Căn cứ của câu trả lời đã chọn`));
       if(reply.provider==='local-demo'||reply.status==='demo')fragment.append(el('strong','evidence-result-title','Minh họa luồng · Chưa có câu trả lời AI'));
       else fragment.append(el('strong','evidence-result-title',reply.grounded&&reply.sources.length?'Có tài liệu kèm theo':'Chưa đủ căn cứ được kiểm chứng'));
-      if(reply.sources.length){for(const s of reply.sources){const a=el('a','evidence-source');a.href=s.url;a.target='_blank';a.rel='noopener noreferrer';const originLabel=s.provenance==='published_drugview'?'Danh mục DrugView đã xuất bản':s.origin==='internal'?'Kho tài liệu được duyệt':'Nguồn bên ngoài';a.append(el('strong','',s.title),el('span','',`${originLabel} · ${new URL(s.url).hostname} ↗`));fragment.append(a);}return fragment;}
+      if(reply.sources.length){for(const s of reply.sources){const a=el('a','evidence-source');a.href=s.url;a.target='_blank';a.rel='noopener noreferrer';const originLabel=s.provenance==='published_drugview'?'Danh mục DrugView đã xuất bản':s.provenance==='official_dailymed'?'NLM/DailyMed · Nhãn SPL Hoa Kỳ':s.provenance==='pubmed_abstract'?'PubMed · Tóm tắt bài báo':s.origin==='internal'?'Kho tài liệu được duyệt':'Nguồn bên ngoài';a.append(el('strong','',s.title));if(s.citation)a.append(el('span','',s.citation));a.append(el('span','',`${originLabel} · ${new URL(s.url).hostname} ↗`));if(s.limitations)a.append(el('p','evidence-note',s.limitations));fragment.append(a);}return fragment;}
     }
     const empty=el('div','evidence-state');empty.append(icon(reply?'book':modeIcon(state.sourceMode)));
     const drugview=state.api?.closedSource;
     empty.append(el('strong','',reply?'Chưa có tài liệu trích dẫn':state.sourceMode==='closed'?(drugview?.lastFetchFailed?'Chưa lấy được dữ liệu mới':drugview?.loaded?'Đã nạp danh mục DrugView':drugview?.configured?'Nguồn DrugView đã cấu hình':'Kho tài liệu chưa được nạp'):'Tra cứu thêm nguồn chính thống'));
-    empty.append(el('p','',reply?'Chỉ các tài liệu thực sự do máy chủ trả về mới xuất hiện ở đây.':state.sourceMode==='closed'?(drugview?.configured?'Tra cứu dữ liệu đã xuất bản trên DrugView, kèm liên kết tài liệu gốc. Không tự bổ sung thông tin còn trống.':'Kho nguồn chưa sẵn sàng để trả lời câu hỏi có căn cứ. Vui lòng thử lại sau.'):'Căn cứ tìm được qua Gemini sẽ được hiển thị và phân biệt với kho nội bộ.'));
-    fragment.append(empty,el('p','evidence-label','THỨ TỰ ƯU TIÊN NGUỒN'));
+    empty.append(el('p','',reply?'Chỉ các tài liệu thực sự do máy chủ trả về mới xuất hiện ở đây.':state.sourceMode==='closed'?(drugview?.configured?'Tra cứu dữ liệu đã xuất bản trên DrugView và tài liệu bệnh viện được cung cấp. Không tự bổ sung thông tin còn trống.':'Kho nguồn chưa sẵn sàng để trả lời câu hỏi có căn cứ. Vui lòng thử lại sau.'):'Chỉ hiển thị đoạn tài liệu thực sự truy xuất từ các kênh đã cấu hình; không dùng tài liệu từ trí nhớ mô hình.'));
+    fragment.append(empty,el('p','evidence-label','KÊNH TÀI LIỆU ĐƯỢC CẤU HÌNH'));
     const list=el('ol','priority-list');
-    [['DrugView Ninh Bình','Dữ liệu đã xuất bản & kho được duyệt'],['Bộ Y tế & Cục Quản lý Dược','Tài liệu chính thức tại Việt Nam'],['WHO & cơ quan y tế','Hướng dẫn y khoa chính thống']].forEach(([t,d],i)=>{const li=el('li');const body=el('div');body.append(el('strong','',t),el('small','',d));li.append(el('span','priority-number',String(i+1)),body);list.append(li);});
-    fragment.append(list,el('p','evidence-note','Đây là chính sách lựa chọn nguồn, không phải danh sách tài liệu đã dùng trong câu trả lời. Ảnh và văn bản bạn gửi không được xem là hướng dẫn chuyên môn đã duyệt.'));
+    [['DrugView & tài liệu bệnh viện','Ưu tiên dữ liệu đã xuất bản và tài liệu được bệnh viện cung cấp'],['NLM / DailyMed','Nhãn SPL Hoa Kỳ; không đồng nhất với hướng dẫn được duyệt tại Việt Nam'],['PubMed','Tóm tắt bài báo; không dùng một mình để quyết định đổi thuốc hoặc liều']].forEach(([t,d],i)=>{const li=el('li');const body=el('div');body.append(el('strong','',t),el('small','',d));li.append(el('span','priority-number',String(i+1)),body);list.append(li);});
+    fragment.append(list,el('p','evidence-note','Đây là các kênh được cấu hình, không phải danh sách tài liệu đã dùng trong câu trả lời. Tài liệu chỉ được trích dẫn khi thực sự truy xuất được. Ảnh và văn bản bạn gửi không được xem là hướng dẫn chuyên môn đã duyệt.'));
     return fragment;
   }
-  function renderEvidence(){ $('evidenceContent').replaceChildren(evidenceNodes()); }
-  function showSources(reply=state.reply){if(reply)state.reply=reply;renderEvidence();$('sourceDialogContent').replaceChildren(evidenceNodes(reply));$('sourcesDialog').showModal();}
-  $('openLibrary').addEventListener('click',()=>showSources());$('mobileSources').addEventListener('click',()=>showSources());
+  function showSources(reply=state.reply){if(reply)state.reply=reply;$('sourceDialogContent').replaceChildren(evidenceNodes(reply));$('sourcesDialog').showModal();}
 
   function scrollToLatest(force=false) {if(force||state.nearBottom){requestAnimationFrame(()=>{scroller.scrollTop=scroller.scrollHeight;$('newMessageBadge').hidden=true;});}else $('newMessageBadge').hidden=false;}
   scroller.addEventListener('scroll',()=>{state.nearBottom=scroller.scrollHeight-scroller.scrollTop-scroller.clientHeight<90;if(state.nearBottom)$('newMessageBadge').hidden=true;});
@@ -74,21 +112,16 @@
     body.append(content);root.append(avatar,body);$('messages').append(root);scrollToLatest(role==='user');return {root,body,meta,content};
   }
   function pendingNode(mode,style){const m=messageNode('assistant','',mode,style);const dots=el('div','thinking');dots.setAttribute('role','status');dots.append(el('i'),el('i'),el('i'),el('span','',isLive()?'Đang tìm thông tin và chuẩn bị câu trả lời…':'Đang tìm thông tin và chuẩn bị câu trả lời…'));m.content.replaceChildren(dots);return m;}
-  function attachSuggestionsHtml(body,html){
-    if(typeof html!=='string'||!html.trim()||html.length>100000)return;
-    const frame=el('iframe','search-suggestions');frame.title='Google Search Suggestions';frame.setAttribute('sandbox','allow-popups allow-popups-to-escape-sandbox');frame.referrerPolicy='no-referrer';
-    const csp="default-src 'none'; style-src 'unsafe-inline'; img-src https: data:; font-src https:; base-uri 'none'; form-action 'none';";
-    frame.srcdoc=`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="${csp}"><meta name="referrer" content="no-referrer"><base target="_blank"></head><body>${html}</body></html>`;body.append(frame);
-  }
   function finishMessage(m,reply) {
-    m.content.textContent=reply.text;
+    m.content.classList.add('markdown-answer');m.content.replaceChildren(renderMarkdown(reply.text,reply.sources));
+    if(modelName(reply.model))m.meta.append(el('span','model-message-tag',modelName(reply.model)));
     if(reply.provider==='local-demo'||reply.status==='demo')m.meta.append(el('span','demo-message-tag','Demo · AI chưa kết nối'));
     else if(!reply.grounded)m.meta.append(el('span','demo-message-tag','Chưa đủ căn cứ'));
     const actions=el('div','message-actions'),copy=el('button');copy.type='button';copy.append(icon('copy'),document.createTextNode('Sao chép'));
     copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(reply.text);toast('Đã sao chép câu trả lời.');}catch{toast('Trình duyệt chưa cho phép sao chép. Bạn có thể chọn văn bản để sao chép.');}});
     const sourceButton=el('button');sourceButton.type='button';sourceButton.append(icon('book'),document.createTextNode(reply.sources.length?`${reply.sources.length} nguồn`:'Xem căn cứ'));sourceButton.addEventListener('click',()=>showSources(reply));actions.append(copy,sourceButton);m.body.append(actions);
-    if(reply.sources.length){const chips=el('div','answer-sources');reply.sources.slice(0,3).forEach((s,i)=>{const b=el('button','source-chip',`${i+1}. ${s.title}`);b.type='button';b.addEventListener('click',()=>showSources(reply));chips.append(b);});m.body.append(chips);}
-    attachSuggestionsHtml(m.body,reply.searchSuggestionsHtml);state.reply=reply;renderEvidence();scrollToLatest();
+    if(reply.sources.length){const chips=el('div','answer-sources');reply.sources.forEach(s=>{const a=el('a','source-chip',`[${s.id}] ${s.citation||s.title}`);a.href=s.url;a.target='_blank';a.rel='noopener noreferrer';a.title=s.citation||s.title;chips.append(a);});m.body.append(chips);}
+    state.reply=reply;scrollToLatest();
   }
   const resizeInput=()=>{question.style.height='auto';question.style.height=Math.min(question.scrollHeight,110)+'px';updateSend();};
   function updateSend(){$('sendMessage').disabled=state.busy||(!question.value.trim()&&!state.attachment);$('sendMessage').setAttribute('aria-label',state.busy?'Đang xử lý câu hỏi':'Gửi câu hỏi');}
@@ -115,7 +148,7 @@
   });
 
   async function checkStatus(){
-    try{const response=await fetch('/api/status',{signal:AbortSignal.timeout(5000)});if(!response.ok)throw new Error();const data=await response.json();state.api=data;if(isLive()){$('connectionLabel').textContent='Vertex đã cấu hình · Chờ kiểm tra kết nối';document.querySelector('.demo-disclosure p').textContent='Mỗi câu trả lời có phần căn cứ riêng. Hãy đối chiếu tài liệu và thông tin chuyên môn trước khi áp dụng.';$('geminiOcr').replaceChildren(document.createTextNode('Đọc lại bằng Gemini'));$('ocrPrivacy').textContent='Bấm “Đọc lại bằng Gemini” sẽ gửi ảnh này đến Vertex AI. Hãy ẩn thông tin cá nhân không cần thiết.';imageControls();renderEvidence();}else $('connectionLabel').textContent='Chưa kết nối AI · Vui lòng thử lại sau';}
+    try{const response=await fetch('/api/status',{signal:AbortSignal.timeout(10000)});if(!response.ok)throw new Error();const data=await response.json();state.api=data;updateModelLabels();if(isLive()){$('connectionLabel').textContent='Vertex đã cấu hình · Chờ kiểm tra kết nối';document.querySelector('.demo-disclosure p').textContent='Mỗi câu trả lời có phần căn cứ riêng. Hãy đối chiếu tài liệu và thông tin chuyên môn trước khi áp dụng.';$('geminiOcr').replaceChildren(document.createTextNode('Đọc lại bằng Gemini'));$('ocrPrivacy').textContent='Bấm “Đọc lại bằng Gemini” sẽ gửi ảnh này đến Vertex AI. Hãy ẩn thông tin cá nhân không cần thiết.';imageControls();}else $('connectionLabel').textContent='Chưa kết nối AI · Vui lòng thử lại sau';}
     catch{$('connectionLabel').textContent='Máy chủ chưa sẵn sàng · Bạn vẫn có thể đọc chữ trên máy';}
   }
 
@@ -174,9 +207,9 @@
   const compactNew=el('button','icon-button mobile-config');compactNew.type='button';compactNew.setAttribute('aria-label','Cuộc trò chuyện mới');compactNew.append(icon('plus'));$('mobileConfig').before(compactNew);compactNew.addEventListener('click',()=>$('newChat').click());
   const sampleButton=el('button','text-button sample-button','Thử đọc ảnh mẫu OCR');sampleButton.type='button';$('welcome').insertBefore(sampleButton,document.querySelector('.demo-disclosure'));sampleButton.addEventListener('click',async()=>{try{const r=await fetch(new URL('assets/ocr-sample.svg',moduleBase));if(!r.ok)throw new Error();readImage(new File([await r.blob()],'anh-mau-ocr.svg',{type:'image/svg+xml'}),true);}catch{toast('Chưa tải được ảnh mẫu. Bạn có thể chọn ảnh JPG hoặc PNG từ máy.');}});
   $('confirmReset').addEventListener('click',()=>{$('resetDialog').close();resetChat();});
-  function resetChat(){state.serial++;requestController?.abort();requestController=null;stopOcr();releaseCandidate();if(state.attachment?.url)URL.revokeObjectURL(state.attachment.url);state.attachment=null;state.history=[];state.reply=null;state.busy=false;state.nearBottom=true;question.value='';$('messages').replaceChildren();$('welcome').hidden=false;$('chatError').hidden=true;$('threadCaption').textContent='Cuộc trò chuyện mới';$('newMessageBadge').hidden=true;renderAttachment();renderEvidence();resizeInput();scroller.scrollTop=0;}
+  function resetChat(){state.serial++;requestController?.abort();requestController=null;stopOcr();releaseCandidate();if(state.attachment?.url)URL.revokeObjectURL(state.attachment.url);state.attachment=null;state.history=[];state.reply=null;state.busy=false;state.nearBottom=true;question.value='';$('messages').replaceChildren();$('welcome').hidden=false;$('chatError').hidden=true;$('threadCaption').textContent='Cuộc trò chuyện mới';$('newMessageBadge').hidden=true;renderAttachment();resizeInput();scroller.scrollTop=0;}
   const updateViewport=()=>{document.documentElement.style.setProperty('--viewport-height',`${window.visualViewport?.height||window.innerHeight}px`);document.documentElement.style.setProperty('--viewport-top',`${window.visualViewport?.offsetTop||0}px`);};
   window.visualViewport?.addEventListener('resize',updateViewport);window.visualViewport?.addEventListener('scroll',updateViewport);window.addEventListener('resize',updateViewport);
   window.addEventListener('pagehide',()=>{stopCamera();stopOcr();requestController?.abort();});
-  updateViewport();renderEvidence();checkStatus();openChat(document.querySelector('[data-open-chat]'));updateSend();
+  updateViewport();checkStatus();openChat(document.querySelector('[data-open-chat]'));updateSend();
 })();
