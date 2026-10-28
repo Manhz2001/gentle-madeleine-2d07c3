@@ -572,7 +572,7 @@
 (() => {
   if (document.body.dataset.page === 'home' || /\/(?:nbcare|nb-care)(?:\/|$)/.test(location.pathname) || document.querySelector('script[data-nbcare-launcher]')) return;
   const script=document.createElement('script');
-  script.src=new URL('nbcare-launcher.js?v=3',document.currentScript.src).href;
+  script.src=new URL('nbcare-launcher.js?v=4',document.currentScript.src).href;
   script.dataset.nbcareLauncher='true';
   document.head.append(script);
 })();

@@ -9,7 +9,7 @@
   }
   const link = document.createElement('a');
   link.className = 'nbcare-fab';
-  link.href = 'https://sites.google.com/view/ninhbinh-general-hospital/nbcare';
+  link.href = new URL('../nbcare/', scriptUrl).href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
   link.dataset.nbcareQuickLink = 'true';

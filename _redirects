@@ -1,3 +1,7 @@
+/api/status /.netlify/functions/nbcare-api?action=status 200
+/api/chat /.netlify/functions/nbcare-api?action=chat 200
+/api/ocr /.netlify/functions/nbcare-api?action=ocr 200
+/nbcare /nbcare/ 301
 /trang-chu /index.html 200
 /tra-cuu-thuoc /tra-cuu-thuoc.html 200
 /tra-cuu-thuoc-tiem-truyen /tra-cuu-thuoc-tiem-truyen.html 200

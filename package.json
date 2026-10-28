@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "scripts": {"build":"node tools/build-static.mjs","test":"node --test tests/nbcare-api.test.mjs"},
+  "dependencies": {
+    "@google/adk": "2.3.0",
+    "@google/genai": "2.31.0"
+  }
+}
