@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {BaseLlm} from '@google/adk';
 import {sourceMetadata,wholeQuote,validateEvidence,renderClinicalReport,draftCandidates,applyDraftVerdict,MISSING} from '../nbcare-server/clinical-policy.mjs';
 import {chat,loadApproved,modelOf,runtimeStatus,DEFAULT_MODEL,DEFAULT_DEEP_MODEL} from '../nbcare-server/runtime.mjs';
-import {verifyDraft} from '../nbcare-server/verify-draft.mjs';
+import {verifyDraft,restoreCompletePassages} from '../nbcare-server/verify-draft.mjs';
 
 // Offline fixtures only: no real patient records, network calls or credentials.
 const quote='Không sử dụng meropenem khi người bệnh có tiền sử quá mẫn nghiêm trọng với thành phần của thuốc.';
@@ -205,4 +205,43 @@ test('provider failure or malformed verifier JSON removes medical claims instead
 test('no consulted evidence means no verifier client is constructed',async()=>{
   const result=await verifyDraft({information:[information()]},new Map(),{env,clientFactory:()=>{throw new Error('Must not construct a network client');}});
   assert.deepEqual(result.information,[]);
+});
+
+test('ordered ellipsis fragments restore the full original passage, including negation and conditions over 3000 characters',()=>{
+  const first='Không sử dụng meropenem khi người bệnh có tiền sử quá mẫn nghiêm trọng với thuốc.';
+  const last='Chỉ cân nhắc sử dụng sau khi bác sĩ chuyên khoa đã đánh giá đầy đủ các ngoại lệ trong tài liệu.';
+  const excerpt=first+'\n\n'+'Đây là ngữ cảnh đầy đủ được giữ nguyên để kiểm chứng. '.repeat(70)+'\n\n'+last;
+  const value={...source,excerpt},shortened=first.toUpperCase().replaceAll(' ','  ')+' ... '+last;
+  const data={information:[{...information(value),evidence:[{source_id:value.id,quote:shortened}]}]};
+  const restored=restoreCompletePassages(data,recordMap(value));
+  assert.equal(restored.information[0].evidence[0].quote,excerpt);
+  assert.equal(data.information[0].evidence[0].quote,shortened,'restoration does not mutate the draft');
+  assert.ok(excerpt.length>3000);assert.equal(wholeQuote(excerpt,restored.information[0].evidence[0].quote),true);
+});
+
+test('restoration never invents a fragment or reorders source passages to fit a draft',()=>{
+  const first='Không sử dụng meropenem khi người bệnh có tiền sử quá mẫn nghiêm trọng với thuốc.';
+  const last='Bác sĩ cần kiểm tra đầy đủ các điều kiện và ngoại lệ trong tài liệu trước khi quyết định.';
+  const value={...source,excerpt:first+'\n\n'+last};
+  for(const shortened of [first+' ... Nội dung bịa đặt không tồn tại trong bất kỳ đoạn nguồn nào.',last+' ... '+first]){
+    const data={information:[{text:'Một nhận định chưa kiểm chứng.',evidence:[{source_id:value.id,quote:shortened}]}]};
+    const restored=restoreCompletePassages(data,recordMap(value));
+    assert.equal(restored.information[0].evidence[0].quote,shortened);
+    assert.equal(validateEvidence(restored.information[0].evidence,recordMap(value)),null);
+  }
+});
+
+test('restoring a shortened quote still requires verification and does not auto-accept an opposite clinical claim',async()=>{
+  const first='Không sử dụng meropenem khi người bệnh có tiền sử quá mẫn nghiêm trọng với thuốc.';
+  const last='Cần đối chiếu tiền sử quá mẫn và các điều kiện áp dụng trước khi dùng thuốc.';
+  const value={...source,excerpt:first+'\n\n'+last};let calls=0;
+  const data={information:[{text:'Được dùng meropenem cho mọi người bệnh có tiền sử quá mẫn nghiêm trọng.',evidence:[{source_id:value.id,quote:first+' ... '+last}]}]};
+  const checked=await verifyDraft(data,recordMap(value),{env,clientFactory:()=>({models:{generateContent:async request=>{
+    calls++;const content=JSON.parse(request.contents[0].parts[0].text);
+    assert.equal(content.candidates[0].item.evidence[0].quote,value.excerpt);
+    assert.equal(content.candidates[0].sources[0].excerpt,value.excerpt);
+    return {text:'{"overview_supported":false,"accepted_item_ids":[]}'};
+  }}})});
+  assert.equal(calls,1);assert.deepEqual(checked.information,[]);
+  const report=renderClinicalReport(checked,recordMap(value));assert.equal(report.grounded,false);assert.doesNotMatch(report.text,/Được dùng meropenem/);
 });
