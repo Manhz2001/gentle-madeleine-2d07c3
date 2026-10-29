@@ -217,13 +217,14 @@ test('deterministic help has copy-only actions without a missing-evidence badge 
   context.icon=()=>el('svg');context.state={reply:null};context.modelName=value=>typeof value==='string'?value:'';context.showSources=()=>{};context.scrollToLatest=()=>{};context.openClinicalAccess=()=>{};
   vm.runInContext(code.slice(start,end)+'\nthis.finishMessage=finishMessage;',context);
   const message={content:el('div'),meta:el('div'),body:el('div')};message.body.append(message.meta,message.content);
-  context.finishMessage(message,{text:'Tôi có thể giúp bạn tra cứu thông tin thuốc.',provider:'vertex-adk',status:'help',grounded:false,sources:[],model:null});
-  assert.deepEqual(all(message.body).filter(n=>n.tagName==='button').map(n=>n.textContent),['Sao chép']);assert.ok(!message.meta.textContent.includes('Chưa đủ căn cứ'));assert.ok(!message.meta.textContent.includes('Demo'));
+  context.finishMessage(message,{text:'Tôi có thể giúp bạn tra cứu thông tin thuốc.',provider:'vertex-adk',status:'help',grounded:false,sources:[],model:'gemini-offline-fixture'});
+  assert.deepEqual(all(message.body).filter(n=>n.tagName==='button').map(n=>n.textContent),['Sao chép']);assert.ok(!message.meta.textContent.includes('Chưa đủ căn cứ'));assert.ok(!message.meta.textContent.includes('Demo'));assert.doesNotMatch(message.meta.textContent,/Gemini|gemini|offline-fixture/);
 });
 
 test('the welcome contains only the requested introduction and the status has no visible connection label or suggestions',()=>{
   const html=fs.readFileSync(path.join(__dirname,'../nbcare/index.html'),'utf8');
-  assert.ok(html.includes('Thông tin thuốc rõ ràng, có căn cứ.'));assert.ok(html.includes('BVĐK tỉnh Ninh Bình'));assert.ok(html.includes('Nhập câu hỏi hoặc tải ảnh để bắt đầu.'));
+  assert.ok(html.includes('Xin chào Quý Lãnh đạo, Bác sĩ &amp; Dược sĩ!'));assert.ok(html.includes('Trợ lý Dược lâm sàng AI NB CARE'));assert.ok(html.includes("Nelson's 2026"));
+  assert.doesNotMatch(html,/technology-label|modelSummaryMobile|Tên model|Vertex AI|Gemini/);assert.doesNotMatch(code,/updateModelLabels|model-message-tag/);
   assert.doesNotMatch(html,/connectionLabel|data-prompt|suggestion-grid|Thử đọc ảnh mẫu/);assert.doesNotMatch(code,/connectionLabel|data-prompt|sampleButton|ocr-sample\.svg/);
   assert.match(html,/id="connectionDot"[^>]*role="status"[^>]*aria-label=/);assert.match(html,/20261029release/);assert.doesNotMatch(html,/20261029preview|Điều hướng bản demo/);assert.match(html,/Điều hướng DrugView/);
   for(const id of ['openCamera','uploadImage','accessDialog','accessPin'])assert.ok(html.includes(`id="${id}"`));

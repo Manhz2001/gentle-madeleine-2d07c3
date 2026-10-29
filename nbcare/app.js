@@ -10,15 +10,6 @@
   const icon = name => { const s=document.createElementNS('http://www.w3.org/2000/svg','svg'); const u=document.createElementNS(s.namespaceURI,'use');u.setAttribute('href',`#i-${name}`);s.append(u);s.setAttribute('aria-hidden','true');return s; };
   const el = (tag,cls,text) => { const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n; };
   const modelName = value => typeof value==='string'&&/^gemini-[a-z0-9.-]+$/.test(value)?value.replace(/^gemini-/,'Gemini '):'';
-  function updateModelLabels(){
-    const basic=modelName(state.api?.models?.basic||state.api?.model),deep=modelName(state.api?.models?.deep);
-    const summary=[basic&&`Cơ bản: ${basic}`,deep&&`Chuyên sâu: ${deep}`].filter(Boolean).join(' · ');
-    document.querySelector('.technology-label').textContent=summary||'Vertex AI · Gemini';
-    document.querySelector('.technology-label').title=summary;
-    $('modelSummaryMobile').textContent=summary||'Tên model sẽ hiển thị khi máy chủ sẵn sàng.';
-    document.querySelectorAll('[data-style]').forEach(button=>{const value=button.dataset.style==='deep'?deep:basic;button.title=[button.dataset.style==='deep'?'Chuyên sâu dành cho nhân viên y tế':'',value].filter(Boolean).join(' · ');});
-  }
-
   const READINESS_TTL_MS=5*60*1000,READINESS_RETRY_GAP_MS=30000;
   const freshReadiness=()=>state.readiness?.ready===true&&Date.now()<state.readiness.expiresAt&&navigator.onLine!==false;
   function renderReadiness(label='Chưa xác nhận kết nối AI',kind='unverified'){
@@ -187,7 +178,6 @@
   function pendingNode(mode,style){const m=messageNode('assistant','',mode,style);const dots=el('div','thinking');dots.setAttribute('role','status');dots.append(el('i'),el('i'),el('i'),el('span','',isLive()?'Đang tìm thông tin và chuẩn bị câu trả lời…':'Đang tìm thông tin và chuẩn bị câu trả lời…'));m.content.replaceChildren(dots);return m;}
   function finishMessage(m,reply) {
     m.content.classList.add('markdown-answer');m.content.replaceChildren(renderMarkdown(reply.text,reply.sources));
-    if(modelName(reply.model))m.meta.append(el('span','model-message-tag',modelName(reply.model)));
     if(reply.provider==='local-demo'||reply.status==='demo')m.meta.append(el('span','demo-message-tag','AI chưa kết nối'));
     else if(!reply.grounded&&reply.status!=='help'&&reply.referral!==true)m.meta.append(el('span','demo-message-tag','Chưa đủ căn cứ'));
     const actions=el('div','message-actions'),copy=el('button');copy.type='button';copy.append(icon('copy'),document.createTextNode('Sao chép'));
@@ -225,7 +215,7 @@
 
   async function checkStatus(){
     if(statusPromise)return statusPromise;
-    const promise=(async()=>{try{const response=await fetch('/api/status',{signal:AbortSignal.timeout(10000)});if(!response.ok)throw new Error();const data=await response.json();state.api=data;updateModelLabels();if(isLive()){$('geminiOcr').replaceChildren(document.createTextNode('Đọc lại bằng Gemini'));$('ocrPrivacy').textContent='Bấm “Đọc lại bằng Gemini” sẽ gửi ảnh này đến Vertex AI. Hãy ẩn thông tin cá nhân không cần thiết.';imageControls();await checkReadiness();}else invalidateReadiness();}
+    const promise=(async()=>{try{const response=await fetch('/api/status',{signal:AbortSignal.timeout(10000)});if(!response.ok)throw new Error();const data=await response.json();state.api=data;if(isLive()){$('geminiOcr').replaceChildren(document.createTextNode('Đọc lại bằng AI'));$('ocrPrivacy').textContent='Bấm “Đọc lại bằng AI” sẽ gửi ảnh này đến dịch vụ AI của Google. Hãy ẩn thông tin cá nhân không cần thiết.';imageControls();await checkReadiness();}else invalidateReadiness();}
       catch{invalidateReadiness('Chưa xác nhận kết nối AI','unavailable');}finally{statusPromise=null;}})();statusPromise=promise;return promise;
   }
 
@@ -266,9 +256,9 @@
   $('removeAttachment').addEventListener('click',()=>{if(state.attachment?.url)URL.revokeObjectURL(state.attachment.url);state.attachment=null;renderAttachment();});
   $('editOcr').addEventListener('click',()=>{if(!state.attachment)return;state.candidate={...state.attachment};if(state.candidate.url)$('reviewImage').src=state.candidate.url;else $('reviewImage').removeAttribute('src');$('imageName').textContent=state.candidate.name;$('ocrText').value=state.candidate.text;state.ocrBusy=false;setOcrStatus('Nội dung bạn đã xác nhận. Có thể kiểm tra hoặc chỉnh sửa thêm.');$('imageDialog').showModal();});
   const toBase64=blob=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=reject;reader.readAsDataURL(blob);});
-  $('geminiOcr').addEventListener('click',async()=>{if(!isLive()||!state.candidate?.blob||state.ocrBusy)return;const blob=state.candidate.blob;const id=++state.imageSerial;state.ocrBusy=true;setOcrStatus('Đang gửi ảnh đến Vertex AI và đọc nội dung…','loading');const controller=new AbortController();ocrRequestController=controller;const t=setTimeout(()=>controller.abort(),65000);
-    try{const data64=await toBase64(blob);if(id!==state.imageSerial||controller.signal.aborted)return;const image={data:data64,mimeType:'image/jpeg'};const res=await fetch('/api/ocr',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image}),signal:controller.signal});const data=await res.json();if(!res.ok)throw new Error();if(id!==state.imageSerial)return;const text=String(data.text||'');if(text.length>12000){state.ocrBusy=false;setOcrStatus('Gemini trả nội dung quá dài. Hãy chụp từng phần; nội dung cũ được giữ, không tự cắt kết quả.','error');return;}if(text.trim())recordAiResponse(data.model||state.api?.models?.basic||state.api?.model);$('ocrText').value=text;state.candidate.uncertain=data.uncertain===true;state.ocrBusy=false;setOcrStatus(data.uncertain?'Gemini báo có nội dung chưa rõ. Hãy đối chiếu lại với ảnh gốc.':'Gemini đã đọc xong. Vui lòng kiểm tra nội dung trước khi sử dụng.');}
-    catch{if(id===state.imageSerial){invalidateReadiness('Chưa xác nhận kết nối AI','unavailable');state.ocrBusy=false;setOcrStatus('Chưa đọc được bằng Gemini. Kết quả trên máy vẫn được giữ để bạn kiểm tra.','error');}}finally{clearTimeout(t);if(ocrRequestController===controller)ocrRequestController=null;}
+  $('geminiOcr').addEventListener('click',async()=>{if(!isLive()||!state.candidate?.blob||state.ocrBusy)return;const blob=state.candidate.blob;const id=++state.imageSerial;state.ocrBusy=true;setOcrStatus('Đang gửi ảnh đến dịch vụ AI của Google và đọc nội dung…','loading');const controller=new AbortController();ocrRequestController=controller;const t=setTimeout(()=>controller.abort(),65000);
+    try{const data64=await toBase64(blob);if(id!==state.imageSerial||controller.signal.aborted)return;const image={data:data64,mimeType:'image/jpeg'};const res=await fetch('/api/ocr',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image}),signal:controller.signal});const data=await res.json();if(!res.ok)throw new Error();if(id!==state.imageSerial)return;const text=String(data.text||'');if(text.length>12000){state.ocrBusy=false;setOcrStatus('AI trả nội dung quá dài. Hãy chụp từng phần; nội dung cũ được giữ, không tự cắt kết quả.','error');return;}if(text.trim())recordAiResponse(data.model||state.api?.models?.basic||state.api?.model);$('ocrText').value=text;state.candidate.uncertain=data.uncertain===true;state.ocrBusy=false;setOcrStatus(data.uncertain?'AI báo có nội dung chưa rõ. Hãy đối chiếu lại với ảnh gốc.':'AI đã đọc xong. Vui lòng kiểm tra nội dung trước khi sử dụng.');}
+    catch{if(id===state.imageSerial){invalidateReadiness('Chưa xác nhận kết nối AI','unavailable');state.ocrBusy=false;setOcrStatus('Chưa đọc được bằng AI. Kết quả trên máy vẫn được giữ để bạn kiểm tra.','error');}}finally{clearTimeout(t);if(ocrRequestController===controller)ocrRequestController=null;}
   });
 
   function stopCamera(){cameraSerial++;if(cameraStream)cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;$('cameraVideo').srcObject=null;$('takePhoto').disabled=true;}

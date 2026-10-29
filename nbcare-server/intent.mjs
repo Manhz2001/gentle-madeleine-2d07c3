@@ -1,6 +1,13 @@
 const normal=value=>String(value||'').toLowerCase().replace(/đ/g,'d').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 export const INTENTS=new Set(['general','interactions','special_dose','prescription_review','other']);
-const INTRODUCTION='Xin chào, tôi là NBCare — trợ lý AI hỗ trợ thông tin thuốc tại BVĐK tỉnh Ninh Bình.\n\nTôi giúp tra cứu thuốc, tương tác, tương hợp/tương kỵ và liều theo chức năng thận từ các nguồn đã kết nối. Bạn có thể nhập câu hỏi hoặc tải ảnh để bắt đầu.';
+const INTRODUCTION=`Xin chào Quý Lãnh đạo, Bác sĩ & Dược sĩ! Tôi là **Trợ lý Dược lâm sàng AI NB CARE** (Bệnh viện Đa khoa tỉnh Ninh Bình).
+
+Tôi sẵn sàng hỗ trợ trực tiếp:
+- **Tra cứu Dược thư Quốc gia Việt Nam** (Chỉ định, chống chỉ định, liều lượng, tác dụng không mong muốn ADR).
+- **Kiểm tra tương tác thuốc & phác đồ điều trị** theo hướng dẫn Bộ Y tế.
+- **Tư vấn hiệu chỉnh liều suy thận (CrCl) & liều Nhi khoa (Nelson's 2026).**
+
+👉 Bạn có thể **đặt câu hỏi ngay vào ô chat bên dưới**; hoặc **chọn ca mẫu / tải ảnh đơn thuốc** ở cột bên trái và bấm **🚀 RÀ SOÁT ĐƠN THUỐC TOÀN DIỆN** để tự động kích hoạt tính năng thẩm định đơn chuyên sâu!`;
 
 export function shortNonClinicalResponse(text){
   const query=normal(text).replace(/[!?.,;:]+/g,' ').replace(/\s+/g,' ').trim();
