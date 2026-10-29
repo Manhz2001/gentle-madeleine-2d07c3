@@ -3,9 +3,13 @@ import {BaseLlm, LlmAgent, Runner, InMemorySessionService, FunctionTool, createL
 import {GoogleGenAI} from '@google/genai';
 import approvedRecords from './approved-sources.json' with {type:'json'};
 import {drugviewStatus, getDrugviewSources} from './drugview.mjs';
+import {getModuleSources,MODULES} from './module-sources.mjs';
 import {getOpenSources,cleanDrugNames,cleanSearchTerms} from './open-sources.mjs';
-import {CLINICAL_INSTRUCTION,MISSING,renderClinicalReport,sourceMetadata} from './clinical-policy.mjs';
+import {CLINICAL_INSTRUCTION,MISSING,renderClinicalReport,sourceMetadata,INTENT_LABELS} from './clinical-policy.mjs';
 import {verifyDraft} from './verify-draft.mjs';
+import {CLINICAL_INSTRUCTION as INTERNAL_REVIEW_INSTRUCTION,renderClinicalReport as renderInternalReview} from './prescription-review.mjs';
+import {classifyIntent,referralResponse,shortNonClinicalResponse} from './intent.mjs';
+import {verifyAccessToken,accessStatus} from './clinical-access.mjs';
 
 // Request/response bodies can contain health information. ADK logging is disabled.
 setLogger(null);
@@ -32,7 +36,7 @@ function keyOf(env){return String(env.GEMINI_API_KEY||env.GOOGLE_API_KEY||'').tr
 const enabled=env=>String(env.NBCARE_VERTEX_ENABLED??env.GEMINI_ENABLED??'true').toLowerCase()==='true';
 const drugviewEnabled=env=>String(env.NBCARE_DRUGVIEW_ENABLED??'true').toLowerCase()==='true';
 export function modelOf(env,style='basic'){const fallback=style==='deep'?DEFAULT_DEEP_MODEL:DEFAULT_MODEL;const value=String(style==='deep'?(env.GEMINI_DEEP_MODEL||fallback):(env.GEMINI_MODEL||fallback));return /^gemini-[a-z0-9.-]+$/.test(value)?value:fallback;}
-export function runtimeStatus(env=process.env){return {configured:enabled(env)&&Boolean(keyOf(env)),provider:'vertex-adk',model:modelOf(env),models:{basic:modelOf(env),deep:modelOf(env,'deep')},authentication:'express',sourceModes:['closed','open'],closedSource:drugviewStatus(drugviewEnabled(env)),openSource:{provider:'official-reference-api',repositories:['DrugView','NLM DailyMed SPL','PubMed abstracts'],googleSearch:false},connectionVerified:false,reason:'Trạng thái cấu hình không thực hiện một lượt gọi mô hình.'};}
+export function runtimeStatus(env=process.env){return {configured:enabled(env)&&Boolean(keyOf(env)),provider:'vertex-adk',model:modelOf(env),models:{basic:modelOf(env),deep:modelOf(env,'deep')},authentication:'express',access:accessStatus(),sourceModes:['closed','open'],closedSource:drugviewStatus(drugviewEnabled(env)),moduleSources:Object.entries(MODULES).map(([kind,s])=>({kind,title:s.title,sheetUrl:`https://docs.google.com/spreadsheets/d/${s.sheetId}/edit`,tab:s.tab})),openSource:{provider:'official-reference-api',repositories:['DrugView','NLM DailyMed SPL','PubMed abstracts'],googleSearch:false},connectionVerified:false,reason:'Trạng thái cấu hình không thực hiện một lượt gọi mô hình.'};}
 
 /** Official ADK BaseLlm extension backed by the official Vertex Express client.
  * ADK 2.3's built-in Gemini constructor requires project/location for Vertex,
@@ -78,34 +82,58 @@ export function projectGroundedParagraphs(text,metadata,urls,limit=4){
   return {text:paragraphs.join('\n\n'),sources:[...selected.values()]};
 }
 
-export async function chat(payload,{env=process.env,signal,agentRunner=runAgent,sourceLoader=getDrugviewSources,openSourceLoader=getOpenSources,draftVerifier=verifyDraft,modelFactory=options=>new VertexExpressModel(options)}={}){
-  const {message,sourceMode:mode,answerStyle='basic',history=[],ocrText=''}=payload;const combined=message+(ocrText?'\n'+ocrText:'');
-  if(urgent(combined))return makeResponse('Nếu bạn hoặc người được hỏi đang có dấu hiệu này, hãy tìm trợ giúp y tế khẩn cấp và đến cơ sở y tế ngay; không chờ câu trả lời của chatbot.\n\n'+WARNING,mode,{answered:true});
-  const unavailable=()=>makeResponse(addWarning(renderClinicalReport({},new Map(),{mode}).text,combined),mode);
-  // Start the fixed catalogue read in parallel with the agent's first turn.
+export async function chat(payload,{env=process.env,signal,agentRunner=runAgent,sourceLoader=getDrugviewSources,moduleSourceLoader,openSourceLoader=getOpenSources,draftVerifier=verifyDraft,modelFactory=options=>new VertexExpressModel(options)}={}){
+  const {message,sourceMode:mode,answerStyle='basic',history=[],ocrText='',accessToken=''}=payload;const combined=message+(ocrText?'\n'+ocrText:'');
+  const classification=classifyIntent(message,{ocrText,history}),intent=classification.intent;
+  if(urgent(combined))return makeResponse(`**[PHÂN LOẠI]: ${INTENT_LABELS[intent]||'HỖ TRỢ KHẨN CẤP'}**\n\nNếu bạn hoặc người được hỏi đang có dấu hiệu này, hãy tìm trợ giúp y tế khẩn cấp và đến cơ sở y tế ngay; không chờ câu trả lời của chatbot.\n\n`+WARNING,mode,{answered:true});
+  if(answerStyle==='deep'&&!verifyAccessToken(accessToken,{env}))throw Object.assign(new Error('Clinical access required'),{status:403,code:'CLINICAL_ACCESS_REQUIRED'});
+  if(intent==='prescription_review'&&answerStyle!=='deep')return {...makeResponse(referralResponse(),mode,{answered:true}),intent,referral:true,status:'internal_access_required'};
+  const nonClinical=intent==='other'&&!ocrText?shortNonClinicalResponse(message):null;
+  if(nonClinical)return {...makeResponse(nonClinical,mode,{answered:true}),intent,status:'help'};
+  const internalReview=intent==='prescription_review';
+  const render=internalReview?renderInternalReview:renderClinicalReport;
+  const unavailable=()=>({...makeResponse(addWarning(render({},new Map(),{mode,intent,input:combined}).text,combined),mode),intent});
+  const emptyModule={sources:[],moduleKind:null,sufficient:false,coverageComplete:false,citationComplete:false};
+  // An injected catalogue is an isolated test/data source unless its module
+  // loader is explicitly supplied too. Production always uses the fixed modules.
+  const moduleLoader=moduleSourceLoader??(sourceLoader===getDrugviewSources?getModuleSources:async()=>emptyModule);
+  const moduleOptions={intent,enabled:drugviewEnabled(env),signal};
+  const lookupModule=async(query,extra={})=>{try{return {...emptyModule,...await moduleLoader(query,{...moduleOptions,...extra})};}catch{signal?.throwIfAborted();return {...emptyModule,unavailable:true};}};
+  const initialModule=await lookupModule(combined);
+  const prioritize=(moduleRecords,otherRecords,query,limit=12)=>{
+    const unique=new Map();for(const source of [...moduleRecords,...retrieve(otherRecords.filter(s=>s.sourceType!=='drugview_module'),query,limit)])if(source&&!unique.has(source.id))unique.set(source.id,source);
+    return [...unique.values()].slice(0,limit);
+  };
+  // Only after checking the relevant module, load the general catalogue in
+  // parallel with the agent. No patient query is sent to either fixed endpoint.
   const catalogue=Promise.resolve().then(()=>sourceLoader(combined,{enabled:drugviewEnabled(env),signal})).then(rows=>({rows,error:false}),()=>({rows:[],error:true}));
   let closedRecords=retrieve(loadApproved(),combined);const consulted=new Map();let toolCalls=0;
-  if(mode==='closed'){const loaded=await catalogue;if(loaded.error&&!closedRecords.length)return makeResponse(addWarning('Chưa tải được danh mục DrugView. '+ABSTAIN+'. Không tự chuyển sang nguồn mở.',combined),mode);closedRecords=retrieve(closedRecords.concat(loaded.rows),combined);if(!closedRecords.length)return unavailable();}
+  if(mode==='closed'){const loaded=await catalogue;if(loaded.error&&!closedRecords.length&&!initialModule.sources.length){const response=unavailable();response.text=response.text.replace(/\n\n/,'\n\nChưa tải được danh mục DrugView. Không tự chuyển sang nguồn mở.\n\n');return response;}closedRecords=prioritize(initialModule.sources,closedRecords.concat(loaded.rows),combined);if(!closedRecords.length)return unavailable();}
   if(!runtimeStatus(env).configured)throw Object.assign(new Error('Vertex not configured'),{code:'NOT_CONFIGURED',status:503});
   const modelId=modelOf(env,answerStyle),model=modelFactory({model:modelId,apiKey:keyOf(env),signal});
-  const context=JSON.stringify({question:message,unverified_ocr:ocrText,untrusted_history:history.slice(-6),answer_style:answerStyle,source_mode:mode});
+  const context=JSON.stringify({question:message,unverified_ocr:ocrText,untrusted_history:history.slice(-6),answer_style:answerStyle,source_mode:mode,classified_intent:intent,internal_review_access:internalReview});
   const tool=new FunctionTool({name:'lookup_clinical_sources',description:'Read actual clinical reference passages with provenance and citation metadata. Closed mode uses only hospital/DrugView data. Open mode can also query NLM DailyMed SPL and PubMed abstracts. Send ONLY public generic drug names and short English medical terms to external APIs, never a patient narrative, identifiers, dates, ages or lab values. SPL is a US label, not a Vietnam-approved SPC. PubMed abstracts cannot support interventions alone.',parameters:{type:'OBJECT',properties:{query:{type:'STRING',description:'Drug names or clinical topic for matching local records.'},drug_names:{type:'ARRAY',items:{type:'STRING'},description:'Up to 3 generic Latin drug names copied from the provided medicine list. No personal information.'},search_terms:{type:'STRING',description:'Short English medical topic only, no patient information, age, dates or test values.'}},required:['query']},execute:async input=>{
     if(++toolCalls>2||!input||typeof input.query!=='string'||input.query.length>1000)return {sources:[],missing:ABSTAIN};
-    signal?.throwIfAborted();let records=closedRecords;
+    signal?.throwIfAborted();
+    const moduleResult=input.query===combined?initialModule:await lookupModule(input.query,{drugNames:cleanDrugNames(input.drug_names),...(!internalReview&&initialModule.moduleKind?{preferredModuleKind:initialModule.moduleKind}:{})});
+    const loaded=await catalogue;
+    let records=prioritize(moduleResult.sources,closedRecords.concat(loaded.rows),input.query);
     if(mode==='open'){
-      const [loaded,external]=await Promise.all([catalogue,Promise.resolve().then(()=>openSourceLoader(input.query,{drugNames:cleanDrugNames(input.drug_names),searchTerms:cleanSearchTerms(input.search_terms),signal})).catch(()=>[])]);
-      records=retrieve(closedRecords.concat(loaded.rows),input.query).concat(external);
+      // A matching row is not sufficient if its evidence/citation is incomplete.
+      // External reference APIs are never started before the module result.
+      const external=moduleResult.sufficient?[]:await Promise.resolve().then(()=>openSourceLoader(input.query,{drugNames:cleanDrugNames(input.drug_names),searchTerms:cleanSearchTerms(input.search_terms),signal})).catch(()=>[]);
+      records=external.length?records.slice(0,answerStyle==='deep'?6:4).concat(external):records;
     }
     const unique=new Map(),limit=answerStyle==='deep'?12:9;let chars=0;
     for(const source of records){if(unique.size>=limit)break;if(!source||typeof source.excerpt!=='string'||!source.excerpt.trim()||chars+source.excerpt.length>65000||!closedUrlAllowed(source.url))continue;unique.set(source.id,source);chars+=source.excerpt.length;}
     unique.forEach((source,id)=>consulted.set(id,source));
-    return {sources:[...unique.values()].map(s=>({...publicSource(s),excerpt:s.excerpt,...sourceMetadata(s),usableForIntervention:sourceMetadata(s).complete,evidenceLevel:s.evidenceLevel||'source_passage',limitations:s.limitations||''})),missing:unique.size?'':ABSTAIN};
+    return {sources:[...unique.values()].map(s=>({...publicSource(s),excerpt:s.excerpt,...sourceMetadata(s),moduleKind:s.moduleKind||'',legendVerified:s.legendVerified===true,usableForIntervention:sourceMetadata(s).complete,evidenceLevel:s.evidenceLevel||'source_passage',limitations:s.limitations||''})),moduleLookup:{kind:moduleResult.moduleKind,coverageComplete:moduleResult.coverageComplete,citationComplete:moduleResult.citationComplete,sufficient:moduleResult.sufficient,unavailable:moduleResult.unavailable===true},missing:unique.size?'':ABSTAIN};
   }});
-  const instruction=INSTRUCTION+(mode==='closed'?'\nChế độ ĐÓNG: tuyệt đối không gọi nguồn mở; không điền bằng kiến thức nhớ sẵn.':'\nChế độ MỞ: ưu tiên tài liệu DrugView/bệnh viện; có thể dùng nguồn API chính thống do lookup_clinical_sources cung cấp. Không có công cụ Google Search. Không tự tạo URL tài liệu.');
+  const instruction=(internalReview?INTERNAL_REVIEW_INSTRUCTION+'\nĐây là khu vực Chuyên sâu đã kiểm tra mã truy cập ở máy chủ, dành cho thẩm định đơn nội bộ. Không coi mã truy cập là bằng chứng về danh tính hay chứng chỉ của người dùng.':INSTRUCTION+'\nÝ định bắt buộc do máy chủ phân loại: '+intent)+(mode==='closed'?'\nChế độ ĐÓNG: tuyệt đối không gọi nguồn mở; không điền bằng kiến thức nhớ sẵn.':'\nChế độ MỞ: ưu tiên tài liệu DrugView/bệnh viện; có thể dùng nguồn API chính thống do lookup_clinical_sources cung cấp. Không có công cụ Google Search. Không tự tạo URL tài liệu.');
   const generation={maxOutputTokens:answerStyle==='deep'?6500:5000,...(/^gemini-(?:3|4)/.test(modelId)?{thinkingConfig:{thinkingLevel:'LOW'}}:{})};
   const agent=new LlmAgent({name:mode==='closed'?'nbcare_closed':'nbcare_open',model,instruction,tools:[tool],generateContentConfig:generation});
-  const raw=await agentRunner(agent,context,signal),draft=await draftVerifier(parseObject(raw.text),consulted,{env,signal,input:combined}),report=renderClinicalReport(draft,consulted,{mode,input:combined});
-  return makeResponse(addWarning(report.text,combined),mode,{sources:report.sources.map(publicSource),grounded:report.grounded,answered:report.answered,model:modelId});
+  const raw=await agentRunner(agent,context,signal),draft=await draftVerifier(parseObject(raw.text),consulted,{env,signal,input:combined,intent,internalReview}),report=render(draft,consulted,{mode,input:combined,intent});
+  return {...makeResponse(addWarning(report.text,combined),mode,{sources:report.sources.map(publicSource),grounded:report.grounded,answered:report.answered,model:modelId}),intent};
 }
 
 export function validateImage(image){if(!image||!['image/jpeg','image/png','image/webp'].includes(image.mimeType)||typeof image.data!=='string'||image.data.length>2800000||!/^[-A-Za-z0-9+/]*={0,2}$/.test(image.data)||image.data.length%4!==0)throw Object.assign(new Error('Invalid image'),{status:422});const bytes=Buffer.from(image.data,'base64');if(!bytes.length||bytes.length>2*1024*1024)throw Object.assign(new Error('Image too large'),{status:413});const valid=image.mimeType==='image/jpeg'?bytes[0]===255&&bytes[1]===216&&bytes[2]===255:image.mimeType==='image/png'?bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])):bytes.toString('ascii',0,4)==='RIFF'&&bytes.toString('ascii',8,12)==='WEBP';if(!valid)throw Object.assign(new Error('Image signature mismatch'),{status:422});return bytes;}

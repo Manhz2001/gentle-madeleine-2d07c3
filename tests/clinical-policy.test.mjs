@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {BaseLlm} from '@google/adk';
-import {sourceMetadata,wholeQuote,validateEvidence,renderClinicalReport,draftCandidates,applyDraftVerdict,MISSING} from '../nbcare-server/clinical-policy.mjs';
+import {sourceMetadata,wholeQuote,validateEvidence,renderClinicalReport,draftCandidates,applyDraftVerdict,MISSING} from '../nbcare-server/prescription-review.mjs';
 import {chat,loadApproved,modelOf,runtimeStatus,DEFAULT_MODEL,DEFAULT_DEEP_MODEL} from '../nbcare-server/runtime.mjs';
 import {verifyDraft,restoreCompletePassages} from '../nbcare-server/verify-draft.mjs';
+import {issueAccessToken} from '../nbcare-server/clinical-access.mjs';
 
 // Offline fixtures only: no real patient records, network calls or credentials.
 const quote='Không sử dụng meropenem khi người bệnh có tiền sử quá mẫn nghiêm trọng với thành phần của thuốc.';
@@ -13,7 +14,7 @@ const source={id:'approved_meropenem',title:'Tài liệu bệnh viện — merop
 const recordMap=(value=source)=>new Map([[value.id,value]]);
 const evidence=(value=source)=>[{source_id:value.id,quote:value.excerpt}];
 const finding=(value=source)=>({severity:'yellow',issue:'Cần đối chiếu tiền sử dị ứng',mechanism:'Tài liệu có giới hạn liên quan đến quá mẫn.',action:'Đề nghị bác sĩ đối chiếu tiền sử dị ứng.',monitoring:'',evidence:evidence(value)});
-const information=(value=source)=>({text:'Tài liệu ghi chống chỉ định khi có tiền sử quá mẫn nghiêm trọng với thành phần thuốc.',evidence:evidence(value)});
+const information=(value=source)=>({section:'contraindications',text:'Tài liệu ghi chống chỉ định khi có tiền sử quá mẫn nghiêm trọng với thành phần thuốc.',evidence:evidence(value)});
 const payload={message:'Thông tin meropenem',sourceMode:'closed',answerStyle:'basic',history:[]};
 const env={GEMINI_API_KEY:'offline-placeholder-only',NBCARE_VERTEX_ENABLED:'true'};
 class OfflineModel extends BaseLlm {
@@ -28,6 +29,20 @@ test('citation metadata never substitutes today or fabricates a year/page',()=>{
   assert.equal(sourceMetadata({...source,year:'2024; page 7'}).complete,false);
   const result=renderClinicalReport({information:[information({...source,year:undefined})]},recordMap({...source,year:undefined}));
   assert.match(result.text,/chưa có năm trong nguồn/);assert.doesNotMatch(result.text,/trang [0-9]+/);
+});
+
+test('internal review preserves module provenance for verification and refuses unverified compatibility-code interventions',()=>{
+  const moduleSource={...source,moduleKind:'compatibility',legendVerified:false,provenance:'published_drugview_module'};
+  const candidates=draftCandidates({information:[information(moduleSource)],findings:[finding(moduleSource)]},recordMap(moduleSource));
+  assert.equal(candidates.length,1);
+  assert.equal(candidates[0].key,'information');
+  assert.equal(candidates[0].sources[0].moduleKind,'compatibility');
+  assert.equal(candidates[0].sources[0].legendVerified,false);
+  assert.equal(candidates[0].sources[0].provenance,'published_drugview_module');
+  assert.equal(validateEvidence(evidence(moduleSource),recordMap(moduleSource),{clinical:true}),null);
+  const report=renderClinicalReport({findings:[finding(moduleSource)]},recordMap(moduleSource));
+  assert.equal(report.grounded,false);
+  assert.doesNotMatch(report.text,/LƯU Ý MỨC ĐỘ 2/);
 });
 
 test('a real document year plus verified section or page can support a clinical citation',()=>{
@@ -162,9 +177,10 @@ test('runtime rejects an unconsulted clinical answer even when a plausible sourc
   assert.equal(report.grounded,false);assert.deepEqual(report.sources,[]);assert.ok(report.text.includes(MISSING));
 });
 
-test('runtime closed mode uses consulted passages only and never invokes open APIs',async()=>{
+test('authenticated internal review uses consulted closed passages only and never invokes open APIs',async()=>{
   let openCalls=0;
-  const report=await chat({...payload,answerStyle:'deep'},{env,sourceLoader:async()=>[source],openSourceLoader:async()=>{openCalls++;throw new Error('Must not query open sources');},
+  const accessToken=issueAccessToken({env}).accessToken;
+  const report=await chat({...payload,message:'Thẩm định đơn thuốc meropenem theo tài liệu.',answerStyle:'deep',accessToken},{env,sourceLoader:async()=>[source],openSourceLoader:async()=>{openCalls++;throw new Error('Must not query open sources');},
     draftVerifier:async data=>data,
     modelFactory:({model})=>{assert.equal(model,DEFAULT_DEEP_MODEL);return new OfflineModel(model);},
     agentRunner:async agent=>{
@@ -174,11 +190,12 @@ test('runtime closed mode uses consulted passages only and never invokes open AP
       return {text:JSON.stringify({information:[information()]})};
     }});
   assert.equal(openCalls,0);assert.equal(report.grounded,true);assert.equal(report.model,DEFAULT_DEEP_MODEL);assert.equal(report.sources[0].id,source.id);
+  assert.equal(report.intent,'prescription_review');assert.match(report.text,/TÓM TẮT ĐƠN THUỐC/);
 });
 
 test('evidence verifier receives complete passages and cannot add items beyond its accepted IDs',async()=>{
   const data={overview:'Thông tin trong input.',information:[information()],findings:[finding()]};let calls=0;
-  const result=await verifyDraft(data,recordMap(),{env,input:'Thông tin trong input.',clientFactory:()=>({models:{generateContent:async request=>{
+  const result=await verifyDraft(data,recordMap(),{env,internalReview:true,input:'Thông tin trong input.',clientFactory:()=>({models:{generateContent:async request=>{
     calls++;const content=JSON.parse(request.contents[0].parts[0].text);
     assert.equal(content.input,'Thông tin trong input.');assert.equal(content.candidates[0].sources[0].excerpt,quote);
     assert.match(request.config.systemInstruction,/phủ định\/điều kiện\/ngoại lệ/);
@@ -189,7 +206,7 @@ test('evidence verifier receives complete passages and cannot add items beyond i
 
 test('a rejected opposite claim is absent after the verifier verdict',async()=>{
   const data={overview:'Chưa đủ dữ liệu.',information:[{text:'Được sử dụng meropenem dù có tiền sử quá mẫn nghiêm trọng.',evidence:evidence()}]};
-  const result=await verifyDraft(data,recordMap(),{env,clientFactory:()=>({models:{generateContent:async()=>({text:'{"overview_supported":false,"accepted_item_ids":[]}'})}})});
+  const result=await verifyDraft(data,recordMap(),{env,internalReview:true,clientFactory:()=>({models:{generateContent:async()=>({text:'{"overview_supported":false,"accepted_item_ids":[]}'})}})});
   assert.deepEqual(result.information,[]);
   assert.doesNotMatch(renderClinicalReport(result,recordMap()).text,/Được sử dụng meropenem/);
 });
@@ -197,13 +214,13 @@ test('a rejected opposite claim is absent after the verifier verdict',async()=>{
 test('provider failure or malformed verifier JSON removes medical claims instead of bypassing verification',async()=>{
   const data={overview:'Tóm tắt chưa kiểm chứng.',information:[information()],findings:[finding()]};
   for(const generateContent of [async()=>{throw new Error('Offline provider failure');},async()=>({text:'not valid JSON'})]){
-    const result=await verifyDraft(data,recordMap(),{env,clientFactory:()=>({models:{generateContent}})});
+    const result=await verifyDraft(data,recordMap(),{env,internalReview:true,clientFactory:()=>({models:{generateContent}})});
     assert.deepEqual(result.information,[]);assert.deepEqual(result.findings,[]);assert.notEqual(result.overview,data.overview);
   }
 });
 
 test('no consulted evidence means no verifier client is constructed',async()=>{
-  const result=await verifyDraft({information:[information()]},new Map(),{env,clientFactory:()=>{throw new Error('Must not construct a network client');}});
+  const result=await verifyDraft({information:[information()]},new Map(),{env,internalReview:true,clientFactory:()=>{throw new Error('Must not construct a network client');}});
   assert.deepEqual(result.information,[]);
 });
 
@@ -236,7 +253,7 @@ test('restoring a shortened quote still requires verification and does not auto-
   const last='Cần đối chiếu tiền sử quá mẫn và các điều kiện áp dụng trước khi dùng thuốc.';
   const value={...source,excerpt:first+'\n\n'+last};let calls=0;
   const data={information:[{text:'Được dùng meropenem cho mọi người bệnh có tiền sử quá mẫn nghiêm trọng.',evidence:[{source_id:value.id,quote:first+' ... '+last}]}]};
-  const checked=await verifyDraft(data,recordMap(value),{env,clientFactory:()=>({models:{generateContent:async request=>{
+  const checked=await verifyDraft(data,recordMap(value),{env,internalReview:true,clientFactory:()=>({models:{generateContent:async request=>{
     calls++;const content=JSON.parse(request.contents[0].parts[0].text);
     assert.equal(content.candidates[0].item.evidence[0].quote,value.excerpt);
     assert.equal(content.candidates[0].sources[0].excerpt,value.excerpt);

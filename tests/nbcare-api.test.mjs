@@ -12,7 +12,7 @@ const env={GEMINI_API_KEY:'offline-test-placeholder',NBCARE_VERTEX_ENABLED:'true
 const payload={message:'Thông tin Meropenem',sourceMode:'closed',answerStyle:'basic',history:[]};
 const source={id:'drugview_0001',title:'Meropenem',url:'https://drive.google.com/file/d/example_pdf/view',
   excerpt:'Meropenem. Không sử dụng khi có phản ứng quá mẫn. Đọc nguyên văn tài liệu trước khi áp dụng.',
-  tags:['Meropenem'],provenance:'published_drugview'};
+  tags:['Meropenem'],provenance:'published_drugview',year:2024,section:'Thông tin thuốc'};
 class OfflineModel extends BaseLlm {
   constructor(){super({model:'gemini-offline-test'});}
   async *generateContentAsync(){throw new Error('A unit test must not invoke a model');}
@@ -114,7 +114,7 @@ test('closed mode uses complete consulted quotes and excludes invented source ID
     assert.equal(agent.tools.length,1);assert.equal(agent.tools[0].name,'lookup_clinical_sources');
     const evidence=await agent.tools[0].runAsync({args:{query:'Meropenem'},toolContext:{}});
     assert.equal(evidence.sources[0].excerpt,source.excerpt);
-    return {text:JSON.stringify({information:[{text:source.excerpt,evidence:[{source_id:source.id,quote:source.excerpt}]},{text:'INVENTED_CLAIM',evidence:[{source_id:'invented_source',quote:source.excerpt}]}]})};
+    return {text:JSON.stringify({information:[{section:'indications',text:source.excerpt,evidence:[{source_id:source.id,quote:source.excerpt}]},{section:'indications',text:'INVENTED_CLAIM',evidence:[{source_id:'invented_source',quote:source.excerpt}]}]})};
   }});
   assert.equal(result.grounded,true);assert.equal(result.status,'answered');
   assert.ok(result.text.includes(source.excerpt));assert.equal(result.sources.length,1);
@@ -170,7 +170,7 @@ test('open chat retrieves actual reference passages and no Google search suggest
   const result=await chat({...payload,sourceMode:'open'},{env,sourceLoader:async()=>[],openSourceLoader:async()=>[evidence],modelFactory,draftVerifier:async data=>data,agentRunner:async agent=>{
     assert.equal(agent.tools[0].name,'lookup_clinical_sources');
     await agent.tools[0].runAsync({args:{query:'Meropenem',drug_names:['meropenem']},toolContext:{}});
-    return {text:JSON.stringify({information:[{text:paragraph,evidence:[{source_id:evidence.id,quote:paragraph}]}]})};
+    return {text:JSON.stringify({information:[{section:'indications',text:paragraph,evidence:[{source_id:evidence.id,quote:paragraph}]}]})};
   }});
   assert.equal(result.sourceMode,'open');assert.equal(result.grounded,true);
   assert.deepEqual(result.sources.map(s=>s.url),['https://moh.gov.vn/example']);
