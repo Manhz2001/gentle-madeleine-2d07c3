@@ -223,7 +223,7 @@ test('deterministic help has copy-only actions without a missing-evidence badge 
 
 test('the welcome contains only the requested introduction and the status has no visible connection label or suggestions',()=>{
   const html=fs.readFileSync(path.join(__dirname,'../nbcare/index.html'),'utf8');
-  assert.ok(html.includes('Thông tin thuốc rõ ràng, có căn cứ.'));assert.ok(html.includes('Hỏi điều bạn cần, NBCare tra cứu cùng bạn.'));
+  assert.ok(html.includes('Thông tin thuốc rõ ràng, có căn cứ.'));assert.ok(html.includes('BVĐK tỉnh Ninh Bình'));assert.ok(html.includes('Nhập câu hỏi hoặc tải ảnh để bắt đầu.'));
   assert.doesNotMatch(html,/connectionLabel|data-prompt|suggestion-grid|Thử đọc ảnh mẫu/);assert.doesNotMatch(code,/connectionLabel|data-prompt|sampleButton|ocr-sample\.svg/);
   assert.match(html,/id="connectionDot"[^>]*role="status"[^>]*aria-label=/);assert.match(html,/20261029release/);assert.doesNotMatch(html,/20261029preview|Điều hướng bản demo/);assert.match(html,/Điều hướng DrugView/);
   for(const id of ['openCamera','uploadImage','accessDialog','accessPin'])assert.ok(html.includes(`id="${id}"`));

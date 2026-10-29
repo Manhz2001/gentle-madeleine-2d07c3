@@ -8,8 +8,9 @@
   <link rel="icon" href="assets/hospital-logo.png">
   <link rel="stylesheet" href="assets/fonts/fonts.css?v=20261029release">
   <link rel="stylesheet" href="style.css?v=20261029release">
+  <link rel="stylesheet" href="responsive.css?v=20261029ui">
   <script src="assets/ocr/tesseract.min.js" defer></script>
-  <script src="app.js?v=20261029release" defer></script>
+  <script src="app.js?v=20261029ui" defer></script>
   <script src="analytics.js?v=20261029release" defer></script>
 </head>
 <body>
@@ -45,7 +46,7 @@
 
       <section class="conversation" aria-label="Nội dung hội thoại">
         <div class="conversation-toolbar"><div class="mode-caption"><span class="mode-dot"></span><strong id="modeCaption">Nguồn đóng</strong><span class="toolbar-separator">/</span><span id="threadCaption">Cuộc trò chuyện mới</span></div><div class="style-toggle" role="group" aria-label="Cách trả lời"><button data-style="basic" aria-pressed="true" class="is-active">Cơ bản</button><button data-style="deep" aria-pressed="false" aria-label="Chuyên sâu dành cho nhân viên y tế">Chuyên sâu</button></div><button class="icon-button mobile-config" id="mobileConfig" aria-label="Chọn nguồn trả lời"><svg><use href="#i-settings"/></svg></button></div>
-        <div class="message-scroll" id="messageScroll"><div id="welcome" class="welcome"><div class="welcome-avatar"><img src="assets/nbcare-assistant.png" alt=""></div><h3>Thông tin thuốc rõ ràng, có căn cứ.</h3><p>Hỏi điều bạn cần, NBCare tra cứu cùng bạn.</p></div><div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions"></div></div>
+        <div class="message-scroll" id="messageScroll"><div id="welcome" class="welcome"><div class="welcome-avatar"><img src="assets/nbcare-assistant.png" alt=""></div><h3>Thông tin thuốc rõ ràng, có căn cứ.</h3><p class="welcome-intro">Tôi là <strong>NBCare</strong>, trợ lý AI hỗ trợ dược lâm sàng tại <strong>BVĐK tỉnh Ninh Bình</strong>.</p><p class="welcome-capabilities">Tôi giúp tra cứu thông tin thuốc, tương tác, tương hợp/tương kỵ và liều theo chức năng thận từ các nguồn đã kết nối.</p><p class="welcome-invite">Nhập câu hỏi hoặc tải ảnh để bắt đầu.</p></div><div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions"></div></div>
         <button id="newMessageBadge" class="new-message-badge" hidden>Tin nhắn mới ↓</button>
         <div class="composer-area"><div class="attached-ocr" id="attachedOcr" hidden><svg><use href="#i-image"/></svg><button id="editOcr">Nội dung từ ảnh đã xác nhận</button><span id="ocrCharacterCount"></span><button id="removeAttachment" class="icon-button" aria-label="Bỏ nội dung từ ảnh"><svg><use href="#i-close"/></svg></button></div><form id="chatForm" class="composer"><label class="visually-hidden" for="question">Câu hỏi gửi NBCare</label><textarea id="question" rows="1" maxlength="4000" placeholder="Nhập câu hỏi hoặc đính kèm ảnh…"></textarea><div class="composer-bottom"><div class="attachment-actions"><button type="button" id="openCamera" class="compose-tool"><svg><use href="#i-camera"/></svg><span>Chụp ảnh</span></button><button type="button" id="uploadImage" class="compose-tool"><svg><use href="#i-image"/></svg><span>Tải ảnh</span></button><span class="composer-mode" id="composerMode"><svg><use href="#i-lock"/></svg>Nguồn đóng</span></div><button type="submit" id="sendMessage" class="send-button" aria-label="Gửi câu hỏi" disabled><svg><use href="#i-send"/></svg></button></div></form><p class="composer-note"><span id="composerNotice">Kiểm tra lại tên thuốc, hàm lượng và đơn vị sau khi đọc ảnh.</span><span>Enter gửi · Shift + Enter xuống dòng</span></p><p class="error-inline" id="chatError" role="alert" hidden></p></div>
       </section>

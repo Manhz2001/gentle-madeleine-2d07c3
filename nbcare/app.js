@@ -112,7 +112,7 @@
   const isLive = () => Boolean(state.api?.configured && state.api?.provider!=='local-demo' && state.api?.demo!==true);
   const toast = text => {clearTimeout(toastTimer);$('toast').textContent=text;chat.append($('toast'));$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,3500);};
 
-  function openChat(trigger) {lastTrigger=trigger||document.activeElement;if(!chat.open)chat.showModal();requestAnimationFrame(()=>{if(window.innerWidth>760)question.focus({preventScroll:true});});}
+  function openChat(trigger) {lastTrigger=trigger||document.activeElement;if(!chat.open){if(embedded)chat.open=true;else chat.showModal();}requestAnimationFrame(()=>{if(!embedded&&window.innerWidth>960&&!window.matchMedia('(pointer: coarse)').matches)question.focus({preventScroll:true});});}
   document.querySelectorAll('[data-open-chat]').forEach(b=>b.addEventListener('click',()=>openChat(b)));
   $('closeChat').addEventListener('click',()=>chat.close());
   chat.addEventListener('cancel',event=>{if(embedded)event.preventDefault();});
@@ -143,6 +143,7 @@
     state.sourceMode=mode==='open'?'open':'closed';
     document.querySelectorAll('[data-source]').forEach(n=>{const active=n.dataset.source===state.sourceMode;n.classList.toggle('is-active',active);n.setAttribute('aria-pressed',String(active));});
     $('modeCaption').textContent=modeName(state.sourceMode);
+    document.querySelectorAll('.mobile-source-name').forEach(n=>{n.textContent=modeName(state.sourceMode);});
     $('composerMode').replaceChildren(icon(modeIcon(mode)),document.createTextNode(modeName(mode)));
     if($('configDialog').open)$('configDialog').close();
   }
@@ -196,9 +197,9 @@
     if(reply.referral===true){const enter=el('button','clinical-access-button','Vào Chuyên sâu dành cho nhân viên y tế');enter.type='button';enter.addEventListener('click',openClinicalAccess);m.body.append(enter);}
     state.reply=reply;scrollToLatest();
   }
-  const resizeInput=()=>{question.style.height='auto';question.style.height=Math.min(question.scrollHeight,110)+'px';updateSend();};
+  const resizeInput=()=>{question.style.height='auto';question.style.height=Math.min(question.scrollHeight,144)+'px';updateSend();};
   function updateSend(){$('sendMessage').disabled=state.busy||(!question.value.trim()&&!state.attachment);$('sendMessage').setAttribute('aria-label',state.busy?'Đang xử lý câu hỏi':'Gửi câu hỏi');}
-  question.addEventListener('input',resizeInput);question.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();if(!$('sendMessage').disabled)$('chatForm').requestSubmit();}});
+  question.addEventListener('input',resizeInput);question.addEventListener('keydown',e=>{const touchTyping=window.matchMedia('(pointer: coarse) and (max-width: 960px)').matches;if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&(!touchTyping||e.ctrlKey||e.metaKey)){e.preventDefault();if(!$('sendMessage').disabled)$('chatForm').requestSubmit();}});
 
   $('chatForm').addEventListener('submit',async event=>{
     event.preventDefault();if(state.busy)return;
@@ -280,10 +281,12 @@
   $('takePhoto').addEventListener('click',async()=>{const video=$('cameraVideo');if(!video.videoWidth||!cameraStream)return;const id=cameraSerial;const canvas=document.createElement('canvas');canvas.width=video.videoWidth;canvas.height=video.videoHeight;canvas.getContext('2d').drawImage(video,0,0);const blob=await new Promise(r=>canvas.toBlob(r,'image/jpeg',.9));if(id!==cameraSerial||!$('cameraDialog').open)return;$('cameraDialog').close();if(blob)readImage(new File([blob],'anh-chup.jpg',{type:'image/jpeg'}));});
 
   $('newChat').addEventListener('click',()=>{if(state.history.length||state.busy||state.attachment||question.value)$('resetDialog').showModal();else resetChat();});
-  const compactNew=el('button','icon-button mobile-config');compactNew.type='button';compactNew.setAttribute('aria-label','Cuộc trò chuyện mới');compactNew.append(icon('plus'));$('mobileConfig').before(compactNew);compactNew.addEventListener('click',()=>$('newChat').click());
+  const compactNew=el('button','icon-button mobile-new-chat');compactNew.type='button';compactNew.setAttribute('aria-label','Cuộc trò chuyện mới');compactNew.title='Cuộc trò chuyện mới';compactNew.append(icon('plus'));document.querySelector('.topbar-actions').prepend(compactNew);compactNew.addEventListener('click',()=>$('newChat').click());
+  $('mobileConfig').append(el('span','mobile-source-name',modeName(state.sourceMode)));question.setAttribute('enterkeyhint','enter');
   $('confirmReset').addEventListener('click',()=>{$('resetDialog').close();resetChat();});
   function resetChat(){state.serial++;requestController?.abort();requestController=null;stopOcr();releaseCandidate();if(state.attachment?.url)URL.revokeObjectURL(state.attachment.url);state.attachment=null;state.history=[];state.reply=null;state.busy=false;state.nearBottom=true;question.value='';$('messages').replaceChildren();$('welcome').hidden=false;$('chatError').hidden=true;$('threadCaption').textContent='Cuộc trò chuyện mới';$('newMessageBadge').hidden=true;renderAttachment();resizeInput();scroller.scrollTop=0;}
-  const updateViewport=()=>{document.documentElement.style.setProperty('--viewport-height',`${window.visualViewport?.height||window.innerHeight}px`);document.documentElement.style.setProperty('--viewport-top',`${window.visualViewport?.offsetTop||0}px`);};
+  let lastViewportHeight=0,lastViewportTop=0;
+  const updateViewport=()=>{const height=window.visualViewport?.height||window.innerHeight,top=window.visualViewport?.offsetTop||0,changed=height!==lastViewportHeight||top!==lastViewportTop;lastViewportHeight=height;lastViewportTop=top;document.documentElement.style.setProperty('--viewport-height',`${height}px`);document.documentElement.style.setProperty('--viewport-top',`${top}px`);document.documentElement.classList.toggle('is-keyboard-open',Boolean(document.activeElement?.matches('textarea,input'))&&height<window.innerHeight-120);if(changed&&state.nearBottom&&chat.open)requestAnimationFrame(()=>scrollToLatest());};
   window.visualViewport?.addEventListener('resize',updateViewport);window.visualViewport?.addEventListener('scroll',updateViewport);window.addEventListener('resize',updateViewport);
   window.addEventListener('online',recheckWhenStale);
   window.addEventListener('offline',()=>{readinessController?.abort();readinessController=null;readinessPromise=null;invalidateReadiness('Thiết bị đang ngoại tuyến','offline');});

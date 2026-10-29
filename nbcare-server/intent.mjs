@@ -1,11 +1,12 @@
 const normal=value=>String(value||'').toLowerCase().replace(/đ/g,'d').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 export const INTENTS=new Set(['general','interactions','special_dose','prescription_review','other']);
+const INTRODUCTION='Xin chào, tôi là NBCare — trợ lý AI hỗ trợ thông tin thuốc tại BVĐK tỉnh Ninh Bình.\n\nTôi giúp tra cứu thuốc, tương tác, tương hợp/tương kỵ và liều theo chức năng thận từ các nguồn đã kết nối. Bạn có thể nhập câu hỏi hoặc tải ảnh để bắt đầu.';
 
 export function shortNonClinicalResponse(text){
   const query=normal(text).replace(/[!?.,;:]+/g,' ').replace(/\s+/g,' ').trim();
-  if(/^(?:xin chao|chao|hello|hi|chao nbcare|xin chao nbcare|nbcare)$/.test(query))return 'NBCare hỗ trợ tra cứu thông tin thuốc và giải đáp câu hỏi sức khỏe có nguồn. Bạn cần tìm hiểu nội dung nào?';
+  if(/^(?:xin chao|chao|hello|hi|chao nbcare|xin chao nbcare|nbcare)$/.test(query))return INTRODUCTION;
   if(/^(?:cam on|cam on ban|cam on nbcare|thank you|thanks)$/.test(query))return 'Bạn có thể gửi thêm câu hỏi khi cần tra cứu.';
-  if(/^(?:ban la ai|nbcare la gi|ban (?:co the )?(?:giup|ho tro|lam) (?:duoc )?gi)$/.test(query))return 'Tôi là NBCare, trợ lý AI hỗ trợ tra cứu thuốc, tương tác và thông tin y khoa từ các nguồn được cung cấp.';
+  if(/^(?:ban la ai|nbcare la gi|ban (?:co the )?(?:giup|ho tro|lam) (?:duoc )?gi)$/.test(query))return INTRODUCTION;
   if(/(?:huong dan|cach|lam (?:the )?nao).{0,35}(?:su dung nbcare|su dung ung dung|tai anh|chup anh|mo camera)/.test(query))return 'Bạn có thể nhập câu hỏi trực tiếp hoặc chọn Chụp ảnh/Tải ảnh. Kiểm tra lại chữ nhận dạng trước khi gửi nội dung ảnh để tra cứu.';
   if(/(?:lam (?:the )?nao|cach|vao|mo|dang nhap).{0,25}(?:chuyen sau|khu vuc noi bo)/.test(query))return 'Chọn Chuyên sâu rồi nhập mã truy cập trong cửa sổ của ứng dụng. Không gửi mã trong hội thoại. Sau khi mở quyền, hãy kiểm tra câu hỏi rồi bấm gửi.';
   if(/^(?:(?:cho toi biet|giai thich|su khac nhau giua|toi (?:nen|muon) chon|cach chon)\s+)?(?:nguon dong|nguon mo)\b/.test(query)&&/khac|la gi|chon|co gi|su dung|dung cung/.test(query))return 'Nguồn đóng chỉ dùng kho tài liệu được cấu hình. Nguồn mở có thể truy xuất thêm các kênh y khoa chính thống được cho phép. Cả hai đều cần bằng chứng thật cho dữ liệu lâm sàng.';
