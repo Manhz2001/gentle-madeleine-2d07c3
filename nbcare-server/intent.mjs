@@ -5,9 +5,7 @@ const INTRODUCTION=`Xin chào Quý Lãnh đạo, Bác sĩ & Dược sĩ! Tôi l�
 Tôi sẵn sàng hỗ trợ trực tiếp:
 - **Tra cứu Dược thư Quốc gia Việt Nam** (Chỉ định, chống chỉ định, liều lượng, tác dụng không mong muốn ADR).
 - **Kiểm tra tương tác thuốc & phác đồ điều trị** theo hướng dẫn Bộ Y tế.
-- **Tư vấn hiệu chỉnh liều suy thận (CrCl) & liều Nhi khoa (Nelson's 2026).**
-
-👉 Bạn có thể **đặt câu hỏi ngay vào ô chat bên dưới**; hoặc **chọn ca mẫu / tải ảnh đơn thuốc** ở cột bên trái và bấm **🚀 RÀ SOÁT ĐƠN THUỐC TOÀN DIỆN** để tự động kích hoạt tính năng thẩm định đơn chuyên sâu!`;
+- **Tư vấn hiệu chỉnh liều suy thận (CrCl) & liều Nhi khoa (Nelson's 2026).**`;
 
 export function shortNonClinicalResponse(text){
   const query=normal(text).replace(/[!?.,;:]+/g,' ').replace(/\s+/g,' ').trim();

@@ -207,3 +207,25 @@
   .small-dialog { position: fixed; inset: var(--viewport-top) 0 auto; margin: 12px auto; max-height: calc(var(--viewport-height) - 24px); }
   .access-dialog form > footer { position: sticky; bottom: 0; background: white; }
 }
+
+@media (min-width: 961px) {
+  .chat-dialog:not(.is-full),
+  .is-embedded .chat-dialog:not(.is-full) {
+    width: min(1120px, calc(100% - 48px));
+    max-width: 1120px;
+    height: min(760px, calc(var(--viewport-height) - 48px));
+    inset: var(--viewport-top) 0 0;
+    margin: auto;
+    border: 1px solid #dce6f0;
+    border-radius: 18px;
+    box-shadow: 0 16px 60px #15385414;
+  }
+  .is-embedded body { background: #f1f5fa; }
+  .chat-workspace { grid-template-columns: 210px minmax(0, 1fr); }
+  .chat-topbar { height: 68px; min-height: 68px; padding-inline: 24px; }
+  .chat-sidebar { padding: 20px 14px; }
+  .conversation-toolbar { min-height: 58px; padding: 7px 22px; }
+  .new-chat { margin-bottom: 24px; }
+  .composer-area { padding-inline: 22px; }
+  .welcome.welcome-introduction { width: calc(100% - 44px); margin-block: 22px; padding: 20px; }
+}

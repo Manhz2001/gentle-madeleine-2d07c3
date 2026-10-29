@@ -4,7 +4,8 @@
   const embedded = new URLSearchParams(location.search).get('embed') === '1' || window.self !== window.top;
   if (embedded) document.documentElement.classList.add('is-embedded');
   const $ = id => document.getElementById(id);
-  const state = {sourceMode:'closed',answerStyle:'basic',busy:false,serial:0,history:[],reply:null,attachment:null,candidate:null,imageSerial:0,ocrBusy:false,nearBottom:true,api:null,accessToken:null,accessExpiresAt:0,readiness:{ready:false,verifiedAt:0,expiresAt:0,model:null}};
+  const CLOSED_SOURCE_AVAILABLE=document.documentElement.dataset.closedSource!=='hidden';
+  const state = {sourceMode:CLOSED_SOURCE_AVAILABLE?'closed':'open',answerStyle:'basic',busy:false,serial:0,history:[],reply:null,attachment:null,candidate:null,imageSerial:0,ocrBusy:false,nearBottom:true,api:null,accessToken:null,accessExpiresAt:0,readiness:{ready:false,verifiedAt:0,expiresAt:0,model:null}};
   const chat = $('chatDialog'), scroller = $('messageScroll'), question = $('question');
   let requestController, ocrRequestController, accessController, accessSerial=0, accessBusy=false, readinessPromise, readinessController, readinessTimer, readinessRevision=0, lastReadinessAttemptAt=0, statusPromise, cameraStream, cameraSerial=0, workerPromise, workerInstance, toastTimer, lastTrigger;
   const icon = name => { const s=document.createElementNS('http://www.w3.org/2000/svg','svg'); const u=document.createElementNS(s.namespaceURI,'use');u.setAttribute('href',`#i-${name}`);s.append(u);s.setAttribute('aria-hidden','true');return s; };
@@ -131,11 +132,11 @@
   });
 
   function setSourceMode(mode) {
-    state.sourceMode=mode==='open'?'open':'closed';
+    state.sourceMode=mode==='closed'&&CLOSED_SOURCE_AVAILABLE?'closed':'open';
     document.querySelectorAll('[data-source]').forEach(n=>{const active=n.dataset.source===state.sourceMode;n.classList.toggle('is-active',active);n.setAttribute('aria-pressed',String(active));});
     $('modeCaption').textContent=modeName(state.sourceMode);
     document.querySelectorAll('.mobile-source-name').forEach(n=>{n.textContent=modeName(state.sourceMode);});
-    $('composerMode').replaceChildren(icon(modeIcon(mode)),document.createTextNode(modeName(mode)));
+    $('composerMode').replaceChildren(icon(modeIcon(state.sourceMode)),document.createTextNode(modeName(state.sourceMode)));
     if($('configDialog').open)$('configDialog').close();
   }
 
@@ -282,5 +283,6 @@
   window.addEventListener('offline',()=>{readinessController?.abort();readinessController=null;readinessPromise=null;invalidateReadiness('Thiết bị đang ngoại tuyến','offline');});
   document.addEventListener('visibilitychange',recheckWhenStale);
   window.addEventListener('pagehide',()=>{stopCamera();stopOcr();requestController?.abort();accessController?.abort();readinessController?.abort();readinessController=null;readinessPromise=null;invalidateReadiness();state.accessToken=null;state.accessExpiresAt=0;});
-  updateViewport();checkStatus();openChat(document.querySelector('[data-open-chat]'));updateSend();
+  document.querySelectorAll('[data-source="closed"]').forEach(button=>{button.hidden=!CLOSED_SOURCE_AVAILABLE;button.disabled=!CLOSED_SOURCE_AVAILABLE;});
+  setSourceMode(state.sourceMode);updateViewport();checkStatus();openChat(document.querySelector('[data-open-chat]'));updateSend();
 })();
