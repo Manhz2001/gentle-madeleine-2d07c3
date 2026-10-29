@@ -229,3 +229,12 @@
   .composer-area { padding-inline: 22px; }
   .welcome.welcome-introduction { width: calc(100% - 44px); margin-block: 22px; padding: 20px; }
 }
+
+/* Keep composition visible while only the conversation scrolls. */
+.chat-dialog[open]{display:flex;flex-direction:column;overflow:hidden}
+.chat-topbar,.conversation-toolbar,.composer-area{flex-shrink:0}
+.chat-workspace{flex:1;min-height:0;overflow:hidden}
+.conversation{height:100%;min-height:0;overflow:hidden}
+.message-scroll{flex:1 1 0%;min-height:0;overflow-y:auto}
+.composer-area{position:sticky;bottom:0;z-index:3;margin-top:auto;background:#fff;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+@media(max-width:960px){.chat-workspace{height:0}.composer-area{padding-bottom:max(10px,env(safe-area-inset-bottom))}}
