@@ -33,7 +33,7 @@ export function allowedFetchUrl(value) {
   return u.hostname === 'script.google.com' || u.hostname === 'script.googleusercontent.com' || u.hostname.endsWith('.script.googleusercontent.com');
 }
 export function drugviewStatus(enabled = true) {
-  return {provider:'drugview-api', configured:Boolean(enabled), recordCount:rows === null ? null : rows.length, sourceUrl:DRUGVIEW_PUBLIC_URL, loaded:rows !== null, cacheFresh:rows !== null && Date.now() - loadedAt < CACHE_MS, lastFetchFailed:lastError, provenance:'published_drugview'};
+  return {provider:'drugview-api', configured:Boolean(enabled), recordCount:rows === null ? null : rows.length, sourceUrl:DRUGVIEW_PUBLIC_URL, loaded:rows !== null, cacheFresh:rows !== null && Date.now() - loadedAt < CACHE_MS, lastFetchFailed:lastError, provenance:'published_drugview',section:'Dữ liệu danh mục DrugView',allowUndatedReference:true};
 }
 async function readLimited(response) {
   if (Number(response.headers.get('content-length')) > MAX_BYTES) throw failure();

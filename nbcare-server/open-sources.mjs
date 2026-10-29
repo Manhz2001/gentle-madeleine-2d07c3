@@ -1,3 +1,4 @@
+import {additionalSources} from './additional-sources.mjs';
 // Public reference retrieval only. Do not pass a patient's narrative as a query.
 // DailyMed is an NLM SPL repository, not proof that a label is FDA approved or a Vietnamese SPC.
 const DAILYMED='https://dailymed.nlm.nih.gov/dailymed/services/v2/';
@@ -128,7 +129,9 @@ export async function getOpenSources(query,{drugNames=[],searchTerms='',signal,f
   if(!names.length&&typeof query==='string'&&/^[a-z][a-z-]{2,49}$/i.test(query.trim()))names.push(query.trim().toLowerCase());
   const requests=names.map(name=>getDailyMedSources(name,{query,signal:timeout,fetchImpl,maxSections:names.length>1?3:6}));
   const terms=cleanSearchTerms(searchTerms);if(terms)requests.push(getPubmedSources(terms,{signal:timeout,fetchImpl}));
+  requests.push(additionalSources({drugNames:names,searchTerms:terms,signal:timeout,fetchImpl}));
   const results=await Promise.allSettled(requests);signal?.throwIfAborted();
-  const seen=new Set();return results.flatMap(result=>result.status==='fulfilled'?result.value:[]).filter(source=>{if(seen.has(source.id))return false;seen.add(source.id);return true;}).slice(0,Math.min(Math.max(maxSources,1),12));
+  const groups=results.map(result=>result.status==='fulfilled'?result.value:[]),diverse=[];for(let i=0;i<12;i++)for(const group of groups)if(group[i])diverse.push(group[i]);
+  const seen=new Set();return diverse.filter(source=>{if(seen.has(source.id))return false;seen.add(source.id);return true;}).slice(0,Math.min(Math.max(maxSources,1),12));
 }
 export function resetOpenSourceCacheForTests(){cache.clear();cacheBytes=0;nextNcbi=0;}

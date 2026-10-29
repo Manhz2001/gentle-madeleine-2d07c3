@@ -16,6 +16,7 @@ export const CLINICAL_INSTRUCTION=`VAI TRÒ VÀ PHẠM VI
 Bạn là NBCare, Dược sĩ Lâm sàng ảo hỗ trợ tra cứu thông tin thuốc tại Bệnh viện Đa khoa tỉnh Ninh Bình. Bạn là AI, không tự nhận là dược sĩ có giấy phép, không ban hành y lệnh hoặc thay thế bác sĩ điều trị. Trả lời chuyên môn, súc tích, trung tính và bằng tiếng Việt.
 Module công khai có ba mẫu general, interactions, special_dose và ý định other để trả lời câu hỏi khác ngoài ba mẫu. Tôn trọng classified_intent do máy chủ cung cấp; nếu thiếu hoặc có mâu thuẫn thì xin làm rõ thay vì đoán. Nếu người dùng gửi đơn thuốc đầy đủ/yêu cầu thẩm định hoặc duyệt đơn, không phân tích đơn trong module công khai: hướng dẫn dùng chế độ Chuyên sâu và đăng nhập nội bộ dành cho nhân viên y tế. Không tự tạo URL, mã truy cập hoặc khẳng định người dùng đã được xác thực.
 
+THÔNG TIN THAM KHẢO: Khi nguồn có allowUndatedReference=true, có thể giải thích thông tin chung dù chưa có năm; ghi rõ chưa có năm, không bịa. Ngoại lệ này không áp dụng cho liều, chống chỉ định, tương tác, phân độ hoặc can thiệp.
 RAG VÀ KỶ LUẬT BẰNG CHỨNG
 Luôn gọi lookup_clinical_sources để lấy đoạn nguồn thật trước khi trả lời dữ liệu lâm sàng. Chỉ dựa vào những đoạn công cụ thực sự cung cấp trong ngữ cảnh; không dùng kiến thức nhớ sẵn để lấp chỗ trống. Ưu tiên tài liệu DrugView/bệnh viện và tài liệu Việt Nam đã được duyệt (Dược thư Quốc gia, hướng dẫn/phác đồ Bộ Y tế, SPC/tờ hướng dẫn đúng sản phẩm), sau đó nguồn chính thống khác thực sự được truy xuất. Không tự nhận có Dược thư, AHFS, SPC hoặc tài liệu trả phí khi hệ thống chưa cung cấp bản nguồn.
 ${MODULE_SOURCE_POLICY}
@@ -70,7 +71,7 @@ function medicalEvidence(item,records,key='information'){
   const intervention=key!=='information'||ACTION_SECTIONS.has(item?.section);
   const sources=validateEvidence(item?.evidence,records,{clinical:intervention});
   return sources&&sources.every(source=>{
-    const m=sourceMetadata(source);if(!m.title||!m.year||!m.page&&!m.section)return false;
+    const m=sourceMetadata(source);if(!m.title||(!m.year&&!(source.allowUndatedReference===true&&!intervention))||!m.page&&!m.section)return false;
     if(source.moduleKind==='compatibility'&&PHARMACOLOGICAL_SECTIONS.has(item?.section))return false;
     if(COMPATIBILITY_SECTIONS.has(item?.section)&&source.moduleKind&&source.moduleKind!=='compatibility')return false;
     if(source.moduleKind==='compatibility'&&['compatibility_result','compatibility_management'].includes(item?.section)&&source.legendVerified!==true)return false;
@@ -79,7 +80,7 @@ function medicalEvidence(item,records,key='information'){
 }
 export function draftCandidates(data,records){
   const result=[];for(const [key,limit] of Object.entries(ITEM_LIMITS))for(const [index,item] of (Array.isArray(data[key])?data[key]:[]).slice(0,limit).entries()){
-    const sources=medicalEvidence(item,records,key);if(sources)result.push({id:`${key}_${index}`,key,index,item,sources:sources.map(s=>({...sourceMetadata(s),limitations:s.limitations||'',sourceType:s.sourceType||'',moduleKind:s.moduleKind||'',legendVerified:s.legendVerified===true,provenance:s.provenance||'',excerpt:s.excerpt}))});
+    const sources=medicalEvidence(item,records,key);if(sources)result.push({id:`${key}_${index}`,key,index,item,sources:sources.map(s=>({...sourceMetadata(s),limitations:s.limitations||'',sourceType:s.sourceType||'',allowUndatedReference:s.allowUndatedReference===true,moduleKind:s.moduleKind||'',legendVerified:s.legendVerified===true,provenance:s.provenance||'',excerpt:s.excerpt}))});
   }return result;
 }
 export function applyDraftVerdict(data,candidates,verdict){

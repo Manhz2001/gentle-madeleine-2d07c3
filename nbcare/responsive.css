@@ -238,3 +238,5 @@
 .message-scroll{flex:1 1 0%;min-height:0;overflow-y:auto}
 .composer-area{position:sticky;bottom:0;z-index:3;margin-top:auto;background:#fff;padding-bottom:max(12px,env(safe-area-inset-bottom))}
 @media(max-width:960px){.chat-workspace{height:0}.composer-area{padding-bottom:max(10px,env(safe-area-inset-bottom))}}
+
+@media(min-width:961px){.is-embedded .chat-dialog:not(.is-full){bottom:auto;top:calc(var(--viewport-top) + 12px);margin:0 auto}}

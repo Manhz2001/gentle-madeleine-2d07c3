@@ -20,7 +20,7 @@ export function restoreCompletePassages(data,records){
 export async function verifyDraft(data,records,{env=process.env,signal,input='',intent='general',internalReview=false,clientFactory=options=>new GoogleGenAI(options)}={}){
   data=restoreCompletePassages(data,records);
   const candidateBuilder=internalReview?internalCandidates:draftCandidates,applyVerdict=internalReview?internalVerdict:applyDraftVerdict;
-  const candidates=candidateBuilder(data,records).filter(candidate=>candidate.sources.every(source=>source.title&&source.year&&(source.section||source.page)));
+  const candidates=candidateBuilder(data,records).filter(candidate=>candidate.sources.every(source=>source.title&&(source.year||source.allowUndatedReference===true)&&(source.section||source.page)));
   if(!candidates.length)return applyVerdict(data,[],{overview_supported:false,patient_context_supported:false,sufficient_dose_context:false});
   const client=clientFactory({vertexai:true,apiKey:String(env.GEMINI_API_KEY||env.GOOGLE_API_KEY||'').trim(),httpOptions:{apiVersion:'v1',timeout:20000}});
   const responseJsonSchema={type:'object',additionalProperties:false,required:['overview_supported','patient_context_supported','sufficient_dose_context','accepted_item_ids'],properties:{overview_supported:{type:'boolean'},patient_context_supported:{type:'boolean'},sufficient_dose_context:{type:'boolean'},accepted_item_ids:{type:'array',maxItems:candidates.length,items:{type:'string',enum:candidates.map(candidate=>candidate.id)}}}};
