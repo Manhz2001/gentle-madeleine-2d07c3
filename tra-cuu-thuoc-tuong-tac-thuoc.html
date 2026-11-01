@@ -514,11 +514,25 @@
       word-break: break-word;
     }
 
-    .value-alert {
-      background: var(--c-danger-soft);
-      color: var(--c-accent) !important;
-      font-weight: 800;
+    .severity-critical { --severity-color: #c00000; --severity-bg: #fff1f1; }
+    .severity-serious { --severity-color: #b25900; --severity-bg: #fff3e8; }
+    .severity-significant { --severity-color: #805b00; --severity-bg: #fff8dc; }
+    .severity-moderate { --severity-color: #1f4e78; --severity-bg: #edf4fb; }
+    .severity-minor { --severity-color: #595959; --severity-bg: #f2f2f2; }
+    .group-row .group-title, .mobile-interaction .mobile-group-title {
+      background: var(--severity-bg, #edf4fb);
+      color: var(--severity-color, #1f4e78);
+      border-left: 5px solid var(--severity-color, #1f4e78);
     }
+    .severity-badge {
+      background: transparent;
+      border: 1px solid currentColor;
+      color: inherit;
+    }
+    .severity-field { background: var(--severity-bg, #edf4fb); }
+    button.suggestions__item { width: 100%; text-align: left; font: inherit; color: inherit; background: #fff; cursor: pointer; }
+    button.suggestions__item:focus-visible { outline: 2px solid var(--c-brand-500); outline-offset: -2px; }
+    #btnSearch:disabled { opacity: .5; cursor: wait; }
 
     @media (max-width: 900px) {
       .table-wrap {
@@ -836,11 +850,11 @@
     <section class="search-shell">
       <div class="search-panel">
         <h2 class="search-panel__title">Tra cứu trực tiếp</h2>
-        <p class="search-panel__desc">Nhập từng hoạt chất để thêm vào danh sách, sau đó tra cứu tương tác theo cặp.</p>
+        <p class="search-panel__desc">Nhập mã ATC hoặc tên thuốc, chọn đúng mục gợi ý rồi tra cứu tương tác theo cặp.</p>
 
         <div class="search-box">
           <div class="search-row">
-            <input id="searchInput" type="text" placeholder="Nhập hoạt chất..." autocomplete="off">
+            <input id="searchInput" type="text" placeholder="Nhập mã ATC hoặc tên thuốc..." aria-label="Mã ATC hoặc tên thuốc" autocomplete="off">
             <button id="btnSearch" type="button" aria-label="Tra cứu"><i class="fas fa-search"></i></button>
           </div>
           <div class="suggestions">
@@ -866,7 +880,7 @@
       <div class="panel-body">
         <div id="msgInit" class="msg">Bắt đầu: thêm tối thiểu 2 hoạt chất, sau đó nhấn <strong>Tra cứu tương tác</strong>.</div>
         <div id="msgError" class="msg" style="display:none;"></div>
-        <div id="msgEmpty" class="msg" style="display:none;">Không có thông tin phù hợp.</div>
+        <div id="msgEmpty" class="msg" style="display:none;">Không tìm thấy cặp phù hợp trong dữ liệu hiện có. Kết quả này không khẳng định không có tương tác.</div>
 
         <div class="table-wrap">
           <table>
@@ -883,385 +897,282 @@
 
   <script>
     const webAppUrl = "https://script.google.com/macros/s/AKfycbxybEUZXYbZxuz2EESUzC1tgIb1nWw4I7CrLTB6yIpGFYk1pLzfNl9Z8V2Kb49HyryS/exec";
-
+    // Exact source columns; header whitespace is normalized at the API boundary.
+    const sourceColumns = ["STT", "ATC 1", "Thuốc 1", "Nhóm tác dụng 1", "ATC 2", "Thuốc 2", "Nhóm tác dụng 2", "Mức độ", "Cơ chế", "Hậu quả", "Xử trí", "Nguồn"];
     let allData = [];
     let suggestionsList = [];
     let selectedDrugs = [];
+    let dataReady = false;
     let lastSyncedFrameHeight = 0;
     let syncFrameRaf = 0;
-
-    const $ = (selector) => document.querySelector(selector);
+    const $ = selector => document.querySelector(selector);
     const el = {
-      input: $("#searchInput"),
-      btnSearch: $("#btnSearch"),
-      box: $("#suggestionsBox"),
-      chips: $("#chips"),
-      msgInit: $("#msgInit"),
-      msgError: $("#msgError"),
-      msgEmpty: $("#msgEmpty"),
-      pcBody: $("#pcBody"),
-      mobileResults: $("#mobileResults")
+      input: $("#searchInput"), btnSearch: $("#btnSearch"), box: $("#suggestionsBox"),
+      chips: $("#chips"), msgInit: $("#msgInit"), msgError: $("#msgError"),
+      msgEmpty: $("#msgEmpty"), pcBody: $("#pcBody"), mobileResults: $("#mobileResults")
     };
 
     function syncParentFrameHeight() {
       cancelAnimationFrame(syncFrameRaf);
       syncFrameRaf = requestAnimationFrame(() => {
-        const bodyHeight = document.body ? document.body.scrollHeight : 0;
-        const htmlHeight = document.documentElement ? document.documentElement.scrollHeight : 0;
-        const nextHeight = Math.max(bodyHeight, htmlHeight) + 16;
-        if (Math.abs(nextHeight - lastSyncedFrameHeight) <= 32) return;
-        lastSyncedFrameHeight = nextHeight;
-
-        try {
-          window.parent.postMessage({ type: "interaction-frame-height", height: nextHeight }, "*");
-        } catch (error) {}
+        const height = Math.max(document.body?.scrollHeight || 0, document.documentElement?.scrollHeight || 0) + 16;
+        if (Math.abs(height - lastSyncedFrameHeight) <= 32) return;
+        lastSyncedFrameHeight = height;
+        window.parent.postMessage({ type: "interaction-frame-height", height }, "*");
       });
     }
-
-    function normalizeString(str) {
-      return String(str || "").trim().toLowerCase().replace(/\s+/g, " ");
+    function normalizeString(value) { return String(value ?? "").trim().toLowerCase().replace(/\s+/g, " "); }
+    function foldVietnamese(value) {
+      return normalizeString(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d");
     }
-
-    function foldVietnamese(str) {
-      return normalizeString(str)
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/đ/g, "d")
-        .replace(/Đ/g, "D");
+    function getVal(cell) { return cell && typeof cell === "object" && "value" in cell ? cell.value ?? "" : cell ?? ""; }
+    function normalizeRows(data) {
+      if (!Array.isArray(data) || !data.length) throw new Error("Dữ liệu trả về không phải danh sách tương tác hợp lệ.");
+      return data.map(row => {
+        const cells = new Map(Object.entries(row).map(([key, value]) => [normalizeString(key), value]));
+        if (sourceColumns.some(key => !cells.has(normalizeString(key)))) {
+          throw new Error("Tiêu đề cột dữ liệu không hợp lệ. Vui lòng thử tải lại.");
+        }
+        const result = Object.fromEntries(sourceColumns.map(key => [key, cells.get(normalizeString(key))]));
+        if (!String(getVal(result["Thuốc 1"])).trim() || !String(getVal(result["Thuốc 2"])).trim()) {
+          throw new Error("Dữ liệu có dòng thiếu tên thuốc.");
+        }
+        return result;
+      });
     }
-
-    function escapeHtml(text) {
-      const div = document.createElement("div");
-      div.textContent = String(text || "");
-      return div.innerHTML.replace(/\n/g, "<br>");
+    function drugId(name, code) { return JSON.stringify([foldVietnamese(name), foldVietnamese(code)]); }
+    function drugLabel(drug) { return drug.code ? `${drug.code} · ${drug.name}` : drug.name; }
+    function buildDrugCatalog(rows) {
+      const catalog = new Map();
+      rows.forEach(row => [1, 2].forEach(side => {
+        const name = String(getVal(row[`Thuốc ${side}`])).trim();
+        const code = String(getVal(row[`ATC ${side}`])).trim();
+        const id = drugId(name, code);
+        if (name && !catalog.has(id)) catalog.set(id, { id, name, code });
+      }));
+      return [...catalog.values()].sort((a, b) => a.name.localeCompare(b.name, "vi") || a.code.localeCompare(b.code));
     }
-
-    function getVal(cell) {
-      if (!cell) return "";
-      if (typeof cell === "object" && "value" in cell) return cell.value || "";
-      return cell || "";
-    }
-
-    function buildSuggestionItem(value) {
-      const node = document.createElement("div");
-      node.className = "suggestions__item";
-      node.textContent = value;
-      node.dataset.value = value;
-      node.addEventListener("click", () => selectSuggestion(value));
-      return node;
-    }
-
+    // Source-specific attribution is separate from the severity warning.
     function isContraindicatedByMOH(row) {
-      const interactionGroup = foldVietnamese(getVal(row["Nhóm tương tác"]));
-      const severity = foldVietnamese(getVal(row["Mức độ"]));
-      const consequence = foldVietnamese(getVal(row["Hậu quả"]));
-      const management = foldVietnamese(getVal(row["Xử trí"]));
       const source = foldVietnamese(getVal(row["Nguồn"]));
-
-      const isContraindicated =
-        severity.includes("chong chi dinh") ||
-        consequence.includes("chong chi dinh") ||
-        management.includes("chong chi dinh");
-
-      const isMOHSource =
-        source.includes("5948/byt") ||
-        source.includes("quyet dinh 5948") ||
-        source.includes("bo y te");
-
-      const mentionsMOHContraindication =
-        interactionGroup.includes("chong chi dinh") ||
-        (isContraindicated && isMOHSource);
-
-      return mentionsMOHContraindication;
+      return getSeverity(row).key === "critical" && /5948|bo y te/.test(source);
     }
-
+    function getSeverity(row) {
+      const text = foldVietnamese(getVal(row["Mức độ"]));
+      if (text.startsWith("rat nghiem trong")) return { key: "critical", color: "#c00000", label: "Rất nghiêm trọng" };
+      if (text.startsWith("nghiem trong")) return { key: "serious", color: "#b25900", label: "Nghiêm trọng" };
+      if (text.startsWith("dang ke") && text.includes("trung binh")) return { key: "moderate", color: "#1f4e78", label: "Đáng kể – Trung bình" };
+      if (text.startsWith("dang ke")) return { key: "significant", color: "#805b00", label: "Đáng kể" };
+      if (text.startsWith("nhe")) return { key: "minor", color: "#595959", label: "Nhẹ – Không đáng kể" };
+      return { key: "unknown", color: "#595959", label: String(getVal(row["Mức độ"])) || "Chưa phân loại" };
+    }
     async function fetchData() {
+      dataReady = false;
+      el.btnSearch.disabled = true;
+      el.input.disabled = true;
       try {
         showInit("Đang tải dữ liệu...");
-        const response = await fetch(webAppUrl);
+        // A unique query also bypasses stale Apps Script redirect responses with old headers.
+        const response = await fetch(`${webAppUrl}?v=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`Không thể tải dữ liệu (HTTP ${response.status}).`);
         const data = await response.json();
-
-        if (data && data.error) throw new Error(data.error);
-
-        allData = Array.isArray(data) ? data : [];
-
-        const set = new Set();
-        allData.forEach((row) => {
-          set.add(getVal(row["Thuốc 1"]).trim());
-          set.add(getVal(row["Thuốc 2"]).trim());
-        });
-        suggestionsList = [...set].filter(Boolean).sort();
-
-        showInit("Bắt đầu: thêm tối thiểu 2 hoạt chất, sau đó nhấn Tra cứu tương tác.");
+        if (data?.error) throw new Error(data.error);
+        allData = normalizeRows(data);
+        suggestionsList = buildDrugCatalog(allData);
+        dataReady = true;
+        el.input.disabled = false;
+        el.btnSearch.disabled = false;
+        refreshResults();
       } catch (error) {
-        showError("LỖI: " + (error && error.message ? error.message : "Không thể tải dữ liệu"));
+        showError("LỖI: " + (error?.message || "Không thể tải dữ liệu"));
       }
     }
-
+    function matchingSuggestions(query) {
+      const needle = foldVietnamese(query);
+      if (!needle) return [];
+      return suggestionsList.filter(item => foldVietnamese(item.name).includes(needle) || foldVietnamese(item.code).includes(needle));
+    }
     function showSuggestions() {
-      const query = normalizeString(el.input.value);
-      if (!query) {
-        hideSuggestions();
-        return;
-      }
-
-      const filtered = suggestionsList.filter((item) => normalizeString(item).includes(query)).slice(0, 15);
-      if (!filtered.length) {
-        hideSuggestions();
-        return;
-      }
-
-      el.box.innerHTML = "";
-      filtered.forEach((item) => el.box.appendChild(buildSuggestionItem(item)));
+      const matches = matchingSuggestions(el.input.value);
+      el.box.replaceChildren();
+      if (!matches.length) { hideSuggestions(); return; }
+      matches.forEach(drug => {
+        const node = document.createElement("button");
+        node.type = "button";
+        node.className = "suggestions__item";
+        node.textContent = drugLabel(drug);
+        node.addEventListener("click", () => selectSuggestion(drug));
+        el.box.appendChild(node);
+      });
       el.box.style.display = "block";
       requestAnimationFrame(syncParentFrameHeight);
     }
-
     function hideSuggestions() {
       el.box.style.display = "none";
-      el.box.innerHTML = "";
+      el.box.replaceChildren();
       requestAnimationFrame(syncParentFrameHeight);
     }
-
-    function selectSuggestion(value) {
-      if (!selectedDrugs.includes(value)) {
-        selectedDrugs.push(value);
-        renderChips();
-      }
-      el.input.value = "";
-      hideSuggestions();
-    }
-
-    function removeDrug(drug) {
-      selectedDrugs = selectedDrugs.filter((item) => item !== drug);
+    function addDrug(drug) {
+      if (!selectedDrugs.some(item => item.id === drug.id)) selectedDrugs.push(drug);
       renderChips();
     }
-
+    function selectSuggestion(drug) {
+      addDrug(drug);
+      el.input.value = "";
+      hideSuggestions();
+      refreshResults();
+      el.input.focus();
+    }
+    function removeDrug(id) {
+      selectedDrugs = selectedDrugs.filter(drug => drug.id !== id);
+      renderChips();
+      // Do not consume the unfinished input while deleting another medicine.
+      refreshResults();
+    }
     function renderChips() {
-      el.chips.innerHTML = "";
-
+      el.chips.replaceChildren();
       if (!selectedDrugs.length) {
-        el.chips.innerHTML = '<div class="msg">Vui lòng thêm tối thiểu hai hoạt chất để bắt đầu tra cứu.</div>';
-        requestAnimationFrame(syncParentFrameHeight);
-        return;
+        el.chips.textContent = "Vui lòng thêm tối thiểu hai hoạt chất để bắt đầu tra cứu.";
       }
-
-      selectedDrugs.forEach((drug) => {
+      selectedDrugs.forEach(drug => {
         const chip = document.createElement("div");
         chip.className = "chip";
-        chip.innerHTML = `
-          <span class="chip__label"></span>
-          <button type="button" class="chip__remove" aria-label="Xóa hoạt chất">×</button>
-        `;
-        chip.querySelector(".chip__label").textContent = drug;
-        chip.querySelector(".chip__remove").addEventListener("click", () => removeDrug(drug));
+        const label = document.createElement("span");
+        label.className = "chip__label";
+        label.textContent = drugLabel(drug);
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "chip__remove";
+        remove.setAttribute("aria-label", `Xóa ${drugLabel(drug)}`);
+        remove.textContent = "×";
+        remove.addEventListener("click", () => removeDrug(drug.id));
+        chip.append(label, remove);
         el.chips.appendChild(chip);
       });
-
       requestAnimationFrame(syncParentFrameHeight);
     }
-
-    function searchInteraction() {
-      hideSuggestions();
-      el.msgError.style.display = "none";
-      el.msgEmpty.style.display = "none";
-      el.msgInit.style.display = "none";
-      el.pcBody.innerHTML = "";
-      el.mobileResults.innerHTML = "";
-
-      const pendingValue = el.input.value.trim();
-      if (pendingValue && !selectedDrugs.includes(pendingValue)) {
-        selectedDrugs.push(pendingValue);
-        renderChips();
-        el.input.value = "";
-      }
-
-      if (selectedDrugs.length < 2) {
-        showError("VUI LÒNG CHỌN ÍT NHẤT HAI HOẠT CHẤT");
-        return;
-      }
-
-      const results = allData.filter((row) => {
-        const drug1 = normalizeString(getVal(row["Thuốc 1"]));
-        const drug2 = normalizeString(getVal(row["Thuốc 2"]));
-
-        for (let i = 0; i < selectedDrugs.length; i += 1) {
-          for (let j = i + 1; j < selectedDrugs.length; j += 1) {
-            const a = normalizeString(selectedDrugs[i]);
-            const b = normalizeString(selectedDrugs[j]);
-            if ((drug1 === a && drug2 === b) || (drug1 === b && drug2 === a)) return true;
-          }
-        }
-        return false;
-      });
-
-      if (!results.length) {
-        showEmpty();
-        return;
-      }
-
+    function matchesDrug(row, side, drug) {
+      return foldVietnamese(getVal(row[`Thuốc ${side}`])) === foldVietnamese(drug.name)
+        && foldVietnamese(getVal(row[`ATC ${side}`])) === foldVietnamese(drug.code);
+    }
+    function findInteractions(rows, drugs) {
+      return rows.filter(row => drugs.some((a, i) => drugs.slice(i + 1).some(b =>
+        (matchesDrug(row, 1, a) && matchesDrug(row, 2, b)) || (matchesDrug(row, 1, b) && matchesDrug(row, 2, a)))));
+    }
+    function refreshResults() {
+      if (!dataReady) return;
+      if (selectedDrugs.length < 2) { showInit("Thêm tối thiểu 2 hoạt chất để tra cứu tương tác."); return; }
+      const results = findInteractions(allData, selectedDrugs);
+      setMessage(null);
+      if (!results.length) { showEmpty(); return; }
       renderResults(results);
     }
-
+    function searchInteraction() {
+      if (!dataReady) return;
+      const query = foldVietnamese(el.input.value);
+      if (query) {
+        const exact = suggestionsList.filter(drug => [drug.name, drug.code, drugLabel(drug)].some(value => foldVietnamese(value) === query));
+        if (exact.length !== 1) {
+          showError(exact.length > 1 ? "Có nhiều thuốc phù hợp. Vui lòng chọn đúng mã ATC và tên thuốc trong gợi ý." : "Không tìm thấy tên hoặc mã ATC chính xác. Vui lòng chọn một mục trong gợi ý.");
+          showSuggestions();
+          return;
+        }
+        addDrug(exact[0]);
+        el.input.value = "";
+      }
+      hideSuggestions();
+      if (selectedDrugs.length < 2) { showError("VUI LÒNG CHỌN ÍT NHẤT HAI HOẠT CHẤT"); return; }
+      refreshResults();
+    }
+    function applyCellStyle(node, cell, fallbackColor) {
+      const style = cell && typeof cell === "object" ? cell : {};
+      if (style.foreground || fallbackColor) node.style.color = style.foreground || fallbackColor;
+      if (style.isBold) node.style.fontWeight = "800";
+      if (style.isItalic) node.style.fontStyle = "italic";
+      if (style.isUnderlined) node.style.textDecoration = "underline";
+      node.style.whiteSpace = "pre-wrap";
+    }
+    function createGroupTitle(row, index, severity, mobile) {
+      const title = document.createElement("div");
+      title.className = mobile ? "mobile-group-title" : "group-title";
+      const number = document.createElement("span");
+      number.textContent = `Tương tác ${index + 1}`;
+      const badge = document.createElement("span");
+      badge.className = "alert-badge severity-badge";
+      badge.textContent = severity.label + (isContraindicatedByMOH(row) ? " · Chống chỉ định Bộ Y tế" : "");
+      title.append(number, badge);
+      return title;
+    }
     function renderResults(results) {
-      el.pcBody.innerHTML = "";
-      el.mobileResults.innerHTML = "";
-
+      el.pcBody.replaceChildren();
+      el.mobileResults.replaceChildren();
       results.forEach((row, index) => {
-        const alertCase = isContraindicatedByMOH(row);
-        const groupRow = document.createElement("tr");
-        groupRow.className = alertCase ? "group-row group-row--alert" : "group-row";
-
-        const groupCell = document.createElement("td");
-        groupCell.colSpan = 2;
-        groupCell.innerHTML = `
-          <div class="group-title">
-            <span>Tương tác ${index + 1}</span>
-            ${alertCase ? '<span class="alert-badge">Cảnh báo đỏ · Chống chỉ định Bộ Y tế</span>' : ""}
-          </div>
-        `;
-        groupRow.appendChild(groupCell);
-        el.pcBody.appendChild(groupRow);
-
-        const fields = [
-          { key: "NHÓM TƯƠNG TÁC", cell: row["Nhóm tương tác"] },
-          { key: "THUỐC 1", cell: row["Thuốc 1"] },
-          { key: "THUỐC 2", cell: row["Thuốc 2"] },
-          { key: "MỨC ĐỘ", cell: row["Mức độ"] },
-          { key: "CƠ CHẾ", cell: row["Cơ chế"] },
-          { key: "HẬU QUẢ", cell: row["Hậu quả"] },
-          { key: "XỬ TRÍ", cell: row["Xử trí"] },
-          { key: "NGUỒN", cell: row["Nguồn"] }
-        ];
-
-        fields.forEach((field) => {
-          const value = getVal(field.cell);
-          if (!value) return;
-
-          const style = field.cell && field.cell.style ? field.cell.style : {};
-          const rowNode = document.createElement("tr");
-          const labelCell = document.createElement("td");
-          const valueCell = document.createElement("td");
-
-          labelCell.textContent = field.key;
-          valueCell.innerHTML = escapeHtml(value);
-
-          if (style.foreground) valueCell.style.color = style.foreground;
-          if (style.isBold) valueCell.style.fontWeight = "800";
-          if (style.isItalic) valueCell.style.fontStyle = "italic";
-          if (style.isUnderlined) valueCell.style.textDecoration = "underline";
-
-          if (alertCase && (field.key === "NHÓM TƯƠNG TÁC" || field.key === "MỨC ĐỘ" || field.key === "XỬ TRÍ")) {
-            valueCell.classList.add("value-alert");
-          }
-
-          rowNode.appendChild(labelCell);
-          rowNode.appendChild(valueCell);
-          el.pcBody.appendChild(rowNode);
-        });
-
+        const severity = getSeverity(row);
+        const group = document.createElement("tr");
+        group.className = `group-row severity-${severity.key}`;
+        const cell = document.createElement("td");
+        cell.colSpan = 2;
+        cell.appendChild(createGroupTitle(row, index, severity, false));
+        group.appendChild(cell);
+        el.pcBody.appendChild(group);
         const mobileCard = document.createElement("article");
-        mobileCard.className = alertCase ? "mobile-interaction mobile-interaction--alert" : "mobile-interaction";
-        mobileCard.innerHTML = `
-          <div class="mobile-group-title">
-            <span>Tương tác ${index + 1}</span>
-            ${alertCase ? '<span class="alert-badge">Cảnh báo đỏ · Chống chỉ định Bộ Y tế</span>' : ""}
-          </div>
-        `;
-
-        fields.forEach((field) => {
-          const value = getVal(field.cell);
-          if (!value) return;
-
-          const style = field.cell && field.cell.style ? field.cell.style : {};
-          const fieldNode = document.createElement("div");
-          fieldNode.className = "mobile-field";
-          fieldNode.innerHTML = `
-            <div class="mobile-field__label">${field.key}</div>
-            <div class="mobile-field__value">${escapeHtml(value)}</div>
-          `;
-
-          const mobileValue = fieldNode.querySelector(".mobile-field__value");
-          if (style.foreground) mobileValue.style.color = style.foreground;
-          if (style.isBold) mobileValue.style.fontWeight = "800";
-          if (style.isItalic) mobileValue.style.fontStyle = "italic";
-          if (style.isUnderlined) mobileValue.style.textDecoration = "underline";
-          if (alertCase && (field.key === "NHÓM TƯƠNG TÁC" || field.key === "MỨC ĐỘ" || field.key === "XỬ TRÍ")) {
-            mobileValue.classList.add("value-alert");
-          }
-
-          mobileCard.appendChild(fieldNode);
+        mobileCard.className = `mobile-interaction severity-${severity.key}`;
+        mobileCard.appendChild(createGroupTitle(row, index, severity, true));
+        sourceColumns.forEach(key => {
+          const value = String(getVal(row[key]));
+          const pcRow = document.createElement("tr");
+          const label = document.createElement("td");
+          const pcValue = document.createElement("td");
+          label.textContent = key.toLocaleUpperCase("vi");
+          pcValue.textContent = value;
+          const field = document.createElement("div");
+          field.className = "mobile-field";
+          const mobileLabel = document.createElement("div");
+          mobileLabel.className = "mobile-field__label";
+          mobileLabel.textContent = label.textContent;
+          const mobileValue = document.createElement("div");
+          mobileValue.className = "mobile-field__value";
+          mobileValue.textContent = value;
+          [pcValue, mobileValue].forEach(node => {
+            applyCellStyle(node, row[key], key === "Mức độ" ? severity.color : undefined);
+            if (key === "Mức độ") node.classList.add("severity-field", `severity-${severity.key}`);
+          });
+          pcRow.append(label, pcValue);
+          el.pcBody.appendChild(pcRow);
+          field.append(mobileLabel, mobileValue);
+          mobileCard.appendChild(field);
         });
-
         el.mobileResults.appendChild(mobileCard);
       });
-
       requestAnimationFrame(syncParentFrameHeight);
     }
-
-    function showInit(message) {
-      el.msgError.style.display = "none";
-      el.msgEmpty.style.display = "none";
-      el.msgInit.style.display = "block";
-      el.msgInit.textContent = message;
-      el.pcBody.innerHTML = "";
-      el.mobileResults.innerHTML = "";
+    function setMessage(active, message) {
+      [el.msgInit, el.msgError, el.msgEmpty].forEach(node => { node.style.display = node === active ? "block" : "none"; });
+      if (active && message !== undefined) active.textContent = message;
+      el.pcBody.replaceChildren();
+      el.mobileResults.replaceChildren();
       requestAnimationFrame(syncParentFrameHeight);
     }
-
-    function showError(message) {
-      el.msgInit.style.display = "none";
-      el.msgEmpty.style.display = "none";
-      el.msgError.style.display = "block";
-      el.msgError.innerHTML = "<strong>" + escapeHtml(message) + "</strong>";
-      el.pcBody.innerHTML = "";
-      el.mobileResults.innerHTML = "";
-      requestAnimationFrame(syncParentFrameHeight);
-    }
-
-    function showEmpty() {
-      el.msgInit.style.display = "none";
-      el.msgError.style.display = "none";
-      el.msgEmpty.style.display = "block";
-      el.pcBody.innerHTML = "";
-      el.mobileResults.innerHTML = "";
-      requestAnimationFrame(syncParentFrameHeight);
-    }
-
+    function showInit(message) { setMessage(el.msgInit, message); }
+    function showError(message) { setMessage(el.msgError, message); }
+    function showEmpty() { setMessage(el.msgEmpty); }
     function setupEvents() {
-      let timer = null;
-
-      el.input.addEventListener("input", () => {
-        clearTimeout(timer);
-        timer = window.setTimeout(showSuggestions, 120);
+      let timer;
+      el.input.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(showSuggestions, 120); });
+      el.input.addEventListener("keydown", event => {
+        if (event.key === "Enter") { event.preventDefault(); clearTimeout(timer); searchInteraction(); }
       });
-
-      el.input.addEventListener("keypress", (event) => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          if (el.box.style.display === "block" && el.box.firstElementChild) {
-            selectSuggestion(el.box.firstElementChild.dataset.value || el.box.firstElementChild.textContent);
-          } else {
-            searchInteraction();
-          }
-        }
-      });
-
       el.btnSearch.addEventListener("click", searchInteraction);
-
-      document.addEventListener("click", (event) => {
-        if (!el.box.contains(event.target) && event.target !== el.input) {
-          hideSuggestions();
-        }
-      });
+      document.addEventListener("click", event => { if (!el.box.contains(event.target) && event.target !== el.input) hideSuggestions(); });
     }
-
     window.addEventListener("load", async () => {
       setupEvents();
       renderChips();
       await fetchData();
       syncParentFrameHeight();
     });
+
   </script>
 </body>
 </html>
+
