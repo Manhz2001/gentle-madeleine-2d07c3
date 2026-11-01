@@ -530,7 +530,9 @@
       color: inherit;
     }
     .severity-field { background: var(--severity-bg, #edf4fb); }
-    button.suggestions__item { width: 100%; text-align: left; font: inherit; color: inherit; background: #fff; cursor: pointer; }
+    button.suggestions__item { appearance: none; display: block; width: 100%; border: 0; border-bottom: 1px solid #eef4fb; border-radius: 0; text-align: left; font: inherit; color: inherit; background: #fff; cursor: pointer; }
+    button.suggestions__item:last-child { border-bottom: 0; }
+    button.suggestions__item:hover { background: var(--c-brand-50); }
     button.suggestions__item:focus-visible { outline: 2px solid var(--c-brand-500); outline-offset: -2px; }
     #btnSearch:disabled { opacity: .5; cursor: wait; }
 
@@ -1118,7 +1120,7 @@
         const mobileCard = document.createElement("article");
         mobileCard.className = `mobile-interaction severity-${severity.key}`;
         mobileCard.appendChild(createGroupTitle(row, index, severity, true));
-        sourceColumns.forEach(key => {
+        sourceColumns.filter(key => key !== "STT").forEach(key => {
           const value = String(getVal(row[key]));
           const pcRow = document.createElement("tr");
           const label = document.createElement("td");

@@ -81,17 +81,17 @@ function harness({ rows = [fixture()], status = 200, payload = rows, fetchError 
   };
 }
 
-test('renders all twelve source fields and normalizes the double-space source header', async () => {
+test('hides STT and renders the other eleven source fields and normalizes the double-space source header', async () => {
   const h = harness(); await h.ready();
   h.call('renderResults', h.state().allData);
   const desktop = h.nodes.pcBody.children.slice(1);
   const mobile = h.nodes.mobileResults.firstElementChild.children.slice(1);
-  assert.deepEqual(desktop.map(row => row.firstElementChild.textContent), columns.map(key => key.toLocaleUpperCase('vi')));
-  assert.deepEqual(mobile.map(field => field.firstElementChild.textContent), columns.map(key => key.toLocaleUpperCase('vi')));
-  assert.equal(desktop[6].lastElementChild.textContent, 'Nhóm thứ hai');
-  assert.equal(desktop[8].lastElementChild.textContent, 'Cơ chế giả định <b>giữ nguyên văn bản</b>');
-  assert.equal(desktop[10].lastElementChild.textContent, 'Dòng đầu\nDòng thứ hai');
-  assert.equal(desktop[10].lastElementChild.style.whiteSpace, 'pre-wrap');
+  assert.deepEqual(desktop.map(row => row.firstElementChild.textContent), columns.filter(key => key !== "STT").map(key => key.toLocaleUpperCase('vi')));
+  assert.deepEqual(mobile.map(field => field.firstElementChild.textContent), columns.filter(key => key !== "STT").map(key => key.toLocaleUpperCase('vi')));
+  assert.equal(desktop[5].lastElementChild.textContent, 'Nhóm thứ hai');
+  assert.equal(desktop[7].lastElementChild.textContent, 'Cơ chế giả định <b>giữ nguyên văn bản</b>');
+  assert.equal(desktop[9].lastElementChild.textContent, 'Dòng đầu\nDòng thứ hai');
+  assert.equal(desktop[9].lastElementChild.style.whiteSpace, 'pre-wrap');
   assert.ok(!h.nodes.pcBody.textContent.includes('NHÓM TƯƠNG TÁC'));
 });
 
@@ -99,8 +99,8 @@ test('preserves all five direct API colors and text styles in desktop and mobile
   const rows = colors.map((color, i) => fixture({ STT: i + 1, 'Mức độ': { value: levels[i], foreground: color, isBold: true, isItalic: true, isUnderlined: true } }));
   const h = harness({ rows }); await h.ready(); h.call('renderResults', h.state().allData);
   for (let i = 0; i < 5; i++) {
-    const desktopValue = h.nodes.pcBody.children[i * 13 + 8].lastElementChild;
-    const mobileValue = h.nodes.mobileResults.children[i].children[8].lastElementChild;
+    const desktopValue = h.nodes.pcBody.children[i * 12 + 7].lastElementChild;
+    const mobileValue = h.nodes.mobileResults.children[i].children[7].lastElementChild;
     for (const node of [desktopValue, mobileValue]) {
       assert.equal(node.style.color, colors[i]);
       assert.equal(node.style.fontWeight, '800'); assert.equal(node.style.fontStyle, 'italic');
@@ -114,7 +114,7 @@ test('severity frames do not depend on MOH attribution and use five separate lev
   const h = harness({ rows }); await h.ready(); h.call('renderResults', h.state().allData);
   const keys = ['critical', 'serious', 'significant', 'moderate', 'minor'];
   for (let i = 0; i < rows.length; i++) {
-    assert.match(h.nodes.pcBody.children[i * 13].className, new RegExp(`severity-${keys[i]}`));
+    assert.match(h.nodes.pcBody.children[i * 12].className, new RegExp(`severity-${keys[i]}`));
     assert.match(h.nodes.mobileResults.children[i].className, new RegExp(`severity-${keys[i]}`));
     assert.ok(!h.nodes.mobileResults.children[i].firstElementChild.textContent.includes('Bộ Y tế'));
   }
@@ -155,7 +155,7 @@ test('exact ATC/name searches reject ambiguity and accept explicitly selected ca
   assert.equal(h.state().selectedDrugs.length, 1);
   h.nodes.searchInput.value = 'b02bb02'; await h.nodes.searchInput.dispatch('keydown', { key: 'Enter' });
   assert.equal(h.state().selectedDrugs.length, 2);
-  assert.equal(h.nodes.pcBody.children.length, 13);
+  assert.equal(h.nodes.pcBody.children.length, 12);
 });
 
 test('exact matching rejects substring pairs and preserves reverse order', async () => {
@@ -173,12 +173,12 @@ test('adding/removing chips recomputes pairs without consuming unfinished input'
   const rows = [fixture(), fixture({ STT: 2, 'ATC 2': c.code, 'Thuốc 2': c.name }), fixture({ STT: 3, 'ATC 1': b.code, 'Thuốc 1': b.name, 'ATC 2': c.code, 'Thuốc 2': c.name })];
   const h = harness({ rows }); await h.ready();
   h.select(a.name); h.select(b.name);
-  assert.equal(h.nodes.pcBody.children.length, 13);
-  h.select(c.name); assert.equal(h.nodes.pcBody.children.length, 39);
+  assert.equal(h.nodes.pcBody.children.length, 12);
+  h.select(c.name); assert.equal(h.nodes.pcBody.children.length, 36);
   h.select(c.name); assert.equal(h.state().selectedDrugs.length, 3);
   h.nodes.searchInput.value = 'unfinished query';
   await h.nodes.chips.children[2].lastElementChild.dispatch('click');
-  assert.equal(h.nodes.pcBody.children.length, 13);
+  assert.equal(h.nodes.pcBody.children.length, 12);
   assert.equal(h.state().selectedDrugs.length, 2); assert.equal(h.nodes.searchInput.value, 'unfinished query');
   await h.nodes.chips.children[0].lastElementChild.dispatch('click');
   assert.equal(h.nodes.pcBody.children.length, 0); assert.equal(h.nodes.mobileResults.children.length, 0);
@@ -218,7 +218,7 @@ test('unique exact ATC search and no-selection guard work through click/keyboard
   h.nodes.searchInput.value = ' a01aa01 '; await h.nodes.searchInput.dispatch('keydown', { key: 'Enter' });
   assert.equal(h.state().selectedDrugs.length, 1);
   h.nodes.searchInput.value = ' B02BB02 '; await h.nodes.btnSearch.dispatch('click');
-  assert.equal(h.state().selectedDrugs.length, 2); assert.equal(h.nodes.pcBody.children.length, 13);
+  assert.equal(h.state().selectedDrugs.length, 2); assert.equal(h.nodes.pcBody.children.length, 12);
   assert.match(h.requests[0].url, /\?v=\d+$/); assert.equal(h.requests[0].options.cache, 'no-store');
 });
 
