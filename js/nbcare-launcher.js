@@ -1,5 +1,6 @@
 (() => {
   'use strict';
+  if (document.querySelector('meta[name="x-drugview-module-mode"]') || document.body.dataset.page === 'tracuu' || /^\/tra-cuu-/.test(location.pathname)) return;
   if (document.body.dataset.page === 'home' || /\/(?:nbcare|nb-care)(?:\/|$)/.test(location.pathname) || document.querySelector('[data-nbcare-quick-link]')) return;
   const scriptUrl = document.currentScript.src;
   if (!document.querySelector('link[data-nbcare-style]')) {

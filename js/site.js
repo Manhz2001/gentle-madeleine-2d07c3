@@ -568,11 +568,12 @@
   });
 })();
 
-/* The homepage uses its NBCare card; other pages show a direct quick link. */
+/* Lookup modules keep their full workspace free of floating quick links. */
 (() => {
+  if (document.querySelector('meta[name="x-drugview-module-mode"]') || document.body.dataset.page === 'tracuu' || /^\/tra-cuu-/.test(location.pathname)) return;
   if (document.body.dataset.page === 'home' || /\/(?:nbcare|nb-care)(?:\/|$)/.test(location.pathname) || document.querySelector('script[data-nbcare-launcher]')) return;
   const script=document.createElement('script');
-  script.src=new URL('nbcare-launcher.js?v=4',document.currentScript.src).href;
+  script.src=new URL('nbcare-launcher.js?v=5',document.currentScript.src).href;
   script.dataset.nbcareLauncher='true';
   document.head.append(script);
 })();
