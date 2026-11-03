@@ -835,7 +835,7 @@
             <img class="interaction-logo" src="27ed86eb0b3d.png" alt="Logo Bệnh viện Đa khoa Tỉnh Ninh Bình" width="56" height="56" decoding="async">
             <h1 class="interaction-title">Tra cứu tương tác thuốc</h1>
           </div>
-          <p class="interaction-desc">Thêm tối thiểu hai hoạt chất để tra cứu theo cặp, xem mức độ tương tác, cơ chế, hậu quả và khuyến cáo xử trí lâm sàng.</p>
+          <p class="interaction-desc">Tra cứu tương tác giữa các hoạt chất, xem mức độ tương tác, cơ chế, hậu quả và khuyến cáo xử trí lâm sàng.</p>
         </div>
         <div class="interaction-alert">
           <div class="interaction-alert-card">
@@ -852,7 +852,7 @@
     <section class="search-shell">
       <div class="search-panel">
         <h2 class="search-panel__title">Tra cứu trực tiếp</h2>
-        <p class="search-panel__desc">Nhập mã ATC hoặc tên thuốc, chọn đúng mục gợi ý rồi tra cứu tương tác theo cặp.</p>
+        <p class="search-panel__desc">Nhập mã ATC hoặc tên thuốc, chọn hoạt chất để tra cứu.</p>
 
         <div class="search-box">
           <div class="search-row">
@@ -871,7 +871,7 @@
         <h3>Danh sách hoạt chất đã chọn</h3>
       </div>
       <div id="chips" class="chips">
-        <div class="msg">Vui lòng thêm tối thiểu hai hoạt chất để bắt đầu tra cứu.</div>
+        <div class="msg">Chọn một thuốc để xem các tương tác liên quan; thêm thuốc thứ hai để lọc theo cặp.</div>
       </div>
     </section>
 
@@ -880,7 +880,7 @@
         <h3>Thông tin kết quả</h3>
       </div>
       <div class="panel-body">
-        <div id="msgInit" class="msg">Bắt đầu: thêm tối thiểu 2 hoạt chất, sau đó nhấn <strong>Tra cứu tương tác</strong>.</div>
+        <div id="msgInit" class="msg">Chọn hoạt chất để tra cứu tương tác.</div>
         <div id="msgError" class="msg" style="display:none;"></div>
         <div id="msgEmpty" class="msg" style="display:none;">Không tìm thấy cặp phù hợp trong dữ liệu hiện có. Kết quả này không khẳng định không có tương tác.</div>
 
@@ -897,10 +897,12 @@
     </section>
   </div>
 
+  <script src="/js/interaction-groups.js?v=20261103-auto-groups"></script>
   <script>
     const webAppUrl = "https://script.google.com/macros/s/AKfycbxybEUZXYbZxuz2EESUzC1tgIb1nWw4I7CrLTB6yIpGFYk1pLzfNl9Z8V2Kb49HyryS/exec";
     // Exact source columns; header whitespace is normalized at the API boundary.
     const sourceColumns = ["STT", "ATC 1", "Thuốc 1", "Nhóm tác dụng 1", "ATC 2", "Thuốc 2", "Nhóm tác dụng 2", "Mức độ", "Cơ chế", "Hậu quả", "Xử trí", "Nguồn"];
+    const Demo = window.InteractionDemo;
     let allData = [];
     let suggestionsList = [];
     let selectedDrugs = [];
@@ -942,7 +944,7 @@
         return result;
       });
     }
-    function drugId(name, code) { return JSON.stringify([foldVietnamese(name), foldVietnamese(code)]); }
+    function drugId(name, code) { return JSON.stringify([Demo.canonicalName(name), foldVietnamese(code)]); }
     function drugLabel(drug) { return drug.code ? `${drug.code} · ${drug.name}` : drug.name; }
     function buildDrugCatalog(rows) {
       const catalog = new Map();
@@ -974,6 +976,7 @@
       el.input.disabled = true;
       try {
         showInit("Đang tải dữ liệu...");
+        if (!Demo) throw new Error("Không thể tải bộ tra cứu tương tác. Vui lòng tải lại trang.");
         // A unique query also bypasses stale Apps Script redirect responses with old headers.
         const response = await fetch(`${webAppUrl}?v=${Date.now()}`, { cache: "no-store" });
         if (!response.ok) throw new Error(`Không thể tải dữ liệu (HTTP ${response.status}).`);
@@ -990,9 +993,9 @@
       }
     }
     function matchingSuggestions(query) {
-      const needle = foldVietnamese(query);
+      const needle = Demo.canonicalName(query);
       if (!needle) return [];
-      return suggestionsList.filter(item => foldVietnamese(item.name).includes(needle) || foldVietnamese(item.code).includes(needle));
+      return suggestionsList.filter(item => Demo.canonicalName(item.name).includes(needle) || foldVietnamese(item.code).includes(needle));
     }
     function showSuggestions() {
       const matches = matchingSuggestions(el.input.value);
@@ -1034,7 +1037,7 @@
     function renderChips() {
       el.chips.replaceChildren();
       if (!selectedDrugs.length) {
-        el.chips.textContent = "Vui lòng thêm tối thiểu hai hoạt chất để bắt đầu tra cứu.";
+        el.chips.textContent = "Chọn một thuốc để xem các tương tác liên quan; thêm thuốc thứ hai để lọc theo cặp.";
       }
       selectedDrugs.forEach(drug => {
         const chip = document.createElement("div");
@@ -1053,17 +1056,12 @@
       });
       requestAnimationFrame(syncParentFrameHeight);
     }
-    function matchesDrug(row, side, drug) {
-      return foldVietnamese(getVal(row[`Thuốc ${side}`])) === foldVietnamese(drug.name)
-        && foldVietnamese(getVal(row[`ATC ${side}`])) === foldVietnamese(drug.code);
-    }
     function findInteractions(rows, drugs) {
-      return rows.filter(row => drugs.some((a, i) => drugs.slice(i + 1).some(b =>
-        (matchesDrug(row, 1, a) && matchesDrug(row, 2, b)) || (matchesDrug(row, 1, b) && matchesDrug(row, 2, a)))));
+      return Demo.analyze(rows, drugs, true).confirmed.map(item => item.row);
     }
     function refreshResults() {
       if (!dataReady) return;
-      if (selectedDrugs.length < 2) { showInit("Thêm tối thiểu 2 hoạt chất để tra cứu tương tác."); return; }
+      if (!selectedDrugs.length) { showInit("Chọn một thuốc để xem các tương tác liên quan; thêm thuốc thứ hai để lọc theo cặp."); return; }
       const results = findInteractions(allData, selectedDrugs);
       setMessage(null);
       if (!results.length) { showEmpty(); return; }
@@ -1071,9 +1069,9 @@
     }
     function searchInteraction() {
       if (!dataReady) return;
-      const query = foldVietnamese(el.input.value);
+      const query = Demo.canonicalName(el.input.value);
       if (query) {
-        const exact = suggestionsList.filter(drug => [drug.name, drug.code, drugLabel(drug)].some(value => foldVietnamese(value) === query));
+        const exact = suggestionsList.filter(drug => [Demo.canonicalName(drug.name), foldVietnamese(drug.code), foldVietnamese(drugLabel(drug))].includes(query));
         if (exact.length !== 1) {
           showError(exact.length > 1 ? "Có nhiều thuốc phù hợp. Vui lòng chọn đúng mã ATC và tên thuốc trong gợi ý." : "Không tìm thấy tên hoặc mã ATC chính xác. Vui lòng chọn một mục trong gợi ý.");
           showSuggestions();
@@ -1083,7 +1081,6 @@
         el.input.value = "";
       }
       hideSuggestions();
-      if (selectedDrugs.length < 2) { showError("VUI LÒNG CHỌN ÍT NHẤT HAI HOẠT CHẤT"); return; }
       refreshResults();
     }
     function applyCellStyle(node, cell, fallbackColor) {
@@ -1177,4 +1174,3 @@
   </script>
 </body>
 </html>
-

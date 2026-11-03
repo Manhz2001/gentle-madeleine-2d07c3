@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 const html = readFileSync(new URL('../tra-cuu-thuoc-tuong-tac-thuoc.html', import.meta.url), 'utf8');
+const groupScript = readFileSync(new URL('../js/interaction-groups.js', import.meta.url), 'utf8');
 const script = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
   .map(match => match[1]).find(code => code.includes('function searchInteraction'));
 assert.ok(script, 'The deployed HTML must contain the interaction module script');
@@ -69,6 +70,7 @@ function harness({ rows = [fixture()], status = 200, payload = rows, fetchError 
       return { ok: status >= 200 && status < 300, status, json: async () => payload };
     },
   });
+  vm.runInContext(groupScript, context, { filename: 'interaction-groups.js' });
   vm.runInContext(script, context, { filename: 'interaction-module.inline.js' });
   const evaluate = code => vm.runInContext(code, context);
   const call = (name, ...args) => { context.testArgs = args; return evaluate(`${name}(...testArgs)`); };
@@ -155,14 +157,14 @@ test('exact ATC/name searches reject ambiguity and accept explicitly selected ca
   assert.equal(h.state().selectedDrugs.length, 1);
   h.nodes.searchInput.value = 'b02bb02'; await h.nodes.searchInput.dispatch('keydown', { key: 'Enter' });
   assert.equal(h.state().selectedDrugs.length, 2);
-  assert.equal(h.nodes.pcBody.children.length, 12);
+  assert.equal(h.nodes.pcBody.children.length, 24);
 });
 
-test('exact matching rejects substring pairs and preserves reverse order', async () => {
+test('matching rejects unconfirmed name substrings without full ATCs and preserves reverse order', async () => {
   const h = harness(); await h.ready(); const drugs = h.state().suggestionsList;
   assert.equal(h.call('findInteractions', h.state().allData, drugs).length, 1);
   assert.equal(h.call('findInteractions', h.state().allData, [...drugs].reverse()).length, 1);
-  assert.equal(h.call('findInteractions', h.state().allData, [{ name: 'Đường', code: 'A01AA01' }, drugs.find(d => d.code === 'B02BB02')]).length, 0);
+  assert.equal(h.call('findInteractions', h.state().allData, [{ name: 'Đường', code: 'A01AA' }, drugs.find(d => d.code === 'B02BB02')]).length, 0);
   h.nodes.searchInput.value = 'duong'; await h.nodes.btnSearch.dispatch('click');
   assert.equal(h.state().selectedDrugs.length, 0);
   assert.match(h.nodes.msgError.textContent, /Không tìm thấy tên hoặc mã ATC chính xác/);
@@ -181,17 +183,22 @@ test('adding/removing chips recomputes pairs without consuming unfinished input'
   assert.equal(h.nodes.pcBody.children.length, 12);
   assert.equal(h.state().selectedDrugs.length, 2); assert.equal(h.nodes.searchInput.value, 'unfinished query');
   await h.nodes.chips.children[0].lastElementChild.dispatch('click');
+  assert.equal(h.nodes.pcBody.children.length, 24); assert.equal(h.nodes.mobileResults.children.length, 2);
+  assert.equal(h.state().selectedDrugs.length, 1);
+  assert.equal(h.nodes.searchInput.value, 'unfinished query');
+  await h.nodes.chips.children[0].lastElementChild.dispatch('click');
   assert.equal(h.nodes.pcBody.children.length, 0); assert.equal(h.nodes.mobileResults.children.length, 0);
-  assert.equal(h.nodes.msgInit.style.display, 'block'); assert.match(h.nodes.msgInit.textContent, /tối thiểu 2/);
+  assert.equal(h.nodes.msgInit.style.display, 'block'); assert.match(h.nodes.msgInit.textContent, /một thuốc/);
 });
 
-test('same ATC with different names remains distinct, not a broad substring/group match', async () => {
+test('catalog identities stay distinct while lookup intentionally includes the same complete ATC', async () => {
   const h = harness({ rows: [fixture(), fixture({ STT: 2, 'Thuốc 1': 'Đường thử Á nhóm rộng' })] }); await h.ready();
   const catalog = h.state().suggestionsList;
   const a = catalog.find(d => d.name === 'Đường thử Á'); const b = catalog.find(d => d.name === 'Thuốc thử B');
   assert.equal(catalog.filter(d => d.code === 'A01AA01').length, 2);
   const results = h.call('findInteractions', h.state().allData, [a, b]);
-  assert.equal(results.length, 1); assert.equal(h.call('getVal', results[0].STT), 1);
+  assert.equal(results.length, 2);
+  assert.deepEqual(Array.from(results, row => h.call('getVal', row.STT)), [1, 2]);
 });
 
 test('load rejects malformed schema and disables search instead of claiming no interactions', async () => {
@@ -214,11 +221,69 @@ test('HTTP and network failures remain explicit load errors', async () => {
 
 test('unique exact ATC search and no-selection guard work through click/keyboard events', async () => {
   const h = harness(); await h.ready(); await h.nodes.btnSearch.dispatch('click');
-  assert.match(h.nodes.msgError.textContent, /ÍT NHẤT HAI/);
+  assert.equal(h.nodes.msgInit.style.display, 'block');
+  assert.match(h.nodes.msgInit.textContent, /một thuốc/);
+  assert.equal(h.nodes.pcBody.children.length, 0);
   h.nodes.searchInput.value = ' a01aa01 '; await h.nodes.searchInput.dispatch('keydown', { key: 'Enter' });
   assert.equal(h.state().selectedDrugs.length, 1);
+  assert.equal(h.nodes.pcBody.children.length, 12);
   h.nodes.searchInput.value = ' B02BB02 '; await h.nodes.btnSearch.dispatch('click');
   assert.equal(h.state().selectedDrugs.length, 2); assert.equal(h.nodes.pcBody.children.length, 12);
   assert.match(h.requests[0].url, /\?v=\d+$/); assert.equal(h.requests[0].options.cache, 'no-store');
 });
 
+test('one selected drug collects related rows from either source side and pairs narrow the results', async () => {
+  const rows = [fixture(), fixture({ STT: 2, 'Thuốc 1': 'Thuốc thử C', 'ATC 1': 'C03CC03', 'Thuốc 2': 'Đường thử Á', 'ATC 2': 'A01AA01' })];
+  const h = harness({ rows }); await h.ready();
+  h.select('Đường thử Á');
+  assert.equal(h.nodes.pcBody.children.length, 24);
+  assert.equal(h.nodes.mobileResults.children.length, 2);
+  h.select('Thuốc thử B');
+  assert.equal(h.nodes.pcBody.children.length, 12);
+  await h.nodes.chips.children[1].lastElementChild.dispatch('click');
+  assert.equal(h.nodes.pcBody.children.length, 24);
+});
+
+test('automatic family lookup retrieves the registered thiopurine source row without unknown-family leakage', async () => {
+  const rows = [
+    fixture({ STT: 101, 'Thuốc 1': 'Azathioprin', 'ATC 1': 'L04AX01', 'Thuốc 2': 'FixtureOther', 'ATC 2': 'X99XX99' }),
+    fixture({ STT: 102, 'Thuốc 1': 'Thiopurines', 'ATC 1': 'V03A', 'Thuốc 2': 'Allopurinol', 'ATC 2': 'M04AA01', 'Nguồn': 'Source fixture for family lookup' }),
+    fixture({ STT: 103, 'Thuốc 1': 'Unknown purine family', 'ATC 1': 'V03A', 'Thuốc 2': 'Allopurinol', 'ATC 2': 'M04AA01' }),
+    fixture({ STT: 104, 'Thuốc 1': 'Thiopurines; Mercaptopurine', 'ATC 1': 'V03A', 'Thuốc 2': 'Allopurinol', 'ATC 2': 'M04AA01' }),
+  ];
+  const h = harness({ rows }); await h.ready();
+  h.nodes.searchInput.value = 'azathioprine'; await h.nodes.searchInput.dispatch('keydown', { key: 'Enter' });
+  assert.equal(h.state().selectedDrugs.length, 1);
+  assert.equal(h.nodes.pcBody.children.length, 24);
+  h.nodes.searchInput.value = 'allopuriol'; await h.nodes.btnSearch.dispatch('click');
+  assert.equal(h.state().selectedDrugs.length, 2);
+  assert.equal(h.nodes.pcBody.children.length, 12);
+  assert.equal(h.nodes.mobileResults.children.length, 1);
+  assert.equal(h.nodes.pcBody.children[2].lastElementChild.textContent, 'Thiopurines');
+  assert.match(h.nodes.pcBody.textContent, /Source fixture for family lookup/);
+  assert.ok(!h.nodes.pcBody.textContent.includes('Unknown purine family'));
+  assert.ok(!h.nodes.pcBody.textContent.includes('Thiopurines; Mercaptopurine'));
+  assert.equal(h.call('getVal', h.state().allData[1]['Thuốc 1']), 'Thiopurines');
+});
+
+test('production keeps the original UI without demo diagnostics, toggles or source locators', () => {
+  assert.match(html, /<script[^>]+src=["'][^"']*\/js\/interaction-groups\.js[^"']*["']/);
+  assert.ok(html.indexOf('/js/interaction-groups.js') < html.indexOf('const Demo = window.InteractionDemo'));
+  assert.doesNotMatch(html, /<(?:div|section|button|input)[^>]+(?:class|id)=["'][^"']*\bdemo(?:[-_\s]|["'])/i);
+  assert.doesNotMatch(html, /<input[^>]+type=["']checkbox["']/i);
+  assert.doesNotMatch(html, /(?:Hàng nguồn|Chờ rà soát|Khớp trực tiếp|demoStats|demoResults|demoCandidates)/i);
+});
+
+test('registered aliases with the same ATC share one suggestion identity and do not duplicate chips', async () => {
+  const rows = [
+    fixture({ 'Thuốc 1': 'Mercaptopurin (6-MP)', 'ATC 1': 'L01BB02' }),
+    fixture({ STT: 2, 'Thuốc 1': 'Mercaptopurine', 'ATC 1': 'L01BB02' }),
+  ];
+  const h = harness({ rows }); await h.ready();
+  assert.equal(h.state().suggestionsList.filter(drug => drug.code === 'L01BB02').length, 1);
+  for (const alias of ['6-MP', 'mercaptopurine']) {
+    h.nodes.searchInput.value = alias; await h.nodes.btnSearch.dispatch('click');
+  }
+  assert.equal(h.state().selectedDrugs.length, 1);
+  assert.equal(h.nodes.pcBody.children.length, 24);
+});
