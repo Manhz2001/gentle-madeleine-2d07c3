@@ -897,7 +897,8 @@
     </section>
   </div>
 
-  <script src="/js/interaction-groups.js?v=20261103-auto-groups"></script>
+  <script src="/js/interaction-registry.js?v=20261103-atc-coverage"></script>
+  <script src="/js/interaction-groups.js?v=20261103-atc-coverage"></script>
   <script>
     const webAppUrl = "https://script.google.com/macros/s/AKfycbxybEUZXYbZxuz2EESUzC1tgIb1nWw4I7CrLTB6yIpGFYk1pLzfNl9Z8V2Kb49HyryS/exec";
     // Exact source columns; header whitespace is normalized at the API boundary.
@@ -944,17 +945,10 @@
         return result;
       });
     }
-    function drugId(name, code) { return JSON.stringify([Demo.canonicalName(name), foldVietnamese(code)]); }
+    function drugId(name, code) { return Demo.drugIdentity(name, code); }
     function drugLabel(drug) { return drug.code ? `${drug.code} · ${drug.name}` : drug.name; }
     function buildDrugCatalog(rows) {
-      const catalog = new Map();
-      rows.forEach(row => [1, 2].forEach(side => {
-        const name = String(getVal(row[`Thuốc ${side}`])).trim();
-        const code = String(getVal(row[`ATC ${side}`])).trim();
-        const id = drugId(name, code);
-        if (name && !catalog.has(id)) catalog.set(id, { id, name, code });
-      }));
-      return [...catalog.values()].sort((a, b) => a.name.localeCompare(b.name, "vi") || a.code.localeCompare(b.code));
+      return Demo.buildDrugCatalog(rows);
     }
     // Source-specific attribution is separate from the severity warning.
     function isContraindicatedByMOH(row) {
@@ -995,7 +989,8 @@
     function matchingSuggestions(query) {
       const needle = Demo.canonicalName(query);
       if (!needle) return [];
-      return suggestionsList.filter(item => Demo.canonicalName(item.name).includes(needle) || foldVietnamese(item.code).includes(needle));
+      return suggestionsList.filter(item => Demo.canonicalName(item.name).includes(needle)
+        || item.searchCodes.some(code => foldVietnamese(code).includes(needle)));
     }
     function showSuggestions() {
       const matches = matchingSuggestions(el.input.value);
@@ -1071,7 +1066,7 @@
       if (!dataReady) return;
       const query = Demo.canonicalName(el.input.value);
       if (query) {
-        const exact = suggestionsList.filter(drug => [Demo.canonicalName(drug.name), foldVietnamese(drug.code), foldVietnamese(drugLabel(drug))].includes(query));
+        const exact = suggestionsList.filter(drug => [Demo.canonicalName(drug.name), ...drug.searchCodes.map(foldVietnamese), ...drug.searchLabels.map(foldVietnamese)].includes(query));
         if (exact.length !== 1) {
           showError(exact.length > 1 ? "Có nhiều thuốc phù hợp. Vui lòng chọn đúng mã ATC và tên thuốc trong gợi ý." : "Không tìm thấy tên hoặc mã ATC chính xác. Vui lòng chọn một mục trong gợi ý.");
           showSuggestions();

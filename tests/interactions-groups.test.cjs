@@ -39,18 +39,20 @@ test('ATC-only lookup inherits only confirmed Coxibs/NSAID labels at proper ance
   }
 });
 
-test('misclassified Parecoxib and narrower NSAID rows are review candidates, not confirmed inheritance', () => {
+test('misclassified drug names stay unconfirmed and known narrower NSAID classes exclude coxibs', () => {
   const names = [drug('Parecoxib', 'M01AH'), drug('Fenamates', 'M01A'), drug('Nimesulide', 'M01A'), drug('Oxicam derivatives', 'M01A')];
   const result = Demo.analyze(names.map(name => fixture(name, allopurinol)), [celecoxib]);
   assert.equal(result.confirmed.length, 0);
-  assert.equal(result.candidates.length, names.length);
+  assert.equal(result.candidates.length, 2);
+  assert.deepEqual(result.candidates.map(item => Demo.value(item.row['Thuốc 1'])), ['Parecoxib', 'Nimesulide']);
   assert.ok(result.candidates.every(item => item.evidence[0].kind === 'review'));
 });
 
-test('directional hierarchy rejects sibling codes, descendant expansion and organ-level prefixes', () => {
-  for (const code of ['M01AH04', 'M01AE01', 'M01', 'M']) {
+test('directional hierarchy rejects siblings, descendants and organ codes; unknown 3-character group labels stay review-only', () => {
+  for (const code of ['M01AH04', 'M01AE01', 'M']) {
     assert.equal(Demo.sideMatch(fixture(drug('Coxibs', code), allopurinol), 1, celecoxib, atcOnly), null, code);
   }
+  assert.equal(Demo.sideMatch(fixture(drug('Coxibs', 'M01'), allopurinol), 1, celecoxib, atcOnly).kind, 'review');
   assert.equal(Demo.sideMatch(fixture(celecoxib, allopurinol), 1, drug('Coxibs', 'M01AH'), atcOnly), null);
   assert.equal(Demo.sideMatch(fixture(celecoxib, allopurinol), 1, drug('Thuốc chống viêm không steroid (NSAID)', 'M01A'), atcOnly), null);
 });

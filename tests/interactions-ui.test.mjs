@@ -5,6 +5,7 @@ import vm from 'node:vm';
 
 const html = readFileSync(new URL('../tra-cuu-thuoc-tuong-tac-thuoc.html', import.meta.url), 'utf8');
 const groupScript = readFileSync(new URL('../js/interaction-groups.js', import.meta.url), 'utf8');
+const registryScript = readFileSync(new URL('../js/interaction-registry.js', import.meta.url), 'utf8');
 const script = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
   .map(match => match[1]).find(code => code.includes('function searchInteraction'));
 assert.ok(script, 'The deployed HTML must contain the interaction module script');
@@ -70,6 +71,7 @@ function harness({ rows = [fixture()], status = 200, payload = rows, fetchError 
       return { ok: status >= 200 && status < 300, status, json: async () => payload };
     },
   });
+  vm.runInContext(registryScript, context, { filename: 'interaction-registry.js' });
   vm.runInContext(groupScript, context, { filename: 'interaction-groups.js' });
   vm.runInContext(script, context, { filename: 'interaction-module.inline.js' });
   const evaluate = code => vm.runInContext(code, context);
@@ -286,4 +288,32 @@ test('registered aliases with the same ATC share one suggestion identity and do 
   }
   assert.equal(h.state().selectedDrugs.length, 1);
   assert.equal(h.nodes.pcBody.children.length, 24);
+});
+
+test('supplemental concrete names retrieve class-only source rows through normal search events', async () => {
+  const h = harness({ rows: [
+    fixture({ STT: 1, 'Thuốc 1': 'Corticosteroid toàn thân', 'ATC 1': 'H02AB' }),
+    fixture({ STT: 2, 'Thuốc 1': 'Thuốc chẹn beta', 'ATC 1': 'C07AA' }),
+  ] });
+  await h.ready();
+  for (const query of ['methylprednisolone', 'bisoprolol']) {
+    h.nodes.searchInput.value = query; await h.nodes.searchInput.dispatch('keydown', { key: 'Enter' });
+    assert.equal(h.state().selectedDrugs.length, 1);
+    assert.equal(h.nodes.mobileResults.children.length, 1);
+    h.select('Thuốc thử B');
+    assert.equal(h.nodes.mobileResults.children.length, 1);
+    for (const chip of [...h.nodes.chips.children]) await chip.lastElementChild.dispatch('click');
+  }
+});
+
+test('legacy systemic Tretinoin is selectable by old/current code without offering topical-only code', async () => {
+  const h = harness({ rows: [fixture({ 'Thuốc 1': 'Tretinoin (ATRA)', 'ATC 1': 'L01XX14 / D10AD01' })] });
+  await h.ready();
+  assert.equal(h.call('matchingSuggestions', 'L01XX14').length, 1);
+  assert.equal(h.call('matchingSuggestions', 'L01XF01').length, 1);
+  assert.equal(h.call('matchingSuggestions', 'D10AD01').length, 0);
+  h.nodes.searchInput.value = 'L01XX14'; await h.nodes.btnSearch.dispatch('click');
+  assert.equal(h.state().selectedDrugs[0].code, 'L01XF01');
+  assert.equal(h.nodes.mobileResults.children.length, 1);
+  assert.match(h.nodes.pcBody.textContent, /L01XX14 \/ D10AD01/);
 });
